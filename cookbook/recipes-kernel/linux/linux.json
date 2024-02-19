@@ -1,0 +1,33 @@
+{
+    "name": "linux",
+    "type": "kernel",
+    "priority": 0,
+    "source": "https://github.com/torvalds/linux",
+    "support": [
+        "linux/arm64",
+        "linux/amd64"
+    ],
+    "ref": {
+        "linux/arm64": "0dd3ee31125508cd67f7e7172247f05b7fd1753a",
+        "linux/amd64": "0dd3ee31125508cd67f7e7172247f05b7fd1753a"
+    },
+    "hostDeps": [
+        "podman",
+        "podman-compose",
+        "git",
+        "make"
+    ],
+    "targetDeps": [],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "patchRecipes": [],
+    "buildRecipes": [
+        "build.ts"
+    ],
+    "deployRecipes": [
+        "deploy.ts",
+        "modules.ts"
+    ],
+    "cleanRecipes": []
+}

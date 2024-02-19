@@ -1,0 +1,75 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "The Distro Manifest Schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "description": "The name of the distro",
+            "type": "string"
+        },
+        "machine": {
+            "description": "The machine type",
+            "type": "string",
+            "enum": [
+                "qemux86-64",
+                "quemuarm64",
+                "wsl-amd64",
+                "wsl-arm64"
+            ]
+        },
+        "version": {
+            "type": "object",
+            "properties": {
+                "major": {
+                    "type": "number"
+                },
+                "minor": {
+                    "type": "number"
+                },
+                "patch": {
+                    "type": "number"
+                },
+                "build": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "major",
+                "minor",
+                "patch",
+                "build"
+            ]
+        },
+        "maxImgSize": {
+            "type": "number"
+        },
+        "arch": {
+            "type": "string",
+            "enum": [
+                "linux/amd64",
+                "linux/arm64"
+            ]
+        },
+        "searchForRecipesOn": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "excludeRecipes": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": [
+        "name",
+        "machine",
+        "version",
+        "maxImgSize",
+        "arch",
+        "searchForRecipesOn",
+        "excludeRecipes"
+    ]
+}

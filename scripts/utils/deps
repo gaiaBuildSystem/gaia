@@ -1,4 +1,21 @@
 #!/bin/bash
 
+# run as root
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
+# install podman
+apt-get install podman podman-compose
+
+# make sure to have unzip
+apt-get install unzip
+
 # install bun
 curl -fsSL https://bun.sh/install | bash
+
+mv /root/.bun/ /opt/bun
+
+# add it to the path
+echo "export PATH=$PATH:/opt/bun/bin" >> /etc/profile

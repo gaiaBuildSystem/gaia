@@ -1,0 +1,34 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../cookbook-torizon-wsl"
+        }
+    ],
+    "settings": {
+        "window.title": "Gaia Core",
+        "typescript.format.enable": true,
+        "workbench.activityBar.location": "top",
+        "workbench.sideBar.location": "right",
+        "json.schemas": [
+            {
+                "fileMatch": [
+                    "/distro-*.json"
+                ],
+                "url": "./schema/distro.json"
+            },
+            {
+                "fileMatch": [
+                    "/*.json",
+                    "!/distro-*.json",
+                    "!/.vscode/*.json",
+                    "!/package.json",
+                    "!/package-lock.json"
+                ],
+                "url": "./schema/recipe.json"
+            }
+        ],
+    }
+}

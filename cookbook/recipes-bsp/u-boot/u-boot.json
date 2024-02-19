@@ -1,0 +1,28 @@
+{
+    "name": "u-boot",
+    "type": "bootloader",
+    "priority": 0,
+    "source": "https://github.com/u-boot/u-boot",
+    "support": [
+        "linux/arm64"
+    ],
+    "ref": {
+        "linux/arm64": "4459ed60cb1e0562bc5b40405e2b4b9bbf766d57"
+    },
+    "hostDeps": [
+        "podman",
+        "podman-compose",
+        "git"
+    ],
+    "targetDeps": [
+        "u-boot-tools"
+    ],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "patchRecipes": [],
+    "buildRecipes": [
+        "build.ts"
+    ],
+    "deployRecipes": []
+}

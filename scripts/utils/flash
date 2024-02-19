@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# check if we are root
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root"
+    exit
+fi
+
+# ask if there is sure to flash the image
+echo "Are you sure you want to flash the image?"
+echo "You will flash the image $1 to the device $2"
+read -p "This will erase all data on the device. [y/N] " -n 1 -r
+
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "\nAborted"
+    exit
+fi
+
+echo -e "\nFlashing, please wait..."
+
+# flash it
+dd if=$1 of=$2 \
+    bs=1048576 status=progress
+
+sync

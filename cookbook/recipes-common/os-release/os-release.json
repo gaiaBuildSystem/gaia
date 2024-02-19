@@ -1,0 +1,21 @@
+{
+    "name": "os-release",
+    "type": "config",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "env": {
+        "OS_RELEASE_PRETTY_NAME": "Quecto Reference Distro",
+        "OS_RELEASE_NAME": "Reference Distro",
+        "OS_RELEASE_ID": "quecto",
+        "OS_RELEASE_VERSION_CODENAME": "reference",
+        "OS_RELEASE_HOME_URL": "https://www.quecto.com",
+        "OS_RELEASE_BUG_REPORT_URL": "https://www.quecto.com/bugs",
+        "OS_RELEASE_SUPPORT_URL": "https://www.quecto.com/support"
+    },
+    "deployRecipes": [
+        "deploy.ts"
+    ]
+}

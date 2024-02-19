@@ -1,0 +1,152 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Quecto Package",
+    "type": "object",
+    "properties": {
+        "name": {
+            "description": "The name of the Recipe",
+            "type": "string"
+        },
+        "type": {
+            "description": "The type of the Recipe",
+            "type": "string",
+            "enum": [
+                "bootloader",
+                "package",
+                "rootfs",
+                "config",
+                "kernel",
+                "kernelModule"
+            ]
+        },
+        "priority": {
+            "description": "The priority of the Recipe. This will use if there are multiple recipes discovery with the same name. So, the property from the recipe with the highest priority will be used.",
+            "type": "number"
+        },
+        "source": {
+            "description": "The source of the Recipe. Was designed to be a git repository or an URL to a tarball or file to be fetched.",
+            "type": "string",
+            "pattern": "^$|^(http|https)://[^ \"]+$"
+        },
+        "file": {
+            "description": "The file to be fetched from the source. If the source is a git repository, this property will be ignored.",
+            "type": "string"
+        },
+        "support": {
+            "description": "This property is used to define the supported architectures of the recipe.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "linux/amd64",
+                    "linux/arm64"
+                ]
+            },
+            "minItems": 1
+        },
+        "ref": {
+            "description": "The git reference to be fetched. If the source is a git repository, this property will be used to define the reference to be fetched.",
+            "type": "object",
+            "properties": {
+                "linux/amd64": {
+                    "type": "string"
+                },
+                "linux/arm64": {
+                    "type": "string"
+                }
+            }
+        },
+        "checksum": {
+            "description": "The checksum of the file to be fetched. If the source is a git repository, this property will be ignored.",
+            "type": "object",
+            "properties": {
+                "linux/amd64": {
+                    "type": "string"
+                },
+                "linux/arm64": {
+                    "type": "string"
+                }
+            }
+        },
+        "hostDeps": {
+            "description": "The host dependencies of the Recipe. This property is used by the main script check if the environment has the necessary dependencies to build the recipe.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "targetDeps": {
+            "description": "The target dependencies of the Recipe. This property is used by the main script to install into the image the necessary dependencies to build the recipe.",
+            "type": "array",
+            "items": {}
+        },
+        "env": {
+            "description": "The environment variables of the Recipe. This property is used by the main script to set the environment variables to build the recipe.",
+            "type": "object"
+        },
+        "fetchRecipes": {
+            "description": "This property is used to define the fetch scripts. They should be executable capable files and will be executed in the fetch stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "patchRecipes": {
+            "description": "This property is used to define the patch scripts. They should be executable capable files and will be executed in the patch stage.",
+            "type": "array",
+            "items": {}
+        },
+        "buildRecipes": {
+            "description": "This property is used to define the build scripts. They should be executable capable files and will be executed in the build stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "beforeDeployRecipes": {
+            "description": "This property is used to define the before deploy scripts. They should be executable capable files and will be executed in the before deploy stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "deployRecipes": {
+            "description": "This property is used to define the deploy scripts. They should be executable capable files and will be executed in the deploy stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "afterDeployRecipes": {
+            "description": "This property is used to define the after deploy scripts. They should be executable capable files and will be executed in the after deploy stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "bundleRecipes": {
+            "description": "This property is used to define the bundle scripts. They should be executable capable files and will be executed in the bundle stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "cleanRecipes": {
+            "description": "This property is used to define the clean scripts. They should be executable capable files and will be executed in the clean stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "merge": {
+            "description": "This property is used to define if the recipes should be merged with the existing ones.",
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "name",
+        "type",
+        "priority",
+        "support"
+    ]
+}

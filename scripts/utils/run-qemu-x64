@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo "Running QEMU with :: $1"
+sleep 2
+
+# check if $2 is monitor or serial
+if [ "$2" == "monitor" ]; then
+    qemu-system-x86_64 \
+        -cpu host \
+        -smp 4 \
+        -nic user,hostfwd=tcp::2222-:22 \
+        -machine pc \
+        -vga virtio \
+        -monitor stdio \
+        -m 2048 \
+        -drive file=$1,format=raw \
+        -bios /usr/share/ovmf/OVMF.fd \
+        -enable-kvm
+else
+    qemu-system-x86_64 \
+        -cpu host \
+        -smp 4 \
+        -nic user,hostfwd=tcp::2222-:22 \
+        -machine pc \
+        -vga virtio \
+        -serial stdio \
+        -m 2048 \
+        -drive file=$1,format=raw \
+        -bios /usr/share/ovmf/OVMF.fd \
+        -enable-kvm
+fi

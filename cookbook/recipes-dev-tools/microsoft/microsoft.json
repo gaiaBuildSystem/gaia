@@ -1,0 +1,17 @@
+{
+    "name": "microsoft-deb-packages",
+    "type": "package",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "source": "https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb",
+    "file": "packages-microsoft-prod.deb",
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ]
+}

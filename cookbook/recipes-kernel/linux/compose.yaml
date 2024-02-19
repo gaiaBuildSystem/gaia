@@ -1,0 +1,49 @@
+version: '3'
+services:
+  linux-build-x86:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      make
+        ARCH=x86
+        CROSS_COMPILE=${COMPILER}
+        bzImage
+        -j${JOBS}
+
+  linux-modules-x86:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: 1000:1000
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      make
+        ARCH=x86
+        CROSS_COMPILE=${COMPILER}
+        modules
+        ${MACHINE}_defconfig
+
+  linux-dtb:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: 1000:1000
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      make
+        CROSS_COMPILE=${COMPILER}
+        dtbs
+        ${MACHINE}_defconfig
+
+  linux-config:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: 1000:1000
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      make
+        CROSS_COMPILE=${COMPILER}
+        ${MACHINE}_defconfig

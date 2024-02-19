@@ -1,0 +1,12 @@
+{
+    "name": "userlogin",
+    "type": "config",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "deployRecipes": [
+        "create.ts"
+    ]
+}

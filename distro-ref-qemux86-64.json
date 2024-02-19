@@ -1,0 +1,19 @@
+{
+    "name": "Reference",
+    "machine": "qemux86-64",
+    "version": {
+        "major": 0,
+        "minor": 0,
+        "patch": 0,
+        "build": 0
+    },
+    "maxImgSize": 500,
+    "arch": "linux/amd64",
+    "searchForRecipesOn": [
+        "cookbook"
+    ],
+    "excludeRecipes": [
+        "u-boot",
+        "fstab"
+    ]
+}

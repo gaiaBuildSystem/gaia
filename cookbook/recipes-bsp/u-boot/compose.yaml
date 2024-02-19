@@ -1,0 +1,37 @@
+version: '3'
+services:
+  u-boot-build:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      make
+        CROSS_COMPILE=${COMPILER}
+        -j${JOBS}
+
+  u-boot-config:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: 1000:1000
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      make
+        CROSS_COMPILE=${COMPILER}
+        ${MACHINE}_defconfig
+
+  u-boot-mkimage:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: 1000:1000
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
+      - ${ORIGIN_PATH}:/assets
+    command:
+      mkimage -A ${MIN_ARCH}
+        -O linux
+        -T script
+        -C none
+        -n /assets/${ARCH}/boot.src
+        -d /assets/${ARCH}/boot.src
+        /source/boot.scr.uimg

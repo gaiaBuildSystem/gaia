@@ -1,0 +1,11 @@
+{
+    "devDependencies": {
+        "@types/node": "^20.10.6"
+    },
+    "dependencies": {
+        "minimist": "^1.2.8",
+        "node-color-log": "^11.0.0",
+        "node-fetch": "^3.3.2",
+        "ajv": "^8.12.0"
+    }
+}

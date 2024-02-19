@@ -1,0 +1,39 @@
+{
+    "name": "debian-sid",
+    "type": "rootfs",
+    "priority": 0,
+    "source": "https://github.com/debuerreotype/docker-debian-artifacts",
+    "file": "sid/rootfs.tar.xz",
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "ref": {
+        "linux/amd64": "06e65b40faea2bdba5d884cc89a990274c543bfb",
+        "linux/arm64": "8420e1aac9977b20a62dbef5e45c44472cacba82"
+    },
+    "checksum": {
+        "linux/amd64": "3d292fea0e8d8970b17d41f10984fd3c1ea02185ec10bf39f6791e3124f9672f",
+        "linux/arm64": "cb612d270e0821738a3169b2892272a61fb6325be64d0bbf2be262610da2cfd8"
+    },
+    "hostDeps": [
+        "mount",
+        "xz-utils",
+        "kpartx"
+    ],
+    "targetDeps": [],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "patchRecipes": [],
+    "buildRecipes": [
+        "disk.ts",
+        "buildRootfs.ts"
+    ],
+    "deployRecipes": [
+        "update.ts"
+    ],
+    "cleanRecipes": [
+        "umount.ts"
+    ]
+}

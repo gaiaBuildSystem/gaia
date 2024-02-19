@@ -1,0 +1,15 @@
+{
+    "name": "systemd",
+    "type": "package",
+    "priority": 0,
+    "support": [
+        "linux/amd64"
+    ],
+    "targetDeps": [
+        "systemd",
+        "systemd-sysv"
+    ],
+    "deployRecipes": [
+        "config.ts"
+    ]
+}

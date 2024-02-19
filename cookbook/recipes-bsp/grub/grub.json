@@ -1,0 +1,21 @@
+{
+    "name": "grub2",
+    "type": "bootloader",
+    "priority": 0,
+    "support": [
+        "linux/amd64"
+    ],
+    "ref": {},
+    "hostDeps": [
+        "grub2-common",
+        "grub-pc-bin"
+    ],
+    "targetDeps": [],
+    "fetchRecipes": [],
+    "patchRecipes": [],
+    "buildRecipes": [],
+    "deployRecipes": [
+        "deploy.ts"
+    ],
+    "cleanRecipes": []
+}

@@ -1,0 +1,91 @@
+#!/opt/bun/bin/bun
+
+import PATH from "path"
+import FS from "fs"
+import { execSync } from "child_process"
+import logger from "node-color-log"
+
+// gaia need to previously set arhitecture and machine
+const ARCH = process.env.ARCH as string
+const MACHINE = process.env.MACHINE as string
+const BUILD_PATH = process.env.BUILD_PATH as string
+const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
+const DISTRO_MINOR = process.env.DISTRO_MINOR as string
+const DISTRO_PATCH = process.env.DISTRO_PATCH as string
+const USER_PASSWD = process.env.USER_PASSWD as string
+
+// get the actual script path, not the process.cwd
+const _path = PATH.dirname(process.argv[1])
+const ORIGIN_PATH = _path
+process.env.ORIGIN_PATH = _path
+
+const IMAGE_PATH =
+    `${BUILD_PATH}/tmp/${MACHINE}/deploy/${MACHINE}-${DISTRO_MAJOR}-${DISTRO_MINOR}-${DISTRO_PATCH}.img`
+process.env.IMAGE_PATH = IMAGE_PATH
+
+const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
+const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
+process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
+process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
+
+// chroot into the rootfs and install the grub
+logger.info("installing grub ...")
+
+// get the loop device
+const DEV_LOOP = execSync(
+    `losetup -j ${IMAGE_PATH} | awk -F ':' '{print $1}'`,
+    {
+        shell: "/bin/bash",
+        stdio: "pipe",
+        encoding: "utf-8",
+        env: process.env
+    }).trim()
+
+logger.debug(`Loop device is: `)
+logger.debug(`  ${DEV_LOOP}`)
+
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `grub-install --target=x86_64-efi ` +
+    `--efi-directory=${IMAGE_MNT_BOOT} ` +
+    `--boot-directory=${IMAGE_MNT_BOOT} ` +
+    `--recheck ` +
+    `--no-nvram ` +
+    `--removable ` +
+    `${DEV_LOOP}`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
+logger.info("installing bootloader splash screen ...")
+
+// move the splash image to the boot partition
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `cp ${ORIGIN_PATH}/noStress.png ` +
+    `${IMAGE_MNT_BOOT}/splash.png`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
+logger.info("installing grub configuration ...")
+
+// move the grub.cfg to the boot partition
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `cp ${ORIGIN_PATH}/grub.cfg ` +
+    `${IMAGE_MNT_BOOT}/EFI/BOOT/grub.cfg`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
+logger.success("grub installed successfully")
