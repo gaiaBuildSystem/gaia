@@ -1,0 +1,18 @@
+{
+    "name": "docker",
+    "type": "package",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "beforeDeployRecipes": [
+        "addSource.ts"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ],
+    "afterDeployRecipes": [
+        "service.ts"
+    ]
+}
