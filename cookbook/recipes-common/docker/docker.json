@@ -11,8 +11,5 @@
     ],
     "deployRecipes": [
         "deploy.ts"
-    ],
-    "afterDeployRecipes": [
-        "service.ts"
     ]
 }
