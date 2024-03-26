@@ -38,4 +38,17 @@ execSync(
         encoding: "utf-8",
         env: process.env
     })
+
+// fixup the /etc/init.d/docker
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `sed -i 's/ulimit -Hn 524288/ulimit -n 524288/' ${IMAGE_MNT_ROOT}/etc/init.d/docker`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
+
 logger.success(`ok, install ${meta.name} is ok`)
