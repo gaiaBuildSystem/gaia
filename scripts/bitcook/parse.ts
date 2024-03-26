@@ -40,7 +40,8 @@ export interface Recipe {
     targetDeps: string[]
     recipeOrigin: string
     env: ProcessEnv
-    merge: boolean
+    merge: boolean,
+    version: string
 }
 
 export function ParseRecipes(workingDir: string, distro: any): Recipe[] {

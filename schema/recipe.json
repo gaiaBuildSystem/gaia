@@ -16,7 +16,8 @@
                 "rootfs",
                 "config",
                 "kernel",
-                "kernelModule"
+                "kernelModule",
+                "application"
             ]
         },
         "priority": {
@@ -141,6 +142,10 @@
         "merge": {
             "description": "This property is used to define if the recipes should be merged with the existing ones.",
             "type": "boolean"
+        },
+        "version": {
+            "description": "The version of the Recipe. This property is used to define the version of the recipe.",
+            "type": "string"
         }
     },
     "required": [
