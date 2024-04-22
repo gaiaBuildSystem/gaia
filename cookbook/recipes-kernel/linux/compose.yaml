@@ -25,6 +25,34 @@ services:
         modules
         ${MACHINE}_defconfig
 
+  linux-install-modules-x86:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: root
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
+      - ${ORIGIN_PATH}:/assets
+      - ${IMAGE_MNT_ROOT}:/rootfs
+    command:
+      make
+        ARCH=x86
+        CROSS_COMPILE=${COMPILER}
+        INSTALL_MOD_PATH=/rootfs
+        modules_install
+
+  linux-install-headers-x86:
+    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    user: root
+    volumes:
+      - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
+      - ${ORIGIN_PATH}:/assets
+      - ${BUILD_PATH}/tmp/${MACHINE}/rootfs:/rootfs
+    command:
+      make
+        ARCH=x86
+        CROSS_COMPILE=${COMPILER}
+        INSTALL_MOD_PATH=/rootfs
+        headers_install
+
   linux-dtb:
     image: docker.io/commontorizon/bsp-builder-amd64:latest
     user: 1000:1000

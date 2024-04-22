@@ -48,3 +48,29 @@ execSync(
         env: process.env
     })
 logger.success("kernel image installed")
+
+logger.info("installing Linux Kernel headers ...")
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `podman-compose -f ${_path}/compose.yaml run --rm linux-install-headers-${LINUX_ARCH}`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    }
+)
+logger.success(`Headers installed`)
+
+logger.info("installing Kernel modules ...")
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `podman-compose -f ${_path}/compose.yaml run --rm linux-install-modules-${LINUX_ARCH}`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    }
+)
+logger.success(`Modules installed`)
