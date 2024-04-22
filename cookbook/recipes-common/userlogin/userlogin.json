@@ -6,6 +6,10 @@
         "linux/amd64",
         "linux/arm64"
     ],
+    "env": {
+        "USER_LOGIN_USER": "reference",
+        "USER_LOGIN_PASSWORD": "reference"
+    },
     "deployRecipes": [
         "create.ts"
     ]

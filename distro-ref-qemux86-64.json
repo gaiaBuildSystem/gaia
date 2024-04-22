@@ -1,6 +1,7 @@
 {
-    "name": "Reference",
+    "name": "Quecto-Reference",
     "machine": "qemux86-64",
+    "arch": "linux/amd64",
     "version": {
         "major": 0,
         "minor": 0,
@@ -8,12 +9,13 @@
         "build": 0
     },
     "maxImgSize": 500,
-    "arch": "linux/amd64",
     "searchForRecipesOn": [
         "cookbook"
     ],
     "excludeRecipes": [
         "u-boot",
-        "fstab"
+        "fstab",
+        "microsoft",
+        "docker"
     ]
 }

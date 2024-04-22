@@ -21,7 +21,11 @@
         "xz-utils",
         "kpartx"
     ],
-    "targetDeps": [],
+    "targetDeps": [
+        "locales",
+        "passwd",
+        "openssl"
+    ],
     "fetchRecipes": [
         "fetch.ts"
     ],

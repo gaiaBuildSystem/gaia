@@ -6,7 +6,7 @@ import logger from "node-color-log"
 import { execSync } from "child_process"
 
 // run update in the chroot
-logger.info("deploy configured fstab ...")
+logger.info("creating userlogin ...")
 
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
@@ -16,6 +16,10 @@ const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
+
+// specific env vars
+const USER = process.env.USER_LOGIN_USER as string
+const PSWD = process.env.USER_LOGIN_PASSWORD as string
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
@@ -29,9 +33,9 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-    `adduser reference && ` +
-    `echo -e "ref\nref" | passwd reference && ` +
-    `usermod -aG sudo reference` +
+    `id -u ${USER} &>/dev/null || ` + // Check if user exists
+    `useradd -m -p $(openssl passwd -1 ${PSWD}) ${USER} && ` + // Create user with encrypted password
+    `usermod -aG sudo ${USER}` +
     `"`,
     {
         shell: "/bin/bash",
