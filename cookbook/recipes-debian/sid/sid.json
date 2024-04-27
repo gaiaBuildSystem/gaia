@@ -22,9 +22,19 @@
         "kpartx"
     ],
     "targetDeps": [
+        "kmod",
         "locales",
-        "passwd",
-        "openssl"
+        "sudo",
+        "bash",
+        "bash-completion",
+        "util-linux",
+        "nano",
+        "htop",
+        "e2fsprogs",
+        "parted",
+        "dbus",
+        "udev",
+        "fbi"
     ],
     "fetchRecipes": [
         "fetch.ts"

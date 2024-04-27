@@ -8,13 +8,12 @@
         "patch": 0,
         "build": 0
     },
-    "maxImgSize": 500,
+    "maxImgSize": 2048,
     "searchForRecipesOn": [
         "cookbook"
     ],
     "excludeRecipes": [
         "u-boot",
-        "fstab",
         "microsoft",
         "docker"
     ]
