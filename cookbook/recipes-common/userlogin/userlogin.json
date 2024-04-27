@@ -9,7 +9,8 @@
     "env": {
         "USER_LOGIN_USER": "reference",
         "USER_LOGIN_PASSWORD": "reference",
-        "USER_ROOT_PASSWORDLESS": "true"
+        "USER_ROOT_PASSWORDLESS": "true",
+        "USER_DEFAULT_SHELL": "/bin/bash"
     },
     "hostDeps": [
         "whois",

@@ -64,3 +64,23 @@ execSync(str_cmd,
         env: process.env
     })
 logger.success("ok, user login is ok")
+
+const USER_DEFAULT_SHELL = process.env.USER_DEFAULT_SHELL as string
+if (
+    USER_DEFAULT_SHELL !== undefined &&
+    USER_DEFAULT_SHELL !== ""
+) {
+    const str_default_shell =
+        `echo ${USER_PASSWD} | sudo -E -S ` +
+        `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+        `chsh -s ${USER_DEFAULT_SHELL} ${USER}"`
+
+    execSync(str_default_shell,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+    logger.success("ok, user default shell is set")
+}
