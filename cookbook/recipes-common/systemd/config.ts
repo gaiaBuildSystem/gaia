@@ -37,4 +37,14 @@ execSync(
         encoding: "utf-8",
         env: process.env
     })
+
+// make some configurations
+execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ${_path}/config.sh`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
 logger.success("ok, systemd config is ok")

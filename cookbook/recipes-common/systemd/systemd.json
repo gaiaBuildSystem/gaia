@@ -7,7 +7,8 @@
     ],
     "targetDeps": [
         "systemd",
-        "systemd-sysv"
+        "systemd-sysv",
+        "systemd-timesyncd"
     ],
     "deployRecipes": [
         "config.ts"
