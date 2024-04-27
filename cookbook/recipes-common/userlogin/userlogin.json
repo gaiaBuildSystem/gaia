@@ -8,9 +8,14 @@
     ],
     "env": {
         "USER_LOGIN_USER": "reference",
-        "USER_LOGIN_PASSWORD": "reference"
+        "USER_LOGIN_PASSWORD": "reference",
+        "USER_ROOT_PASSWORDLESS": "true"
     },
-    "deployRecipes": [
+    "hostDeps": [
+        "whois",
+        "sudo"
+    ],
+    "afterDeployRecipes": [
         "create.ts"
     ]
 }
