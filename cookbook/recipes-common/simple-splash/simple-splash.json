@@ -1,0 +1,14 @@
+{
+    "name": "simple-splash",
+    "type": "init",
+    "priority": 0,
+    "support": [
+        "linux/amd64"
+    ],
+    "targetDeps": [
+        "systemd"
+    ],
+    "afterDeployRecipes": [
+        "config.ts"
+    ]
+}
