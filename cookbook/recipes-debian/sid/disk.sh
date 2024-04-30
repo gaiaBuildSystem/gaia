@@ -20,6 +20,6 @@ dd if=/dev/zero of=$IMAGE_PATH \
 
 # create the partition table
 parted $IMAGE_PATH -s mktable msdos
-parted $IMAGE_PATH -s mkpart primary fat32 1 50 \
+parted $IMAGE_PATH -s mkpart primary fat32 1 100 \
     set 1 lba on align-check optimal 1 \
-    mkpart primary ext4 51 $(($MAX_IMG_SIZE - 51))
+    mkpart primary ext4 101 $(($MAX_IMG_SIZE - 101))

@@ -33,8 +33,7 @@
         "e2fsprogs",
         "parted",
         "dbus",
-        "udev",
-        "fbi"
+        "udev"
     ],
     "fetchRecipes": [
         "fetch.ts"

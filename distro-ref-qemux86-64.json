@@ -8,7 +8,7 @@
         "patch": 0,
         "build": 0
     },
-    "maxImgSize": 2048,
+    "maxImgSize": 3072,
     "searchForRecipesOn": [
         "cookbook"
     ],

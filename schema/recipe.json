@@ -14,6 +14,7 @@
                 "bootloader",
                 "package",
                 "rootfs",
+                "init",
                 "config",
                 "kernel",
                 "kernelModule",

@@ -1,6 +1,6 @@
 {
     "name": "systemd",
-    "type": "package",
+    "type": "init",
     "priority": 0,
     "support": [
         "linux/amd64"
