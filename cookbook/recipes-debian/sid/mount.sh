@@ -6,6 +6,8 @@ read PART_LOOP <<<$(grep -o 'loop.' <<<"$kpartxret")
 
 # format it ??
 if [ "$CLEAN_IMAGE" == "true" ]; then
+    echo "Formatting the partitions"
+
     mkfs.vfat -F 32 /dev/mapper/${PART_LOOP}p1
     mkfs.ext4 /dev/mapper/${PART_LOOP}p2
     fatlabel /dev/mapper/${PART_LOOP}p1 'BOOT'
