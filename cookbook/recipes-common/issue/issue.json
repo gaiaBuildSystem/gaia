@@ -1,0 +1,11 @@
+{
+    "name": "issue",
+    "type": "package",
+    "priority": 0,
+    "support": [
+        "linux/amd64"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ]
+}
