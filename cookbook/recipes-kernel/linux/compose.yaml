@@ -1,18 +1,18 @@
 version: '3'
 services:
-  linux-build-x86:
+  linux-build:
     image: docker.io/commontorizon/bsp-builder-amd64:latest
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
       - ${ORIGIN_PATH}:/assets
     command:
       make
-        ARCH=x86
+        ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
         bzImage
         -j${JOBS}
 
-  linux-modules-x86:
+  linux-modules:
     image: docker.io/commontorizon/bsp-builder-amd64:latest
     user: 1000:1000
     volumes:
@@ -20,12 +20,12 @@ services:
       - ${ORIGIN_PATH}:/assets
     command:
       make
-        ARCH=x86
+        ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
         modules
         ${MACHINE}_defconfig
 
-  linux-install-modules-x86:
+  linux-install-modules:
     image: docker.io/commontorizon/bsp-builder-amd64:latest
     user: root
     volumes:
@@ -34,12 +34,12 @@ services:
       - ${IMAGE_MNT_ROOT}:/rootfs
     command:
       make
-        ARCH=x86
+        ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
         INSTALL_MOD_PATH=/rootfs
         modules_install
 
-  linux-install-headers-x86:
+  linux-install-headers:
     image: docker.io/commontorizon/bsp-builder-amd64:latest
     user: root
     volumes:
@@ -48,7 +48,7 @@ services:
       - ${BUILD_PATH}/tmp/${MACHINE}/rootfs:/rootfs
     command:
       make
-        ARCH=x86
+        ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
         INSTALL_MOD_PATH=/rootfs
         headers_install

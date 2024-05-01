@@ -36,6 +36,7 @@ if (ARCH === "linux/arm64") {
     LINUX_ARCH = "x86"
     LINUX_IMAGE = "bzImage"
 }
+process.env.LINUX_ARCH = LINUX_ARCH
 
 logger.info("installing kernel image ...")
 execSync(
@@ -52,7 +53,7 @@ logger.success("kernel image installed")
 logger.info("installing Linux Kernel headers ...")
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `podman-compose -f ${_path}/compose.yaml run --rm linux-install-headers-${LINUX_ARCH}`,
+    `podman-compose -f ${_path}/compose.yaml run --rm linux-install-headers`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
@@ -65,7 +66,7 @@ logger.success(`Headers installed`)
 logger.info("installing Kernel modules ...")
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `podman-compose -f ${_path}/compose.yaml run --rm linux-install-modules-${LINUX_ARCH}`,
+    `podman-compose -f ${_path}/compose.yaml run --rm linux-install-modules`,
     {
         shell: "/bin/bash",
         stdio: "inherit",

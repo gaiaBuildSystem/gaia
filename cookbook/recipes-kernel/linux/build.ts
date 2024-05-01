@@ -76,7 +76,7 @@ logger.success(`Configuration done`)
 logger.info(`Building ...`)
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `podman-compose -f ${_path}/compose.yaml run --rm linux-build-${LINUX_ARCH}`,
+    `podman-compose -f ${_path}/compose.yaml run --rm linux-build`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
@@ -89,7 +89,7 @@ logger.success(`Build done`)
 logger.info(`Building modules ...`)
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `podman-compose -f ${_path}/compose.yaml run --rm linux-modules-${LINUX_ARCH}`,
+    `podman-compose -f ${_path}/compose.yaml run --rm linux-modules`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
