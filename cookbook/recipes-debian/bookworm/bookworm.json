@@ -1,20 +1,20 @@
 {
-    "name": "debian-sid",
+    "name": "debian-bookworm",
     "type": "rootfs",
     "priority": 0,
     "source": "https://github.com/debuerreotype/docker-debian-artifacts",
-    "file": "sid/rootfs.tar.xz",
+    "file": "bookworm/rootfs.tar.xz",
     "support": [
         "linux/amd64",
         "linux/arm64"
     ],
     "ref": {
-        "linux/amd64": "06e65b40faea2bdba5d884cc89a990274c543bfb",
-        "linux/arm64": "8420e1aac9977b20a62dbef5e45c44472cacba82"
+        "linux/amd64": "44807175c12f847248c046022ef95862e5567c58",
+        "linux/arm64": "836e0afa104ba9409a98f6ba98a7b127d037b490"
     },
     "checksum": {
-        "linux/amd64": "3d292fea0e8d8970b17d41f10984fd3c1ea02185ec10bf39f6791e3124f9672f",
-        "linux/arm64": "cb612d270e0821738a3169b2892272a61fb6325be64d0bbf2be262610da2cfd8"
+        "linux/amd64": "ae82d80feff703be4500a8bd331a5e1882cc549a323bd1b0773217c0eab2aef6",
+        "linux/arm64": "c4bb3edab66836d2e59d2e5078824b7b3d4330b62a3bef3495e73345e59619bd"
     },
     "hostDeps": [
         "mount",

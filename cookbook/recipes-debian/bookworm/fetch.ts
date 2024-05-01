@@ -1,5 +1,7 @@
 #!/opt/bun/bin/bun
 
+// TODO: allways check the https://docker.debian.net/ for the latest version
+
 import * as FS from "fs"
 import * as CRYPTO from "crypto"
 
