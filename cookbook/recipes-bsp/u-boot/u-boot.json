@@ -24,5 +24,7 @@
     "buildRecipes": [
         "build.ts"
     ],
-    "deployRecipes": []
+    "deployRecipes": [
+        "deploy.ts"
+    ]
 }
