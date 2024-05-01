@@ -191,11 +191,11 @@ if (!CLEAN) {
         ExecBuild(recipesParsed)
 
         // these steps need to have the chroot applied on the rootfs
-        ExecPackage(recipesParsed) // this one will install the targetDeps
-        ExecBeforeDeploy(recipesParsed) // this will run the before deploy scripts
-        ExecDeploy(recipesParsed) // this will run the deploy scripts
-        ExecAfterDeploy(recipesParsed) // this will run the after deploy scripts
-        ExecBundle(recipesParsed) // this will create the packages or release compressed artifacts
+        ExecPackage(recipesParsed)
+        ExecBeforeDeploy(recipesParsed)
+        ExecDeploy(recipesParsed)
+        ExecAfterDeploy(recipesParsed)
+        ExecBundle(recipesParsed)
     } finally {
         ExecClean(recipesParsed)
     }
