@@ -9,9 +9,11 @@ import logger from "node-color-log"
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
 const BUILD_PATH = process.env.BUILD_PATH as string
+const DISTRO_NAME = process.env.DISTRO_NAME as string
 const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
+const USER_PASSWD = process.env.USER_PASSWD as string
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
@@ -40,6 +42,7 @@ function compileBootScript(): void {
     process.env.COMPILER = _compiler
 
     execSync(
+        `echo ${USER_PASSWD} | sudo -E -S ` +
         `podman-compose -f ${_path}/compose.yaml run --rm u-boot-mkimage`,
         {
             shell: "/bin/bash",
@@ -55,8 +58,9 @@ function compileBootScript(): void {
 process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/u-boot`)
 
 // replace the defconfig
-logger.info(`Parsing defconfig ${_path}/${ARCH}/defconfig.template ...`)
-const _defconfig = FS.readFileSync(`${_path}/${ARCH}/defconfig.template`, "utf-8")
+logger.info(`Parsing defconfig ${_path}/${MACHINE}/${MACHINE}_defconfig.template ...`)
+const _defconfig = FS.readFileSync(`${_path}/${MACHINE}/${MACHINE}_defconfig.template`, "utf-8")
+    .replace(/{{dName}}/g, DISTRO_NAME)
     .replace(/{{v1}}/g, DISTRO_MAJOR)
     .replace(/{{v2}}/g, DISTRO_MINOR)
     .replace(/{{v3}}/g, DISTRO_PATCH)
@@ -73,6 +77,7 @@ process.env.JOBS = require("os").cpus().length
 
 logger.info(`Configuring ...`)
 execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm u-boot-config`,
     {
         shell: "/bin/bash",
@@ -85,6 +90,7 @@ logger.success(`Configuration done`)
 
 logger.info(`Building ...`)
 execSync(
+    `echo ${USER_PASSWD} | sudo -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm u-boot-build`,
     {
         shell: "/bin/bash",

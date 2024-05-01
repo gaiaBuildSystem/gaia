@@ -1,0 +1,20 @@
+{
+    "name": "Quecto-Reference",
+    "machine": "qemuarm64",
+    "arch": "linux/arm64",
+    "version": {
+        "major": 0,
+        "minor": 0,
+        "patch": 0,
+        "build": 0
+    },
+    "maxImgSize": 3072,
+    "searchForRecipesOn": [
+        "cookbook"
+    ],
+    "excludeRecipes": [
+        "grub",
+        "microsoft",
+        "docker"
+    ]
+}

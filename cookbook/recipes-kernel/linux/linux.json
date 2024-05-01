@@ -8,7 +8,7 @@
         "linux/amd64"
     ],
     "ref": {
-        "linux/arm64": "0dd3ee31125508cd67f7e7172247f05b7fd1753a",
+        "linux/arm64": "e8f897f4afef0031fe618a8e94127a0934896aba",
         "linux/amd64": "0dd3ee31125508cd67f7e7172247f05b7fd1753a"
     },
     "hostDeps": [
@@ -26,8 +26,7 @@
         "build.ts"
     ],
     "deployRecipes": [
-        "deploy.ts",
-        "modules.ts"
+        "deploy.ts"
     ],
     "cleanRecipes": []
 }

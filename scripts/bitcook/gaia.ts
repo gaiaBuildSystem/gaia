@@ -17,6 +17,7 @@ import { ExecBundle } from "./execBundle"
 import { ExecPatch } from "./execPatch"
 import { ExecBeforeDeploy } from "./execBeforeDeploy"
 import { ExecAfterDeploy } from "./execAfterDeploy"
+import { execSync } from "child_process"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv()
@@ -169,6 +170,17 @@ process.env.MAX_IMG_SIZE = distro.maxImgSize || "1024"
 
 // parse the recipes
 const recipesParsed = ParseRecipes(_path, distro)
+
+// we need to have support to all the architecures
+execSync(
+    `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
+    `podman run --rm --privileged docker.io/torizon/binfmt:latest`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
 
 if (!CLEAN) {
     try {

@@ -9,7 +9,7 @@ services:
       make
         ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
-        bzImage
+        ${IMAGE_TYPE}
         -j${JOBS}
 
   linux-modules:
@@ -61,6 +61,7 @@ services:
       - ${ORIGIN_PATH}:/assets
     command:
       make
+        ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
         dtbs
         ${MACHINE}_defconfig
@@ -73,5 +74,6 @@ services:
       - ${ORIGIN_PATH}:/assets
     command:
       make
+        ARCH=${LINUX_ARCH}
         CROSS_COMPILE=${COMPILER}
         ${MACHINE}_defconfig

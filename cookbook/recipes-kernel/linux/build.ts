@@ -28,22 +28,28 @@ process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/linux`)
 //          PLEASE DOES NOT INXIST ON IT
 let LINUX_ARCH = ARCH
 let COMPILER = ""
+let IMAGE_TYPE = ""
+
 switch (ARCH) {
     case "linux/amd64":
         LINUX_ARCH = "x86"
         COMPILER = "x86_64-linux-gnu-"
+        IMAGE_TYPE = "bzImage"
         break
 
     case "linux/arm64":
         LINUX_ARCH = "arm64"
         COMPILER = "aarch64-linux-gnu-"
+        IMAGE_TYPE = "Image"
         break
 
     default:
         break
 }
+
 process.env.LINUX_ARCH = LINUX_ARCH
 process.env.COMPILER = COMPILER
+process.env.IMAGE_TYPE = IMAGE_TYPE
 
 // replace the defconfig
 logger.info(`Parsing defconfig ${_path}/${MACHINE}/defconfig.template ...`)
@@ -104,7 +110,7 @@ if (LINUX_ARCH === "arm64") {
     logger.info(`Building dtbs ...`)
     execSync(
         `echo ${USER_PASSWD} | sudo -E -S ` +
-        `podman-compose -f ${_path}/compose.yaml run --rm linux-dtbs`,
+        `podman-compose -f ${_path}/compose.yaml run --rm linux-dtb`,
         {
             shell: "/bin/bash",
             stdio: "inherit",

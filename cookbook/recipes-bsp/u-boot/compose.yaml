@@ -32,6 +32,6 @@ services:
         -O linux
         -T script
         -C none
-        -n /assets/${ARCH}/boot.src
-        -d /assets/${ARCH}/boot.src
+        -n /assets/${MACHINE}/boot.src
+        -d /assets/${MACHINE}/boot.src
         /source/boot.scr.uimg

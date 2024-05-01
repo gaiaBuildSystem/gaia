@@ -1,0 +1,2 @@
+LABEL=BOOT   /boot   vfat    auto,exec,rw,async,nofail,user,uid=1000     0   1
+LABEL=gaia   /       ext4    errors=remount-ro                           0   1

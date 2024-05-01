@@ -28,7 +28,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 // copy the fstab file to the rootfs
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `cp ${_path}/fstab ${IMAGE_MNT_ROOT}/etc/fstab`,
+    `cp ${_path}/${MACHINE}/fstab ${IMAGE_MNT_ROOT}/etc/fstab`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
