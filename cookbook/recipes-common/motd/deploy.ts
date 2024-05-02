@@ -25,10 +25,25 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
+logger.info(`Parsing motd ${_path}/motd.template ...`)
+const _motd = FS.readFileSync(`${_path}/motd.template`, "utf-8")
+    .replace(/{{MOTD_MESSAGE}}/g, process.env.MOTD_MESSAGE!)
+
+// create the issue directory if it does not exist
+if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/motd`)) {
+    FS.mkdirSync(`${BUILD_PATH}/tmp/${MACHINE}/motd`, { recursive: true })
+}
+
+// dump the issue file
+FS.writeFileSync(
+    `${BUILD_PATH}/tmp/${MACHINE}/motd/motd`,
+    _motd
+)
+
 // copy the fstab file to the rootfs
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `cp ${_path}/motd ${IMAGE_MNT_ROOT}/etc/motd`,
+    `cp ${BUILD_PATH}/tmp/${MACHINE}/motd/motd ${IMAGE_MNT_ROOT}/etc/motd`,
     {
         shell: "/bin/bash",
         stdio: "inherit",

@@ -6,6 +6,9 @@
         "linux/amd64",
         "linux/arm64"
     ],
+    "env": {
+        "ISSUE_LINE": "Quecto Reference"
+    },
     "deployRecipes": [
         "deploy.ts"
     ]

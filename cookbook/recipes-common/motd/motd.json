@@ -6,6 +6,9 @@
         "linux/amd64",
         "linux/arm64"
     ],
+    "env": {
+        "MOTD_MESSAGE": "Quecto Reference comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law."
+    },
     "deployRecipes": [
         "deploy.ts"
     ]

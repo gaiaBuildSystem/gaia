@@ -25,10 +25,25 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
-// copy the fstab file to the rootfs
+logger.info(`Parsing issue ${_path}/issue.template ...`)
+const _issue = FS.readFileSync(`${_path}/issue.template`, "utf-8")
+    .replace(/{{ISSUE_LINE}}/g, process.env.ISSUE_LINE!)
+
+// create the issue directory if it does not exist
+if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/issue`)) {
+    FS.mkdirSync(`${BUILD_PATH}/tmp/${MACHINE}/issue`, { recursive: true })
+}
+
+// dump the issue file
+FS.writeFileSync(
+    `${BUILD_PATH}/tmp/${MACHINE}/issue/issue`,
+    _issue
+)
+
+// copy the issue file to the rootfs
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `cp ${_path}/issue ${IMAGE_MNT_ROOT}/etc/issue`,
+    `cp ${BUILD_PATH}/tmp/${MACHINE}/issue/issue ${IMAGE_MNT_ROOT}/etc/issue`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
