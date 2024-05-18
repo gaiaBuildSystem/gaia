@@ -4,6 +4,8 @@ import PATH from "path"
 import FS from "fs"
 import logger from "node-color-log"
 import { execSync } from "child_process"
+import { Recipe } from "../../../scripts/bitcook/parse"
+import { getAssetPath } from "../../../scripts/bitcook/utils/getAssetPath"
 
 // run update in the chroot
 logger.info("deploy configured fstab ...")
@@ -17,8 +19,13 @@ const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
 
+// get the recipe metadata
+const META = JSON.parse(process.env.META as string) as Recipe
+
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
+const _paths = META.paths.toString()
+const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
 
 const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
 const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
@@ -28,7 +35,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 // copy the fstab file to the rootfs
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `cp ${_path}/${MACHINE}/fstab ${IMAGE_MNT_ROOT}/etc/fstab`,
+    `cp ${_getAssetPath(`${MACHINE}/fstab`)} ${IMAGE_MNT_ROOT}/etc/fstab`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
