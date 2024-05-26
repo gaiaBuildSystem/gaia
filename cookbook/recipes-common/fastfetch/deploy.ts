@@ -44,7 +44,7 @@ if (process.env.ALIAS_NEOFETCH === "true") {
         `echo ${USER_PASSWD} | sudo -E -S ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c ` +
         `"` +
-        `ln -s /usr/bin/fastfetch /usr/bin/neofetch` +
+        `ln -sf /usr/bin/fastfetch /usr/bin/neofetch` +
         `"`,
         {
             shell: "/bin/bash",
