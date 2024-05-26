@@ -1,0 +1,49 @@
+{
+    "name": "fastfetch",
+    "type": "config",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "source": "https://github.com/fastfetch-cli/fastfetch.git",
+    "ref": {
+        "linux/amd64": "7e1c426e3424ccf2258befe0da36b41d1fa594fe",
+        "linux/arm64": "7e1c426e3424ccf2258befe0da36b41d1fa594fe"
+    },
+    "env": {
+        "ALIAS_NEOFETCH": "true"
+    },
+    "hostAsContainer": true,
+    "containerImage": {
+        "image": "debian",
+        "tag": "bookworm"
+    },
+    "hostDeps": [
+        "binutils",
+        "build-essential",
+        "cmake",
+        "libdrm-dev",
+        "libglib2.0-dev",
+        "libdconf-dev",
+        "libchafa-dev",
+        "zlib1g-dev",
+        "libdbus-1-dev",
+        "libosmesa6-dev",
+        "libopencl-clang-15-dev",
+        "directx-headers-dev"
+    ],
+    "targetDeps": [
+        "libdrm2",
+        "libosmesa6"
+    ],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "buildRecipes": [
+        "build.sh"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ]
+}
