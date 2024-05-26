@@ -70,6 +70,27 @@
                 }
             }
         },
+        "hostAsContainer": {
+            "description": "This property is used to define if the recipe should be built inside a container.",
+            "type": "boolean",
+            "default": false
+        },
+        "containerImage": {
+            "description": "This property is used to define the container to be used to build the recipe.",
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "image",
+                "tag"
+            ]
+        },
         "hostDeps": {
             "description": "The host dependencies of the Recipe. This property is used by the main script check if the environment has the necessary dependencies to build the recipe.",
             "type": "array",
@@ -149,6 +170,26 @@
             "type": "string"
         }
     },
+    "allOf": [
+        {
+            "if": {
+                "properties": {
+                    "hostAsContainer": {
+                        "const": true
+                    }
+                },
+                "required": [
+                    "hostAsContainer"
+                ]
+            },
+            "then": {
+                "required": [
+                    "containerImage"
+                ]
+            },
+            "else": {}
+        }
+    ],
     "required": [
         "name",
         "type",

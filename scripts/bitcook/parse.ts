@@ -36,6 +36,11 @@ export interface Recipe {
     afterDeployRecipes: string[]
     bundleRecipes: string[]
     cleanRecipes: string[]
+    hostAsContainer: boolean
+    containerImage: {
+        image: string
+        tag: string
+    }
     hostDeps: string[]
     targetDeps: string[]
     recipeOrigin: string
