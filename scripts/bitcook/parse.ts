@@ -248,14 +248,23 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
                         (
                             prop.includes("Recipes") ||
                             prop.includes("Deps") ||
-                            prop.includes("paths")
+                            prop.includes("paths") ||
+                            prop.includes("env")
                         ) &&
                         meta2.merge === true
                     ) {
-                        _metas[recipeName][prop] = [
-                            ...meta2[prop],
-                            ..._metas[recipeName][prop]
-                        ]
+                        // check if the prop is an array
+                        if (Array.isArray(_metas[recipeName][prop])) {
+                            _metas[recipeName][prop] = [
+                                ...meta2[prop],
+                                ..._metas[recipeName][prop]
+                            ]
+                        } else {
+                            // so, we have an object, we need to merge the keys
+                            for (const key in meta2[prop]) {
+                                _metas[recipeName][prop][key] = meta2[prop][key]
+                            }
+                        }
                     } else {
                         _metas[recipeName][prop] = meta2[prop]
                     }
