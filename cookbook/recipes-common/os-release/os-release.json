@@ -13,7 +13,8 @@
         "OS_RELEASE_VERSION_CODENAME": "reference",
         "OS_RELEASE_HOME_URL": "https://www.quecto.com",
         "OS_RELEASE_BUG_REPORT_URL": "https://www.quecto.com/bugs",
-        "OS_RELEASE_SUPPORT_URL": "https://www.quecto.com/support"
+        "OS_RELEASE_SUPPORT_URL": "https://www.quecto.com/support",
+        "OS_RELEASE_VARIANT": "reference"
     },
     "deployRecipes": [
         "deploy.ts"

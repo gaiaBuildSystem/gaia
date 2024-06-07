@@ -37,6 +37,7 @@ const _os_release = FS.readFileSync(`${_path}/os-release.template`, "utf-8")
     .replace(/{{HOME_URL}}/g, process.env.OS_RELEASE_HOME_URL!)
     .replace(/{{SUPPORT_URL}}/g, process.env.OS_RELEASE_SUPPORT_URL!)
     .replace(/{{BUG_REPORT_URL}}/g, process.env.OS_RELEASE_BUG_REPORT_URL!)
+    .replace(/{{VARIANT}}/g, process.env.OS_RELEASE_VARIANT!)
 
 // create the os-release directory if it does not exist
 if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/os-release`)) {
