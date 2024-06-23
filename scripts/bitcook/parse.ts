@@ -73,11 +73,17 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
                 if (stat.isDirectory()) {
                     jsonFiles.push(...getJsonFiles(filePath))
                 } else {
+                    // must be a file .json and should have the same name
+                    // as the directory
                     if (
                         filePath.endsWith(".json") &&
-                        !filePath.includes("distro-")
+                        PATH.basename(filePath, ".json") === PATH.basename(dir)
                     ) {
                         jsonFiles.push(filePath)
+                    } else if (
+                        filePath.endsWith(".json")
+                    ) {
+                        logger.warn(`Ignoring possible recipe : ${PATH.basename(filePath)}`)
                     }
                 }
             }
