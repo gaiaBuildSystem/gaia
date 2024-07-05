@@ -20,6 +20,6 @@ background_image /splash.png
 
 # and boot the linux kernel
 menuentry "Linux" {
-    linux /bzImage console=ttyS0,115200 root=LABEL:gaia rootfstype=ext4 logo.nologo vt.global_cursor_default=0 video=1024x768
+    linux /bzImage {{GRUB_KERNEL_CMDLINE}}
     initrd /initramfs.cpio.gz
 }

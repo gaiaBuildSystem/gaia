@@ -50,6 +50,19 @@ export interface Recipe {
     version: string
 }
 
+function replaceConfigEnvVars(recipe: Recipe, str: string | undefined): string {
+    if (str != null) {
+        return str.replace(/\${(\w+)}/g, (match, p1) => {
+            if (p1 === "recipeOrigin") {
+                return recipe.recipeOrigin
+            }
+
+            return ""
+        })
+    } else
+        return ""
+}
+
 export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
     logger.info("Parsing recipes ...")
     let _RECIPES: string[] = []
@@ -295,6 +308,7 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
     // also inject the environment variables
     for (const recipe of RECIPES) {
         for (const env in recipe.env) {
+            recipe.env[env] = replaceConfigEnvVars(recipe, recipe.env[env])
             process.env[env] = recipe.env[env]
         }
     }

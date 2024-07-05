@@ -28,6 +28,21 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
+logger.info(`Parsing grub.cfg ${_path}/grub.cfg.template ...`)
+const _grubCFG = FS.readFileSync(`${_path}/grub.cfg.template`, "utf-8")
+    .replace(/{{GRUB_KERNEL_CMDLINE}}/g, process.env.GRUB_KERNEL_CMDLINE!)
+
+// create the issue directory if it does not exist
+if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/grub`)) {
+    FS.mkdirSync(`${BUILD_PATH}/tmp/${MACHINE}/grub`, { recursive: true })
+}
+
+// dump the parsed file
+FS.writeFileSync(
+    `${BUILD_PATH}/tmp/${MACHINE}/grub/grub.cfg`,
+    _grubCFG
+)
+
 // chroot into the rootfs and install the grub
 logger.info("installing grub ...")
 
@@ -65,7 +80,7 @@ logger.info("installing bootloader splash screen ...")
 // move the splash image to the boot partition
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `cp ${ORIGIN_PATH}/noStress.png ` +
+    `cp ${process.env.GRUB_SPLASH_PATH} ` +
     `${IMAGE_MNT_BOOT}/splash.png`,
     {
         shell: "/bin/bash",
@@ -79,7 +94,7 @@ logger.info("installing grub configuration ...")
 // move the grub.cfg to the boot partition
 execSync(
     `echo ${USER_PASSWD} | sudo -E -S ` +
-    `cp ${ORIGIN_PATH}/grub.cfg ` +
+    `cp ${BUILD_PATH}/tmp/${MACHINE}/grub/grub.cfg ` +
     `${IMAGE_MNT_BOOT}/EFI/BOOT/grub.cfg`,
     {
         shell: "/bin/bash",
