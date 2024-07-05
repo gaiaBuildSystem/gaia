@@ -8,6 +8,7 @@ export function ExecBuild(recipes: Recipe[]): void {
     const USER_PASSWD = process.env.USER_PASSWD as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
+    const DISTRO_NAME = process.env.DISTRO_NAME as string
 
     // directly call the build scrips from the recipes
     for (const recipe of recipes) {
@@ -30,7 +31,7 @@ export function ExecBuild(recipes: Recipe[]): void {
                     try {
                         execSync(
                             `echo ${USER_PASSWD} | sudo -E -S ` +
-                            `podman exec -it ${_containerEnv} ${recipe.name}-host ` +
+                            `podman exec -it ${_containerEnv} ${recipe.name}-${DISTRO_NAME}-host ` +
                             `/bin/bash -c "` +
                             `exec ${buildRecipe}` +
                             `"`,

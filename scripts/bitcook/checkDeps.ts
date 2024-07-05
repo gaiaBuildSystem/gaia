@@ -11,6 +11,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
     const USER_PASSWD = process.env.USER_PASSWD as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
+    const DISTRO_NAME = process.env.DISTRO_NAME as string
 
     // check if the recipes have the required dependencies
     for (const recipe of recipes) {
@@ -25,7 +26,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
                 try {
                     execSync(
                         `echo ${USER_PASSWD} | sudo -E -S ` +
-                        `podman inspect ${recipe.name}-host`,
+                        `podman inspect ${recipe.name}-${DISTRO_NAME}-host`,
                         {
                             shell: "/bin/bash",
                             stdio: "inherit",
@@ -39,7 +40,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
 
                 // if not create it and install the dependencies
                 if (!_hostContainerExists) {
-                    logger.info(`Creating container ${recipe.name}-host for platform ${ARCH} ...`)
+                    logger.info(`Creating container ${recipe.name}-${DISTRO_NAME}-host for platform ${ARCH} ...`)
 
                     let _pathsBinding = ""
                     for (const _path of recipe.paths) {
@@ -48,7 +49,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
 
                     execSync(
                         `echo ${USER_PASSWD} | sudo -E -S ` +
-                        `podman run -d --name ${recipe.name}-host --platform ${ARCH} ` +
+                        `podman run -d --name ${recipe.name}-${DISTRO_NAME}-host --platform ${ARCH} ` +
                         `-v ${BUILD_PATH}:${BUILD_PATH} ` +
                         `${_pathsBinding}` +
                         `${recipe.containerImage.image}:${recipe.containerImage.tag} ` +
@@ -64,13 +65,13 @@ export function CheckDependencies(recipes: Recipe[]): void {
                         }
                     )
                 } else {
-                    logger.info(`Container ${recipe.name}-host exists`)
+                    logger.info(`Container ${recipe.name}-${DISTRO_NAME}-host exists`)
                 }
 
                 // make sure the container is running
                 execSync(
                     `echo ${USER_PASSWD} | sudo -E -S ` +
-                    `podman start ${recipe.name}-host `,
+                    `podman start ${recipe.name}-${DISTRO_NAME}-host `,
                     {
                         shell: "/bin/bash",
                         stdio: "inherit",
@@ -82,7 +83,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
                 try {
                     execSync(
                         `echo ${USER_PASSWD} | sudo -E -S ` +
-                        `podman exec -it ${recipe.name}-host ` +
+                        `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
                         `/bin/bash -c "` +
                         `apt-get update && ` +
                         `apt-get install -y ${recipe.hostDeps.join(" ")}` +
