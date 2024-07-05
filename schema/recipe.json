@@ -34,6 +34,13 @@
             "description": "The file to be fetched from the source. If the source is a git repository, this property will be ignored.",
             "type": "string"
         },
+        "files": {
+            "description": "The files to be fetched from the source. If the source is a git repository, this property will be ignored.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "support": {
             "description": "This property is used to define the supported architectures of the recipe.",
             "type": "array",
