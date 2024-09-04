@@ -34,9 +34,11 @@ export interface Recipe {
     beforeDeployRecipes: string[]
     deployRecipes: string[]
     afterDeployRecipes: string[]
+    initramfsRecipes: string[]
     bundleRecipes: string[]
     cleanRecipes: string[]
-    hostAsContainer: boolean
+    hostAsContainer: boolean,
+    support: string[]
     containerImage: {
         image: string
         tag: string
@@ -133,7 +135,7 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
 
     // parse then
     for (const recipe of _RECIPES) {
-        const meta = require(`${recipe}`)
+        const meta: Recipe = require(`${recipe}`)
         logger.info(`Parsing recipe ${recipe} ...`)
 
         // validate the recipe JSON with their schema
@@ -216,6 +218,15 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
             }
         } else {
             meta.afterDeployRecipes = []
+        }
+
+        if (meta.initramfsRecipes != null) {
+            // FIXME: and if the path is already absolute?
+            for (let i = 0; i < meta.initramfsRecipes.length; i++) {
+                meta.initramfsRecipes[i] = `${meta.recipeOrigin}/${meta.initramfsRecipes[i]}`
+            }
+        } else {
+            meta.initramfsRecipes = []
         }
 
         if (meta.bundleRecipes != null) {
@@ -311,15 +322,6 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
             recipe.env[env] = replaceConfigEnvVars(recipe, recipe.env[env])
             process.env[env] = recipe.env[env]
         }
-    }
-
-    if (process.env.VERBOSE === "true") {
-        logger.debug("\n\nParsed recipes: \n" + JSON.stringify(RECIPES, null, 4))
-
-        logger.debug("\n\nEnvironment variables: \n" + JSON.stringify(process.env, null, 4))
-
-        // verbose does not execute the other steps
-        process.exit(0)
     }
 
     return RECIPES

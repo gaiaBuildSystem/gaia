@@ -18,6 +18,8 @@ import { ExecPatch } from "./execPatch"
 import { ExecBeforeDeploy } from "./execBeforeDeploy"
 import { ExecAfterDeploy } from "./execAfterDeploy"
 import { execSync } from "child_process"
+import { ExecDeployIniramfs } from "./execDeployInitramfs"
+import { ExecBundleIniramfs } from "./execBundleInitramfs"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv()
@@ -146,6 +148,11 @@ _validateSchema(
 BUILD_PATH = `${BUILD_PATH}/build-${distro.name}`
 process.env.BUILD_PATH = BUILD_PATH
 
+// also make sure that the build path exists
+if (!FS.existsSync(BUILD_PATH)) {
+    FS.mkdirSync(BUILD_PATH, { recursive: true })
+}
+
 const DISTRO_NAME = distro.name
 process.env.DISTRO_NAME = DISTRO_NAME
 
@@ -168,8 +175,29 @@ process.env.DISTRO_PATCH = distro.version?.patch || "0"
 // set the environment variable for the maximum size of the img
 process.env.MAX_IMG_SIZE = distro.maxImgSize || "1024"
 
+// check if we should add the initramfs
+process.env.USE_INITRAMFS = distro.useInitramfs || "false"
+const USE_INITRAMFS = distro.useInitramfs || false
+
 // parse the recipes
 const recipesParsed = ParseRecipes(_path, distro)
+
+if (USE_INITRAMFS) {
+    // set the INITRAMFS_PATH
+    const MACHINE = process.env.MACHINE as string
+    const BUILD_PATH = process.env.BUILD_PATH as string
+    process.env.INITRAMFS_PATH = `${BUILD_PATH}/tmp/${MACHINE}/initramfs`
+}
+
+// debug
+if (process.env.VERBOSE === "true") {
+    logger.debug("\n\nParsed recipes: \n" + JSON.stringify(recipesParsed, null, 4))
+
+    logger.debug("\n\nEnvironment variables: \n" + JSON.stringify(process.env, null, 4))
+
+    // verbose does not execute the other steps
+    process.exit(0)
+}
 
 // we need to have support to all the architecures
 execSync(
@@ -195,6 +223,13 @@ if (!CLEAN) {
         ExecBeforeDeploy(recipesParsed)
         ExecDeploy(recipesParsed)
         ExecAfterDeploy(recipesParsed)
+
+        if (USE_INITRAMFS) {
+            ExecDeployIniramfs(recipesParsed)
+            ExecBundleIniramfs(recipesParsed)
+        }
+
+        // package the image
         ExecBundle(recipesParsed)
     } finally {
         ExecClean(recipesParsed)

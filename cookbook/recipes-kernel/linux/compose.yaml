@@ -24,6 +24,7 @@ services:
         CROSS_COMPILE=${COMPILER}
         modules
         ${MACHINE}_defconfig
+        -j${JOBS}
 
   linux-install-modules:
     image: docker.io/commontorizon/bsp-builder-amd64:latest
@@ -65,6 +66,7 @@ services:
         CROSS_COMPILE=${COMPILER}
         dtbs
         ${MACHINE}_defconfig
+        -j${JOBS}
 
   linux-config:
     image: docker.io/commontorizon/bsp-builder-amd64:latest

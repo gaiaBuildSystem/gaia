@@ -168,6 +168,13 @@
                 "type": "string"
             }
         },
+        "initramfsRecipes": {
+            "description": "This property is used to define the initramfs scripts. They should be executable capable files and will be executed in the initramfs stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "merge": {
             "description": "This property is used to define if the recipes should be merged with the existing ones.",
             "type": "boolean"
