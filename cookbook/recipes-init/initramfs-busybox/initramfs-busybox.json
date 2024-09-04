@@ -1,0 +1,19 @@
+{
+    "name": "initramfs-busybox",
+    "type": "init",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "hostDeps": [
+        "cpio",
+        "gzip"
+    ],
+    "targetDeps": [
+        "busybox-static"
+    ],
+    "initramfsRecipes": [
+        "deploy.ts"
+    ]
+}

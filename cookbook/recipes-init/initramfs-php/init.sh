@@ -22,7 +22,7 @@ if grep -q "shell" /proc/cmdline; then
     reboot -f
 fi
 
-# call the typescript init
+# call the php init
 ./init.php
 
 # switch to the real root

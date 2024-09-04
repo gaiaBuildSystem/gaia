@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+# run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root"
+    exit
+fi
+
+# create
+find . | cpio -H newc -o >./initramfs.cpio
+gzip -c ./initramfs.cpio >./initramfs.cpio.gz
+
+# copy it to the boot directory
+mv ./initramfs.cpio.gz $IMAGE_MNT_BOOT/initramfs.cpio.gz
+
+# clean up
+rm ./initramfs.cpio
