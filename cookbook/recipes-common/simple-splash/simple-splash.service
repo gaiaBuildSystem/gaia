@@ -1,6 +1,6 @@
 [Unit]
 Description=Simple Splash Service
-After=rc-local.service systemd-user-sessions.service
+After=rc-local.service systemd-user-sessions.service getty.target
 
 [Service]
 Type=oneshot

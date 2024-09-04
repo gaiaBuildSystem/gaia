@@ -7,9 +7,19 @@
         "linux/arm64"
     ],
     "targetDeps": [
-        "systemd"
+        "procps",
+        "systemd",
+        "patchelf",
+        "python3",
+        "python3-pip",
+        "scons",
+        "fbset",
+        "fbi"
     ],
     "afterDeployRecipes": [
         "config.ts"
+    ],
+    "initramfsRecipes": [
+        "deployInit.sh"
     ]
 }
