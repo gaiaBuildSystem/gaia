@@ -13,5 +13,11 @@ umount $IMAGE_MNT_ROOT/sys
 umount $IMAGE_MNT_BOOT
 umount $IMAGE_MNT_ROOT
 
+# first check if the image exists
+if [ ! -f $IMAGE_PATH ]; then
+    echo "Image file $IMAGE_PATH does not exist"
+    exit 0
+fi
+
 # remove the mapping
 kpartx -dv $IMAGE_PATH
