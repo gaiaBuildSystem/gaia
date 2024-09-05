@@ -27,7 +27,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // enable systemd services
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `stat /sbin/init` +
     `"`,

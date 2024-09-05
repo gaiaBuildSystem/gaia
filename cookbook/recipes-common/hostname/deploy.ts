@@ -26,7 +26,7 @@ process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/hostname ${IMAGE_MNT_ROOT}/etc/hostname`,
     {
         shell: "/bin/bash",

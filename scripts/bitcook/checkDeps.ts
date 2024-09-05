@@ -25,7 +25,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
                 let _hostContainerExists = false
                 try {
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -E -S ` +
+                        `echo ${USER_PASSWD} | sudo -k -E -S ` +
                         `podman inspect ${recipe.name}-${DISTRO_NAME}-host`,
                         {
                             shell: "/bin/bash",
@@ -48,7 +48,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
                     }
 
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -E -S ` +
+                        `echo ${USER_PASSWD} | sudo -k -E -S ` +
                         `podman run -d --name ${recipe.name}-${DISTRO_NAME}-host --platform ${ARCH} ` +
                         `-v ${BUILD_PATH}:${BUILD_PATH} ` +
                         `${_pathsBinding}` +
@@ -70,7 +70,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
 
                 // make sure the container is running
                 execSync(
-                    `echo ${USER_PASSWD} | sudo -E -S ` +
+                    `echo ${USER_PASSWD} | sudo -k -E -S ` +
                     `podman start ${recipe.name}-${DISTRO_NAME}-host `,
                     {
                         shell: "/bin/bash",
@@ -82,7 +82,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
                 // install the dependencies
                 try {
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -E -S ` +
+                        `echo ${USER_PASSWD} | sudo -k -E -S ` +
                         `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
                         `/bin/bash -c "` +
                         `apt-get update && ` +

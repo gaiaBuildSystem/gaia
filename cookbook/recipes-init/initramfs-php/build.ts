@@ -26,7 +26,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // move the script to the chroot
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/setupInit.sh ${IMAGE_MNT_ROOT}/setupInit.sh`,
     {
         shell: "/bin/bash",
@@ -36,7 +36,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/init.sh ${IMAGE_MNT_ROOT}/init.sh`,
     {
         shell: "/bin/bash",
@@ -46,7 +46,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/init.php ${IMAGE_MNT_ROOT}/init.php`,
     {
         shell: "/bin/bash",
@@ -56,7 +56,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/noStress.png ${IMAGE_MNT_ROOT}/noStress.png`,
     {
         shell: "/bin/bash",
@@ -67,7 +67,7 @@ execSync(
 
 // execute
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash /setupInit.sh`,
     {
         shell: "/bin/bash",
@@ -78,7 +78,7 @@ execSync(
 
 // move the initramfs to the boot partition
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `mv ${IMAGE_MNT_ROOT}/initramfs.cpio.gz ${IMAGE_MNT_BOOT}/`,
     {
         shell: "/bin/bash",
@@ -88,7 +88,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `mkdir -p ${BUILD_PATH}/tmp/${MACHINE}/initramfs`,
     {
         shell: "/bin/bash",
@@ -98,7 +98,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${IMAGE_MNT_BOOT}/initramfs.cpio.gz ${BUILD_PATH}/tmp/${MACHINE}/initramfs/initramfs.cpio.gz`,
     {
         shell: "/bin/bash",

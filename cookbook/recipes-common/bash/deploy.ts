@@ -27,7 +27,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // copy the fstab file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/.bashrc ${IMAGE_MNT_ROOT}/etc/bash.bashrc`,
     {
         shell: "/bin/bash",
@@ -37,7 +37,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${_path}/.bashrc ${IMAGE_MNT_ROOT}/etc/skel/.bashrc`,
     {
         shell: "/bin/bash",

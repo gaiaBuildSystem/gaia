@@ -42,7 +42,7 @@ FS.writeFileSync(
 
 // copy the fstab file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/motd/motd ${IMAGE_MNT_ROOT}/etc/motd`,
     {
         shell: "/bin/bash",

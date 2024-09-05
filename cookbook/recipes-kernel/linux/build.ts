@@ -77,7 +77,7 @@ process.env.JOBS = require("os").cpus().length
 
 logger.info(`Configuring ...`)
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-config`,
     {
         shell: "/bin/bash",
@@ -90,7 +90,7 @@ logger.success(`Configuration done`)
 
 logger.info(`Building ...`)
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-build`,
     {
         shell: "/bin/bash",
@@ -103,7 +103,7 @@ logger.success(`Build done`)
 
 logger.info(`Building modules ...`)
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-modules`,
     {
         shell: "/bin/bash",
@@ -118,7 +118,7 @@ logger.success(`Modules built`)
 if (LINUX_ARCH === "arm64") {
     logger.info(`Building dtbs ...`)
     execSync(
-        `echo ${USER_PASSWD} | sudo -E -S ` +
+        `echo ${USER_PASSWD} | sudo -k -E -S ` +
         `podman-compose -f ${_path}/compose.yaml run --rm linux-dtb`,
         {
             shell: "/bin/bash",
