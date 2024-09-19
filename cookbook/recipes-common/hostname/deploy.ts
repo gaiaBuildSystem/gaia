@@ -17,17 +17,31 @@ const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
 
+// recipe env
+const HOSTNAME_NAME = process.env.HOSTNAME_NAME as string
+
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
+const _deployPath = `${BUILD_PATH}/tmp/${MACHINE}/hostname`
+
+// check if the deploy path exists
+if (!FS.existsSync(_deployPath)) {
+    logger.info("deploy path does not exists, creating ...")
+    FS.mkdirSync(_deployPath, { recursive: true })
+}
+
+// write the HOSTNAME_NAME to the hostname file
+FS.writeFileSync(`${_deployPath}/hostname`, `${HOSTNAME_NAME}\n`)
 
 const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
 const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
+
 execSync(
     `echo ${USER_PASSWD} | sudo -k -E -S ` +
-    `cp ${_path}/hostname ${IMAGE_MNT_ROOT}/etc/hostname`,
+    `cp ${_deployPath}/hostname ${IMAGE_MNT_ROOT}/etc/hostname`,
     {
         shell: "/bin/bash",
         stdio: "inherit",

@@ -6,6 +6,9 @@
         "linux/amd64",
         "linux/arm64"
     ],
+    "env": {
+        "HOSTNAME_NAME": "reference"
+    },
     "deployRecipes": [
         "deploy.ts"
     ]
