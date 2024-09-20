@@ -48,4 +48,17 @@ execSync(
         encoding: "utf-8",
         env: process.env
     })
+
+// also we need to update the /etc/hosts file
+execSync(
+    `echo ${USER_PASSWD} | sudo -k -E -S bash -c '` +
+    `echo "127.0.0.1\t${HOSTNAME_NAME}" >> ${IMAGE_MNT_ROOT}/etc/hosts` +
+    `'`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
 logger.success("ok, hostname is ok")
