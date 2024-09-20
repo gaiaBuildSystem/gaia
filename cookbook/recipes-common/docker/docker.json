@@ -11,5 +11,8 @@
     ],
     "deployRecipes": [
         "deploy.ts"
+    ],
+    "afterDeployRecipes": [
+        "setupIptableLegacy.ts"
     ]
 }
