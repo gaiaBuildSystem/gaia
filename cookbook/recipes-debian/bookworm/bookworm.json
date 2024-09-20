@@ -33,7 +33,10 @@
         "e2fsprogs",
         "parted",
         "dbus",
-        "udev"
+        "udev",
+        "network-manager",
+        "net-tools",
+        "resolvconf"
     ],
     "fetchRecipes": [
         "fetch.ts"
