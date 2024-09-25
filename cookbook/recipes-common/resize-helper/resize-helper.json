@@ -1,0 +1,17 @@
+{
+    "name": "resize-helper",
+    "type": "init",
+    "priority": 0,
+    "support": [
+        "linux/amd64"
+    ],
+    "targetDeps": [
+        "util-linux",
+        "udev",
+        "gdisk",
+        "fdisk"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ]
+}
