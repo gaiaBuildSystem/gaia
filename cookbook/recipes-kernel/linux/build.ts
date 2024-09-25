@@ -75,6 +75,19 @@ logger.info(`Building Linux Kernel for ${MACHINE} :: ${ARCH} ...`)
 // get how many cores we have
 process.env.JOBS = require("os").cpus().length
 
+logger.info(`Updating builder image ...`)
+execSync(
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `podman-compose -f ${_path}/compose.yaml pull`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    }
+)
+logger.success(`Builder image updated`)
+
 logger.info(`Configuring ...`)
 execSync(
     `echo ${USER_PASSWD} | sudo -k -E -S ` +
@@ -101,18 +114,22 @@ execSync(
 )
 logger.success(`Build done`)
 
-logger.info(`Building modules ...`)
-execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
-    `podman-compose -f ${_path}/compose.yaml run --rm linux-modules`,
-    {
-        shell: "/bin/bash",
-        stdio: "inherit",
-        encoding: "utf-8",
-        env: process.env
-    }
-)
-logger.success(`Modules built`)
+if (process.env.KERNEL_LINUX_BUILD_MODULES === "false") {
+    logger.warn(`Skipping modules build`)
+} else {
+    logger.info(`Building modules ...`)
+    execSync(
+        `echo ${USER_PASSWD} | sudo -k -E -S ` +
+        `podman-compose -f ${_path}/compose.yaml run --rm linux-modules`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        }
+    )
+    logger.success(`Modules built`)
+}
 
 // ? need to build the dtbs ?
 if (LINUX_ARCH === "arm64") {
