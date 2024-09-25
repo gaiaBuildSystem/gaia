@@ -3,10 +3,22 @@
 #
 # Reference boot script.
 
+echo "Booting Reference ..."
+
+# check if loglevel is set
+if env exists loglevel
+    then
+        echo "loglevel is set to ${loglevel}"
+    else
+        setenv loglevel 3
+fi
+
 env set bootargs root=LABEL:gaia rootfstype=ext4
 env set bootargs ${bootargs} console=ttyAMA0,115200
 env set bootargs ${bootargs} logo.nologo vt.global_cursor_default=0
 env set bootargs ${bootargs} video=1024x768
+env set bootargs ${bootargs} loglevel=${loglevel}
+env set bootargs ${bootargs} ${extraargs}
 
 # loads the kernel and the initramfs
 virtio dev 0
