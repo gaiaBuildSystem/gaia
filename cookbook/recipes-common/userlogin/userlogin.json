@@ -16,7 +16,7 @@
         "whois",
         "sudo"
     ],
-    "afterDeployRecipes": [
+    "beforeDeployRecipes": [
         "create.ts"
     ]
 }
