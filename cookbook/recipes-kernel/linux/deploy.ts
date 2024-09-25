@@ -17,6 +17,11 @@ const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
 
+if (process.env.KERNEL_LINUX_DEPLOY === "false") {
+    logger.warn("Skipping Kernel Linux Deploy")
+    process.exit(0)
+}
+
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
 
