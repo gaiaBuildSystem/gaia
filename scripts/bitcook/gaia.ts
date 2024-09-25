@@ -20,6 +20,8 @@ import { ExecAfterDeploy } from "./execAfterDeploy"
 import { execSync } from "child_process"
 import { ExecDeployIniramfs } from "./execDeployInitramfs"
 import { ExecBundleIniramfs } from "./execBundleInitramfs"
+import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
+import { ExecBeforePackage } from "./execBeforePackage"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv()
@@ -112,6 +114,11 @@ const CLEAN = _args.clean as boolean
 const VERBOSE = _args.verbose as boolean
 
 process.env.VERBOSE = VERBOSE != null ? VERBOSE.toString() : false.toString()
+process.env.RECIPE = RECIPE != null ? RECIPE : undefined
+
+if (process.env.RECIPE !== undefined) {
+    logger.debug(`Running only the recipe ${RECIPE}`)
+}
 
 // if not BUILD_PATH is set, use the _path/build
 if (!BUILD_PATH) {
@@ -219,13 +226,17 @@ if (!CLEAN) {
         ExecBuild(recipesParsed)
 
         // these steps need to have the chroot applied on the rootfs
-        ExecPackage(recipesParsed)
-        ExecBeforeDeploy(recipesParsed)
-        ExecDeploy(recipesParsed)
-        ExecAfterDeploy(recipesParsed)
+        if (process.env.RECIPE === undefined) {
+            ExecBeforePackage(recipesParsed)
+            ExecPackage(recipesParsed)
+            ExecBeforeDeploy(recipesParsed)
+            ExecDeploy(recipesParsed)
+            ExecAfterDeploy(recipesParsed)
+        }
 
         if (USE_INITRAMFS) {
             ExecDeployIniramfs(recipesParsed)
+            ExecAfterDeployIniramfs(recipesParsed)
             ExecBundleIniramfs(recipesParsed)
         }
 

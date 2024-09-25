@@ -1,6 +1,7 @@
 import { execSync } from "child_process"
 import logger from "node-color-log"
 import { Recipe } from "./parse"
+import { canExecRecipe } from "./utils/recipeMatch"
 
 export function ExecDeployIniramfs(recipes: Recipe[]): void {
     logger.info("Executing Deploy InitRamfs ...")
@@ -28,6 +29,8 @@ export function ExecDeployIniramfs(recipes: Recipe[]): void {
 
     // directly call the deploy scrips from the recipes
     for (const recipe of recipes) {
+        if (!canExecRecipe(recipe.name)) continue
+
         // check if the recipe has a build script
         if (recipe.initramfsRecipes && recipe.initramfsRecipes.length > 0) {
             logger.info(`Executing deploy initramfs for ${recipe.name} ...`)

@@ -6,6 +6,12 @@ import PATH from "path"
 export function ExecBundleIniramfs(recipes: Recipe[]): void {
     logger.info("Executing Bundle InitRamfs ...")
 
+    if (process.env.RECIPE !== undefined) {
+        logger.warn("Bundle InitRamfs will be skipped")
+        logger.warn("cause: Running with RECIPE env variable set")
+        return
+    }
+
     // distro info
     const MACHINE = process.env.MACHINE as string
     const BUILD_PATH = process.env.BUILD_PATH as string

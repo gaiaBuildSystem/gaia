@@ -1,9 +1,16 @@
 import { execSync } from "child_process"
 import logger from "node-color-log"
 import { Recipe } from "./parse"
+import { canExecRecipe } from "./utils/recipeMatch"
 
 export function ExecClean(recipes: Recipe[]): void {
     logger.info("Executing Clean ...")
+
+    if (process.env.RECIPE !== undefined) {
+        logger.warn("Clean recipes will be skipped")
+        logger.warn("cause: Running with RECIPE env variable set")
+        return
+    }
 
     // directly call the clean scrips from the recipes
     for (const recipe of recipes) {

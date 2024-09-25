@@ -105,6 +105,11 @@
                 "type": "string"
             }
         },
+        "beforeTargetDepsRecipes": {
+            "description": "This property is used to define the beforeTargetDeps scripts. They should be executable capable files and will be executed in the fetch stage.",
+            "type": "array",
+            "items": {}
+        },
         "targetDeps": {
             "description": "The target dependencies of the Recipe. This property is used by the main script to install into the image the necessary dependencies to build the recipe.",
             "type": "array",
@@ -170,6 +175,13 @@
         },
         "initramfsRecipes": {
             "description": "This property is used to define the initramfs scripts. They should be executable capable files and will be executed in the initramfs stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "afterDeployInitramfsRecipes": {
+            "description": "This property is used to define the after deploy initramfs scripts. They should be executable capable files and will be executed in the after deploy initramfs stage.",
             "type": "array",
             "items": {
                 "type": "string"

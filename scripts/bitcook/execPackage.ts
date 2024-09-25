@@ -21,22 +21,29 @@ export function ExecPackage(recipes: Recipe[]): void {
     process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
     process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
-    // update the sources
-    execSync(
-        `echo ${USER_PASSWD} | sudo -k -E -S ` +
-        `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get update"`,
-        {
-            shell: "/bin/bash",
-            stdio: "inherit",
-            encoding: "utf-8",
-            env: process.env
-        })
+    var _apt_updated: boolean = false
 
     // directly call the clean scrips from the recipes
     for (const recipe of recipes) {
         // check if the recipe has a build script
         if (recipe.targetDeps && recipe.targetDeps.length > 0) {
             logger.info(`Executing packages for ${recipe.name} ...`)
+
+            // only for the first target package
+            if (!_apt_updated) {
+                // update the sources
+                execSync(
+                    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+                    `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get update"`,
+                    {
+                        shell: "/bin/bash",
+                        stdio: "inherit",
+                        encoding: "utf-8",
+                        env: process.env
+                    })
+                _apt_updated = true
+            }
+
             // put the deps in a string space separated
             const deps = recipe.targetDeps.join(" ")
 

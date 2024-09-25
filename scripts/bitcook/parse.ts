@@ -35,6 +35,7 @@ export interface Recipe {
     deployRecipes: string[]
     afterDeployRecipes: string[]
     initramfsRecipes: string[]
+    afterDeployInitramfsRecipes: string[]
     bundleRecipes: string[]
     cleanRecipes: string[]
     hostAsContainer: boolean,
@@ -44,6 +45,7 @@ export interface Recipe {
         tag: string
     }
     hostDeps: string[]
+    beforeTargetDepsRecipes: string[]
     targetDeps: string[]
     recipeOrigin: string
     paths: string[]
@@ -200,6 +202,15 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
             meta.deployRecipes = []
         }
 
+        if (meta.beforeTargetDepsRecipes != null) {
+            // FIXME: and if the path is already absolute?
+            for (let i = 0; i < meta.beforeTargetDepsRecipes.length; i++) {
+                meta.beforeTargetDepsRecipes[i] = `${meta.recipeOrigin}/${meta.beforeTargetDepsRecipes[i]}`
+            }
+        } else {
+            meta.beforeTargetDepsRecipes = []
+        }
+
         if (meta.beforeDeployRecipes != null) {
             // for all deployRecipes, transform in absolute path
             // FIXME: and if the path is already absolute?
@@ -227,6 +238,15 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
             }
         } else {
             meta.initramfsRecipes = []
+        }
+
+        if (meta.afterDeployInitramfsRecipes != null) {
+            // FIXME: and if the path is already absolute?
+            for (let i = 0; i < meta.afterDeployInitramfsRecipes.length; i++) {
+                meta.afterDeployInitramfsRecipes[i] = `${meta.recipeOrigin}/${meta.afterDeployInitramfsRecipes[i]}`
+            }
+        } else {
+            meta.afterDeployInitramfsRecipes = []
         }
 
         if (meta.bundleRecipes != null) {

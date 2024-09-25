@@ -15,7 +15,8 @@
                 "qemuarm64",
                 "wsl-amd64",
                 "wsl-arm64",
-                "rpi4b"
+                "rpi4b",
+                "rpi5b"
             ]
         },
         "version": {

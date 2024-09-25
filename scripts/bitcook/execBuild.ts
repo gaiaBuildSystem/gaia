@@ -1,6 +1,7 @@
 import { execSync } from "child_process"
 import logger from "node-color-log"
 import { Recipe } from "./parse"
+import { canExecRecipe } from "./utils/recipeMatch"
 
 export function ExecBuild(recipes: Recipe[]): void {
     logger.info("Executing build ...")
@@ -12,6 +13,8 @@ export function ExecBuild(recipes: Recipe[]): void {
 
     // directly call the build scrips from the recipes
     for (const recipe of recipes) {
+        if (!canExecRecipe(recipe.name)) continue
+
         process.env.META = JSON.stringify(recipe)
 
         // check if the recipe has a build script
