@@ -4,6 +4,8 @@ import PATH from "path"
 import FS from "fs"
 import { execSync } from "child_process"
 import logger from "node-color-log"
+import { Recipe } from "../../../scripts/bitcook/parse"
+import { getAssetPath } from "../../../scripts/bitcook/utils/getAssetPath"
 
 // gaia need to previously set arhitecture and machine
 const ARCH = process.env.ARCH as string
@@ -13,9 +15,11 @@ const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
+const META = JSON.parse(process.env.META as string) as Recipe
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
+const _paths = META.paths.toString()
 const ORIGIN_PATH = _path
 process.env.ORIGIN_PATH = _path
 
@@ -28,8 +32,14 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
+const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
+
 logger.info(`Parsing grub.cfg ${_path}/grub.cfg.template ...`)
-const _grubCFG = FS.readFileSync(`${_path}/grub.cfg.template`, "utf-8")
+
+// get it from the recipe origin or from here
+const _grub_cfg_template_Path = _getAssetPath(`grub.cfg.template`)
+
+const _grubCFG = FS.readFileSync(`${_grub_cfg_template_Path}`, "utf-8")
     .replace(/{{GRUB_KERNEL_CMDLINE}}/g, process.env.GRUB_KERNEL_CMDLINE!)
 
 // create the issue directory if it does not exist
