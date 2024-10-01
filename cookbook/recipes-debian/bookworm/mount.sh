@@ -10,8 +10,8 @@ if [ "$CLEAN_IMAGE" == "true" ]; then
 
     mkfs.vfat -F 32 /dev/mapper/${PART_LOOP}p1
     mkfs.ext4 /dev/mapper/${PART_LOOP}p2
-    fatlabel /dev/mapper/${PART_LOOP}p1 'BOOT'
-    e2label /dev/mapper/${PART_LOOP}p2 'gaia'
+    fatlabel /dev/mapper/${PART_LOOP}p1 $BOOT_LABEL
+    e2label /dev/mapper/${PART_LOOP}p2 $ROOT_LABEL
     sync
 fi
 

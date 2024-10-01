@@ -16,6 +16,10 @@
         "linux/amd64": "ae82d80feff703be4500a8bd331a5e1882cc549a323bd1b0773217c0eab2aef6",
         "linux/arm64": "c4bb3edab66836d2e59d2e5078824b7b3d4330b62a3bef3495e73345e59619bd"
     },
+    "env": {
+        "BOOT_LABEL": "BOOT",
+        "ROOT_LABEL": "gaia"
+    },
     "hostDeps": [
         "mount",
         "xz-utils",
