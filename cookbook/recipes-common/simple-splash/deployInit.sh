@@ -22,7 +22,13 @@ echo $USER_PASSWD | sudo -E -S mkdir -p $INITRAMFS_PATH/usr/share/fonts
 echo $USER_PASSWD | sudo -E -S cp -r $IMAGE_MNT_ROOT/usr/share/fonts/ $INITRAMFS_PATH/usr/share/fonts/
 
 # deploy the image
-echo $USER_PASSWD | sudo -E -S cp $_path/noStress.png $INITRAMFS_PATH/noStress.png
+# check if the SIMPLE_SPLASH_PATH is set
+if [ -z "$SIMPLE_SPLASH_PATH" ]; then
+    echo "SIMPLE_SPLASH_PATH is not set, using the default image"
+    SIMPLE_SPLASH_PATH=$_path/noStress.png
+fi
+
+echo $USER_PASSWD | sudo -E -S cp $SIMPLE_SPLASH_PATH $INITRAMFS_PATH/splash.png
 
 # deploy the script
 echo $USER_PASSWD | sudo -E -S cp $_path/busybox/00-splash.sh $INITRAMFS_PATH/scripts/00-splash.sh
