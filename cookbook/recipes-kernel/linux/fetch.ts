@@ -24,6 +24,18 @@ if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/linux`)) {
             encoding: "utf-8"
         }
     )
+} else {
+    // possible to get new stuff
+    logger.info(`fetching ${meta.source} ...`)
+    process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/linux`)
+    execSync(
+        `git fetch`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8"
+        }
+    )
 }
 
 // set the working directory
