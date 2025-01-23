@@ -13,6 +13,7 @@ const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
+const DOCKER_ALTERNATIVES_ADMINDIR = process.env.DOCKER_ALTERNATIVES_ADMINDIR as string
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
@@ -28,8 +29,8 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 execSync(
     `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-    `update-alternatives --set iptables /usr/sbin/iptables-legacy && ` +
-    `update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy` +
+    `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --set iptables /usr/sbin/iptables-legacy && ` +
+    `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --set ip6tables /usr/sbin/ip6tables-legacy` +
     `"`,
     {
         shell: "/bin/bash",
