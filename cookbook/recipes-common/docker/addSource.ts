@@ -31,7 +31,7 @@ switch (ARCH) {
         break
 
     case "linux/arm64":
-        DPKG_ARCH = "aarch64"
+        DPKG_ARCH = "arm64"
         break
 
     default:
