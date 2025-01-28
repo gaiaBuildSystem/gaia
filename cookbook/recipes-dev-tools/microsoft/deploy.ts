@@ -27,7 +27,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // copy the .deb file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/microsoft/${meta.file} ${IMAGE_MNT_ROOT}/tmp`,
     {
         shell: "/bin/bash",
@@ -38,7 +38,7 @@ execSync(
 
 // install the .deb file
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `dpkg -i /tmp/${meta.file}"`,
     {

@@ -33,7 +33,7 @@ export function ExecPackage(recipes: Recipe[]): void {
             if (!_apt_updated) {
                 // update the sources
                 execSync(
-                    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+                    `echo ${USER_PASSWD} | sudo -k -S ` +
                     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get update"`,
                     {
                         shell: "/bin/bash",
@@ -49,7 +49,7 @@ export function ExecPackage(recipes: Recipe[]): void {
 
             // install the deps
             execSync(
-                `echo ${USER_PASSWD} | sudo -k -E -S ` +
+                `echo ${USER_PASSWD} | sudo -k -S ` +
                 `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get install -y ${deps}"`,
                 {
                     shell: "/bin/bash",

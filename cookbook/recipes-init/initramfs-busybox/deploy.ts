@@ -21,7 +21,7 @@ process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `cp ${_path}/init.sh ${INITRAMFS_PATH}/init`,
     {
         shell: "/bin/bash",
@@ -31,7 +31,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `chmod +x ${INITRAMFS_PATH}/init`,
     {
         shell: "/bin/bash",
@@ -42,7 +42,7 @@ execSync(
 
 // copy the busybox static to the initramfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `cp ${IMAGE_MNT_ROOT}/usr/bin/busybox ${INITRAMFS_PATH}/bin/busybox`,
     {
         shell: "/bin/bash",
@@ -53,7 +53,7 @@ execSync(
 
 // copy the common scripts to the initramfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `cp ${_path}/scripts/* ${INITRAMFS_PATH}/scripts/`,
     {
         shell: "/bin/bash",
@@ -64,7 +64,7 @@ execSync(
 
 // give them the right permissions
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `chmod +x ${INITRAMFS_PATH}/scripts/*`,
     {
         shell: "/bin/bash",

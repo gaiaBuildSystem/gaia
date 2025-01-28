@@ -40,7 +40,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `cp ${_deployPath}/hostname ${IMAGE_MNT_ROOT}/etc/hostname`,
     {
         shell: "/bin/bash",
@@ -51,7 +51,7 @@ execSync(
 
 // also we need to update the /etc/hosts file
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S bash -c '` +
+    `echo ${USER_PASSWD} | sudo -k -S bash -c '` +
     `echo "127.0.0.1\t${HOSTNAME_NAME}" >> ${IMAGE_MNT_ROOT}/etc/hosts` +
     `'`,
     {

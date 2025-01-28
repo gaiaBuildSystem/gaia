@@ -27,7 +27,7 @@ process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --set iptables /usr/sbin/iptables-legacy && ` +
     `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --set ip6tables /usr/sbin/ip6tables-legacy` +

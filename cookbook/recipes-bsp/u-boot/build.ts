@@ -53,7 +53,7 @@ function compileBootScript(): void {
     process.env.ORIGIN_PATH = PATH.dirname(_getAssetPath(`${MACHINE}`))
 
     execSync(
-        `echo ${USER_PASSWD} | sudo -k -E -S ` +
+        `echo ${USER_PASSWD} | sudo -k -S ` +
         `podman-compose -f ${_getAssetPath("compose.yaml")} run --rm u-boot-mkimage`,
         {
             shell: "/bin/bash",
@@ -88,7 +88,7 @@ process.env.JOBS = require("os").cpus().length
 
 logger.info(`Configuring ...`)
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `podman-compose -f ${_getAssetPath(`compose.yaml`)} run --rm u-boot-config`,
     {
         shell: "/bin/bash",
@@ -101,7 +101,7 @@ logger.success(`Configuration done`)
 
 logger.info(`Building ...`)
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `echo ${USER_PASSWD} | sudo -k -S ` +
     `podman-compose -f ${_getAssetPath(`compose.yaml`)} run --rm u-boot-build`,
     {
         shell: "/bin/bash",
