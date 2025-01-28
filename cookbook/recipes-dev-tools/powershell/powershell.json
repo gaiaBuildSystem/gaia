@@ -1,0 +1,19 @@
+{
+    "name": "powershell",
+    "type": "package",
+    "priority": 0,
+    "support": [
+        "linux/amd64"
+    ],
+    "source": "https://github.com/PowerShell/PowerShell/releases/download/v7.4.1",
+    "file": "powershell-lts_7.4.1-1.deb_amd64.deb",
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ],
+    "afterDeployRecipes": [
+        "test.ts"
+    ]
+}

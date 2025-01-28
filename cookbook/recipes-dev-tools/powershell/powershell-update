@@ -1,0 +1,46 @@
+#!/usr/bin/env pwsh
+
+param()
+
+$ErrorActionPreference = "Stop"
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', "Internal PS variable"
+)]
+$PSNativeCommandUseErrorActionPreference = $true
+
+Write-Host -ForegroundColor DarkYellow "🔍 Checking the latest version of the PowerShell..."
+
+# check the version of the powershell
+$myVersion = $PSVersionTable.PSVersion
+
+# get latest version from github
+$_githubRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/PowerShell/PowerShell/releases/latest"
+$latestTag = $_githubRelease.tag_name
+$latestVersion = $latestTag -replace 'v', ''
+
+$downloadUrl = $null
+
+if ( $myVersion -ne $latestVersion ) {
+    foreach ($asset in $_githubRelease.assets) {
+        if ($asset.name -like "powershell-lts_$latestVersion*.deb_amd64.deb") {
+            $downloadUrl = $asset.browser_download_url
+            break
+        }
+    }
+}
+
+if ( $null -eq $downloadUrl ) {
+    Write-Host -ForegroundColor Green " ✅ No new version available, you are up to date."
+    exit 0
+} else {
+    # download the latest version
+    mkdir -p "$env:HOME/Downloads"
+    $downloadPath = "$env:HOME/Downloads/powershell_$latestVersion.deb"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+
+    # install the latest version
+    sudo apt-get install -y $downloadPath
+
+    # kill the current session of the pwsh so user need to restart the terminal
+    Stop-Process -Name pwsh -ErrorAction SilentlyContinue
+}
