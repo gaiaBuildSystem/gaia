@@ -7,13 +7,13 @@
         "linux/arm64"
     ],
     "env": {
-        "OS_RELEASE_PRETTY_NAME": "Quecto Reference Distro",
-        "OS_RELEASE_NAME": "Reference Distro",
-        "OS_RELEASE_ID": "quecto",
-        "OS_RELEASE_VERSION_CODENAME": "reference",
-        "OS_RELEASE_HOME_URL": "https://www.quecto.com",
-        "OS_RELEASE_BUG_REPORT_URL": "https://www.quecto.com/bugs",
-        "OS_RELEASE_SUPPORT_URL": "https://www.quecto.com/support",
+        "OS_RELEASE_PRETTY_NAME": "DeimOS Reference Distro",
+        "OS_RELEASE_NAME": "DeimOS",
+        "OS_RELEASE_ID": "deimOS",
+        "OS_RELEASE_VERSION_CODENAME": "gaia",
+        "OS_RELEASE_HOME_URL": "https://github.com/gaiaBuildSystem",
+        "OS_RELEASE_BUG_REPORT_URL": "https://github.com/gaiaBuildSystem",
+        "OS_RELEASE_SUPPORT_URL": "https://github.com/gaiaBuildSystem",
         "OS_RELEASE_VARIANT": "reference"
     },
     "deployRecipes": [

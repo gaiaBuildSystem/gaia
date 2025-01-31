@@ -7,7 +7,7 @@
         "linux/arm64"
     ],
     "env": {
-        "ISSUE_LINE": "Quecto Reference"
+        "ISSUE_LINE": "DeimOS Reference"
     },
     "deployRecipes": [
         "deploy.ts"

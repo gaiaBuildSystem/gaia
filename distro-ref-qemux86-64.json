@@ -1,5 +1,5 @@
 {
-    "name": "Quecto-Reference",
+    "name": "DeimOS-Reference",
     "machine": "qemux86-64",
     "arch": "linux/amd64",
     "version": {
