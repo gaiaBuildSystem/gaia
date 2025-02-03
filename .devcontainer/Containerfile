@@ -1,0 +1,22 @@
+
+
+FROM debian:bookworm
+
+
+COPY . /gaia
+
+# setup
+RUN chmod +x /gaia/scripts/utils/deps && \
+    cd /gaia/scripts/utils && \
+    ./deps
+
+# workspace will be mounted
+WORKDIR /workspace
+
+# create the gaia user
+RUN useradd -m -s /bin/bash gaia && \
+    echo "gaia ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/gaia
+
+USER gaia
+
+CMD [ "/gaia/scripts/bitcook/gaia.ts", "--help" ]

@@ -1,0 +1,8 @@
+services:
+  dev:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Containerfile
+    volumes:
+      - ../../:/workspace
+    image: pergamos/gaia-workspace-dev:latest
