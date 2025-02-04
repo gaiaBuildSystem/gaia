@@ -34,6 +34,9 @@ Check the other repositories for DeimOS support on other machines.
 
 ## Setup Multi-Cookbook Build
 
+> [!WARNING]
+This depends on having Docker and Docker compose plugin installed.
+
 For some targets you may need to build with the help of other meta cookbooks. To do this we recommend you to use the Gaia `repo`util with a `manifest.json` file. These are the interfaces that follow the `manifest.json` schema:
 
 ```typescript
