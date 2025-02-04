@@ -1,0 +1,120 @@
+#!/opt/bun/bin/bun
+
+import logger from "node-color-log"
+import fs from "fs"
+import { exec } from "child_process"
+
+interface Folder {
+    path: string
+    name: string
+}
+
+interface JsonSchema {
+    fileMatch: string[]
+    url: string
+}
+
+interface Settings {
+    "window.title": string,
+    "json.validate.enable": boolean,
+    "json.schemas": JsonSchema[]
+}
+
+class Config {
+    folders: Folder[]
+    settings: Settings
+}
+
+interface Repository {
+    name: string
+    path: string
+    url: string
+    revision: string
+}
+
+interface Manifest {
+    name: string,
+    description: string,
+    maintainer: string,
+    repositories: Repository[]
+}
+
+logger.info("_________________________________________________________________")
+logger.info("Configuring repository for Gaia Project builds")
+logger.info("_________________________________________________________________")
+
+// 1. check if the /workspace/manifest.json file exists
+if (!fs.existsSync("/workspace/manifest.json")) {
+    logger.error("The /workspace/manifest.json file does not exist")
+    process.exit(404)
+}
+
+// 2. read the /workspace/manifest.json file
+const _manifest: Manifest = JSON.parse(
+    fs.readFileSync("/workspace/manifest.json", "utf8")
+)
+
+// 3. clone the repositories into the /workspace directory
+process.chdir("/workspace")
+
+for (const repo of _manifest.repositories) {
+    logger.info(`Cloning repository ${repo.name} from ${repo.url}`)
+
+    const clone = `git clone ${repo.url} ${repo.path}`
+    const checkout = `cd ${repo.path} && git checkout ${repo.revision}`
+    const command = `${clone} && ${checkout}`
+
+    logger.debug(`Running command: ${command}`)
+    const result = exec(command)
+
+    if (result.exitCode !== 0) {
+        logger.error(`Failed to clone repository ${repo.name}`)
+        process.exit(500)
+    }
+}
+
+// 4. create the /workspace/gaia.code-workspace file
+const _config = new Config()
+_config.settings["window.title"] = _manifest.name
+_config.settings["json.validate.enable"] = true
+_config.settings["json.schemas"] = []
+_config.settings["json.schemas"].push(
+    {
+        "fileMatch": [
+            "/distro-*.json"
+        ],
+        "url": "./gaia/schema/distro.json"
+    },
+    {
+        "fileMatch": [
+            "/*.json",
+            "!/distro-*.json",
+            "!/.vscode/*.json",
+            "!/package.json",
+            "!/package-lock.json",
+            "!/settings.json"
+        ],
+        "url": "./gaia/schema/recipe.json"
+    }
+)
+
+for (const repo of _manifest.repositories) {
+    _config.folders.push(
+        {
+            "path": `./${repo.path}`,
+            "name": repo.name
+        }
+    )
+}
+
+fs.writeFileSync(
+    "/workspace/gaia.code-workspace",
+    JSON.stringify(
+        _config,
+        null,
+        4
+    )
+)
+
+// 5. the end
+logger.success("Repository configured successfully")

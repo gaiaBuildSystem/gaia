@@ -6,3 +6,9 @@ services:
     volumes:
       - ../../:/workspace
     image: pergamos/gaia-workspace-dev:latest
+
+  repo:
+    volumes:
+      - ../../:/workspace
+    image: pergamos/gaia-workspace-dev:latest
+    command: "/workspace/gaia/scripts/utils/repo"
