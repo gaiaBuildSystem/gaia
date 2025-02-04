@@ -2,7 +2,7 @@
 
 import fs from "fs"
 import logger from "node-color-log"
-import { exec } from "child_process"
+import { execSync, ExecException } from "child_process"
 
 interface Folder {
     path: string
@@ -65,12 +65,12 @@ for (const repo of _manifest.repositories) {
         const command = `cd ${repo.path} && git fetch origin && git checkout ${repo.revision}`
 
         logger.debug(`Running command: ${command}`)
-        const result = exec(command)
-
-        if (result.exitCode !== 0) {
-            console.log(result.stdout)
-            console.log(result.stderr)
+        try {
+            const result = execSync(command)
+        } catch (error) {
+            const _error = error as ExecException
             logger.error(`Failed to update repository ${repo.name}`)
+            console.log(`${_error.code} :: ${_error.message}`)
             process.exit(500)
         }
 
@@ -84,10 +84,13 @@ for (const repo of _manifest.repositories) {
     const command = `${clone} && ${checkout}`
 
     logger.debug(`Running command: ${command}`)
-    const result = exec(command)
 
-    if (result.exitCode !== 0) {
+    try {
+        const result = execSync(command)
+    } catch (error) {
+        const _error = error as ExecException
         logger.error(`Failed to clone repository ${repo.name}`)
+        console.log(`${_error.code} :: ${_error.message}`)
         process.exit(500)
     }
 }
@@ -120,7 +123,7 @@ _config.settings["json.schemas"].push(
 for (const repo of _manifest.repositories) {
     _config.folders.push(
         {
-            "path": `./${repo.path}`,
+            "path": `./ ${repo.path}`,
             "name": repo.name
         }
     )
