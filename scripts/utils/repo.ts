@@ -95,6 +95,7 @@ for (const repo of _manifest.repositories) {
 
 // 4. create the /workspace/gaia.code-workspace file
 const _config = new Config()
+_config.settings = {} as Settings
 _config.settings["window.title"] = _manifest.name
 _config.settings["json.validate.enable"] = true
 _config.settings["json.schemas"] = []
@@ -117,6 +118,8 @@ _config.settings["json.schemas"].push(
         "url": "./gaia/schema/recipe.json"
     }
 )
+
+_config.folders = []
 
 for (const repo of _manifest.repositories) {
     _config.folders.push(
