@@ -1,0 +1,111 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "chmod-scripts",
+            "type": "shell",
+            "command": "./scripts/utils/executable",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "icon": {
+                "id": "shield"
+            }
+        },
+        {
+            "label": "run-qemu-x86",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "DISPLAY": "localhost:10.0"
+                }
+            },
+            "command": "sudo",
+            "args": [
+                "qemu-system-x86_64",
+                "-name",
+                "\"Quecto Reference x86_64\"",
+                "-cpu",
+                "host",
+                "-smp",
+                "10",
+                "-machine",
+                "pc",
+                "-net",
+                "user",
+                "-vga",
+                "none",
+                "-device",
+                "virtio-gpu-pci",
+                "-device",
+                "virtio-tablet-pci",
+                "-display",
+                "gtk",
+                "-m",
+                "1024",
+                "-drive",
+                "file=../build-Quecto-Reference/tmp/qemux86-64/deploy/qemux86-64-0-0-0.img,format=raw",
+                "-bios",
+                "/usr/share/ovmf/OVMF.fd",
+                "-enable-kvm",
+                "-serial",
+                "mon:stdio"
+            ],
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "icon": {
+                "id": "run"
+            }
+        },
+        {
+            "label": "run-qemu-arm64",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "DISPLAY": "localhost:10.0"
+                }
+            },
+            "command": "sudo",
+            "args": [
+                "qemu-system-aarch64",
+                "-name",
+                "\"Quecto Reference arm64\"",
+                "-cpu",
+                "cortex-a57",
+                "-smp",
+                "8",
+                "-machine",
+                "virt",
+                "-net",
+                "user",
+                "-device",
+                "virtio-gpu-pci",
+                "-device",
+                "virtio-tablet-pci",
+                "-display",
+                "gtk",
+                "-m",
+                "1024",
+                "-drive",
+                "file=../build-Quecto-Reference/tmp/qemuarm64/deploy/qemuarm64-0-0-0.img,format=raw",
+                //"-drive",
+                // "file=../build-Quecto-Reference/tmp/qemuarm64/deploy/torizon-core-common-docker-dev-qemuarm64.wic,format=raw",
+                // "-bios",
+                // "../build-Quecto-Reference/tmp/qemuarm64/deploy/u-boot.bin",
+                "-bios",
+                "../build-Quecto-Reference/tmp/qemuarm64/u-boot/u-boot.bin",
+                "-serial",
+                "mon:stdio",
+                // "-machine",
+                // "dumpdtb=qemu.dtb"
+            ],
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "icon": {
+                "id": "run"
+            }
+        }
+    ]
+}
