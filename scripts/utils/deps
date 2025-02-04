@@ -10,7 +10,11 @@ fi
 apt-get update
 
 # make sure to have parcial dependencies
-apt-get install -y unzip curl git
+apt-get install -y \
+    unzip \
+    curl \
+    git \
+    sudo
 
 # install podman
 apt-get install -y podman podman-compose
