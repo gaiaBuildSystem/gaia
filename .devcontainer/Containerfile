@@ -21,4 +21,8 @@ RUN useradd -m -s /bin/bash gaia && \
 
 USER gaia
 
+# this is needed to install the node packages
+RUN cd /gaia && \
+    bun install
+
 CMD [ "/gaia/scripts/bitcook/gaia.ts", "--help" ]
