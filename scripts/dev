@@ -15,8 +15,8 @@ if ! docker --help | grep -q compose; then
     exit
 fi
 
-# run the build of the devcontainer
-docker compose -f ./gaia/.devcontainer/docker-compose.yml build
-
 # run the repo
-docker compose -f ./gaia/.devcontainer/docker-compose.yml run --rm dev
+docker compose -f ./gaia/.devcontainer/docker-compose.yml run -d dev
+
+# open vs code and attach to it
+code ./gaia
