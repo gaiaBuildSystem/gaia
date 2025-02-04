@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# check if docker is installed
+if ! command -v docker &>/dev/null; then
+    echo "Docker could not be found"
+    exit
+fi
+
+# check if docker compose plugin is installed
+# not docker-compose the plugin compose
+if ! docker --help | grep -q compose; then
+    echo "Docker compose plugin could not be found"
+    exit
+fi
+
+# run the build of the devcontainer
+docker compose -f ./gaia/.devcontainer/docker-compose.yml build
+
+# run the repo
+docker compose -f ./gaia/.devcontainer/docker-compose.yml run --rm dev

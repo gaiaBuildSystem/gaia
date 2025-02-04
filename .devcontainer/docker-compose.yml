@@ -1,5 +1,5 @@
 services:
-  dev:
+  build:
     build:
       context: ..
       dockerfile: .devcontainer/Containerfile
@@ -12,3 +12,9 @@ services:
       - ../../:/workspace
     image: pergamos/gaia-workspace-dev:latest
     command: "/workspace/gaia/scripts/utils/repo.ts"
+
+  dev:
+    volumes:
+      - ../../:/workspace
+    image: pergamos/gaia-workspace-dev:latest
+    command: "bash"
