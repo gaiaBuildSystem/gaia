@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "bun",
+            "request": "launch",
+            "name": "Debug Bun",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}/../",
+            "runtime": "/opt/bun/bin/bun",
+            "args": [
+                "--buildPath",
+                "${config:build_path}",
+                "--distro",
+                "${config:distro_path}"
+            ],
+            "env": {
+                "USER_PASSWD": "019414"
+            },
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "args",
+            "description": "Arguments to pass to the program",
+            "type": "promptString"
+        }
+    ],
+    "compounds": []
+}

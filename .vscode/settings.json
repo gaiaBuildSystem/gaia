@@ -1,0 +1,51 @@
+{
+    "window.title": "Gaia Core",
+    "build_path": "/workspace",
+    "distro_path": "./gaia/distro-ref-qemux86-64.json",
+    "typescript.format.enable": true,
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    // typescript specific
+    "typescript.format.insertSpaceAfterConstructor": true,
+    "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+    "typescript.format.insertSpaceBeforeFunctionParenthesis": true,
+    "typescript.format.semicolons": "remove",
+    "files.insertFinalNewline": true,
+    "typescript.inlayHints.enumMemberValues.enabled": true,
+    "typescript.inlayHints.parameterNames.enabled": "all",
+    "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+    "typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName": true,
+    "typescript.inlayHints.parameterTypes.enabled": true,
+    "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+    "typescript.inlayHints.variableTypes.enabled": true,
+    "typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName": false,
+    // personal use, edit as you wish
+    "workbench.activityBar.location": "top",
+    "workbench.sideBar.location": "right",
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/sources/poky/bitbake/lib",
+        "${workspaceFolder}/sources/poky/meta/lib"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/sources/poky/bitbake/lib",
+        "${workspaceFolder}/sources/poky/meta/lib"
+    ],
+    "files.associations": {
+        "Dockerfile*": "dockerfile",
+        "Containerfile*": "dockerfile",
+        "docker-compose*": "yaml",
+        "*.scr": "shellscript",
+        "*defconfig*": "kconfig",
+        "*.build": "powershell",
+        "*.run": "powershell",
+        "*COMMIT_EDITMSG*": "git-commit",
+        ".wslconfig": "ini",
+        "*.defs": "makefile",
+        "*.ld": "linkerscript",
+        ".env*": "dotenv",
+        "*.inc": "bitbake",
+        "*.conf": "bitbake"
+    }
+}
