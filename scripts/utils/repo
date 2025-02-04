@@ -1,7 +1,7 @@
 #!/opt/bun/bin/bun
 
-import logger from "node-color-log"
 import fs from "fs"
+import logger from "node-color-log"
 import { exec } from "child_process"
 
 interface Folder {
@@ -68,6 +68,8 @@ for (const repo of _manifest.repositories) {
         const result = exec(command)
 
         if (result.exitCode !== 0) {
+            console.log(result.stdout)
+            console.log(result.stderr)
             logger.error(`Failed to update repository ${repo.name}`)
             process.exit(500)
         }
