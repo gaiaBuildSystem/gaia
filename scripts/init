@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # check if docker is installed
 if ! command -v docker &>/dev/null; then
     echo "Docker could not be found"
