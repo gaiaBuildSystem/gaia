@@ -66,11 +66,10 @@ for (const repo of _manifest.repositories) {
 
         logger.debug(`Running command: ${command}`)
         try {
-            const result = execSync(command)
+            const result = execSync(command, { stdio: "inherit" })
         } catch (error) {
             const _error = error as ExecException
             logger.error(`Failed to update repository ${repo.name}`)
-            console.log(`${_error.code} :: ${_error.message}`)
             process.exit(500)
         }
 
@@ -86,11 +85,10 @@ for (const repo of _manifest.repositories) {
     logger.debug(`Running command: ${command}`)
 
     try {
-        const result = execSync(command)
+        const result = execSync(command, { stdio: "inherit" })
     } catch (error) {
         const _error = error as ExecException
         logger.error(`Failed to clone repository ${repo.name}`)
-        console.log(`${_error.code} :: ${_error.message}`)
         process.exit(500)
     }
 }
