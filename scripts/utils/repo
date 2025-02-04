@@ -58,6 +58,23 @@ const _manifest: Manifest = JSON.parse(
 process.chdir("/workspace")
 
 for (const repo of _manifest.repositories) {
+    // check if the repository already exists
+    if (fs.existsSync(repo.path)) {
+        logger.info(`Repository ${repo.name} already exists`)
+        logger.debug(`Fetching latest changes from ${repo.url} and updating to revision ${repo.revision}`)
+        const command = `cd ${repo.path} && git fetch origin && git checkout ${repo.revision}`
+
+        logger.debug(`Running command: ${command}`)
+        const result = exec(command)
+
+        if (result.exitCode !== 0) {
+            logger.error(`Failed to update repository ${repo.name}`)
+            process.exit(500)
+        }
+
+        continue
+    }
+
     logger.info(`Cloning repository ${repo.name} from ${repo.url}`)
 
     const clone = `git clone ${repo.url} ${repo.path}`
