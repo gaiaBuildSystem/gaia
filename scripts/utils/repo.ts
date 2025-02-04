@@ -189,6 +189,14 @@ _config.settings["json.schemas"].push(
 
 _config.folders = []
 
+// add the hardcoded Gaia repository
+_config.folders.push(
+    {
+        "path": "./gaia",
+        "name": "Gaia Core"
+    }
+)
+
 for (const repo of _manifest.repositories) {
     _config.folders.push(
         {
