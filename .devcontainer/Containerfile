@@ -15,7 +15,9 @@ WORKDIR /workspace
 
 # create the gaia user
 RUN useradd -m -s /bin/bash gaia && \
-    echo "gaia ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/gaia
+    echo "gaia ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/gaia && \
+    chown -R gaia:gaia /root/.bun/ && \
+    chmod -R 775 /root
 
 USER gaia
 
