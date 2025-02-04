@@ -11,4 +11,4 @@ services:
     volumes:
       - ../../:/workspace
     image: pergamos/gaia-workspace-dev:latest
-    command: "/workspace/gaia/scripts/utils/repo"
+    command: "/workspace/gaia/scripts/utils/repo.ts"
