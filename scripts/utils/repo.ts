@@ -55,6 +55,23 @@ const _manifest: Manifest = JSON.parse(
 )
 
 // 3. clone the repositories into the /workspace directory
+function _execRepoInit (repo: Repository) {
+    if (fs.existsSync(`${repo.path}/init`)) {
+        logger.info(`Repository ${repo.name} have an init script`)
+        const init = `cd ${repo.path} && ./init`
+        logger.debug(`Running command: ${init}`)
+
+        try {
+            const result = execSync(init, { stdio: "inherit" })
+        } catch (error) {
+            const _error = error as ExecException
+            logger.error(`Failed to run init script for repository ${repo.name}`)
+            // I choosed to ignore the error and continue
+            // the user could continue and try to fix the init after the Gaia init
+        }
+    }
+}
+
 process.chdir("/workspace")
 
 for (const repo of _manifest.repositories) {
@@ -72,6 +89,9 @@ for (const repo of _manifest.repositories) {
             logger.error(`Failed to update repository ${repo.name}`)
             process.exit(500)
         }
+
+        // exec the init
+        _execRepoInit(repo)
 
         continue
     }
@@ -91,6 +111,9 @@ for (const repo of _manifest.repositories) {
         logger.error(`Failed to clone repository ${repo.name}`)
         process.exit(500)
     }
+
+    // exec the init
+    _execRepoInit(repo)
 }
 
 // 4. create the /workspace/gaia.code-workspace file
