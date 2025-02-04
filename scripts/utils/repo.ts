@@ -74,6 +74,51 @@ function _execRepoInit (repo: Repository) {
 
 process.chdir("/workspace")
 
+
+if (!fs.existsSync("/workspace/gaia")) {
+    logger.info("Cloning Gaia repository")
+    const clone = "git clone https://github.com/gaiaBuildSystem/gaia.git gaia"
+
+    logger.debug(`Running command: ${clone}`)
+
+    try {
+        const result = execSync(clone, { stdio: "inherit" })
+    } catch (error) {
+        const _error = error as ExecException
+        logger.error("Failed to clone Gaia repository")
+        process.exit(500)
+    }
+
+    // exec the init
+    _execRepoInit({
+        name: "gaia",
+        path: "gaia",
+        url: "",
+        revision: ""
+    } as Repository)
+} else {
+    logger.info("Updating Gaia repository")
+    const command = "cd /workspace/gaia && git fetch origin && git reset --hard origin/main"
+
+    logger.debug(`Running command: ${command}`)
+
+    try {
+        const result = execSync(command, { stdio: "inherit" })
+    } catch (error) {
+        const _error = error as ExecException
+        logger.error("Failed to update Gaia repository")
+        process.exit(500)
+    }
+
+    // exec the init
+    _execRepoInit({
+        name: "gaia",
+        path: "gaia",
+        url: "",
+        revision: ""
+    } as Repository)
+}
+
 for (const repo of _manifest.repositories) {
     // check if the repository already exists
     if (fs.existsSync(repo.path)) {
