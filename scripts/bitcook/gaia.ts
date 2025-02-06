@@ -72,7 +72,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("  --help -h        Shows this help")
     logger.info("  --version -v     Shows the version")
     logger.info("  --buildPath      The path where the build artifacts will be stored")
-    logger.info("  --distro         The path to the distr.json file")
+    logger.info("  --distro         The path to the distro.json file")
     logger.info("  --recipe         The recipe to build")
     logger.info("  --verbose        Print all the recipes parse objects in json format")
     logger.info("  --step           The step to execute")
