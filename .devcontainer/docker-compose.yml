@@ -4,17 +4,17 @@ services:
       context: ..
       dockerfile: .devcontainer/Containerfile
     volumes:
-      - ../../:/workspace
+      - __pwd__:__pwd__
     image: pergamos/gaia-workspace-dev:latest
 
   repo:
     volumes:
-      - ../../:/workspace
+      - __pwd__:__pwd__
     image: pergamos/gaia-workspace-dev:latest
-    command: "/workspace/gaia/scripts/utils/repo.ts"
+    command: "__pwd__/gaia/scripts/utils/repo.ts"
 
   dev:
     volumes:
-      - ../../:/workspace
+      - __pwd__:__pwd__
     image: pergamos/gaia-workspace-dev:latest
     command: "bash"

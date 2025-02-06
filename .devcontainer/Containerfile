@@ -11,7 +11,7 @@ RUN chmod +x /gaia/scripts/utils/deps && \
     ./deps
 
 # workspace will be mounted
-WORKDIR /workspace
+WORKDIR __pwd__
 
 # create the gaia user
 RUN useradd -m -s /bin/bash gaia && \
