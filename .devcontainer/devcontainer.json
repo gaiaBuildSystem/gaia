@@ -1,0 +1,46 @@
+{
+    "name": "Existing Dockerfile",
+    "build": {
+        "context": "..",
+        "dockerfile": "./Containerfile",
+        "cacheFrom": "pergamos/gaia-workspace-dev:latest",
+        "args": {
+            "BUILDKIT_INLINE_CACHE": "0",
+            // FIXME: change here to your docker group id
+            // getent group docker
+            "GID": "988"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "python.defaultInterpreterPath": "/opt/venv/bin/python3"
+            },
+            "extensions": [
+                "ms-python.mypy-type-checker",
+                "ms-azuretools.vscode-docker",
+                "streetsidesoftware.code-spell-checker",
+                "redhat.vscode-yaml",
+                "ms-python.python",
+                "ms-python.pylint",
+                "eamodio.gitlens",
+                "github.copilot",
+                "yahyabatulu.vscode-markdown-alert",
+                "microhobby.vscode-tasks-label",
+                "microhobby.xonsh2",
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+    "privileged": true,
+    "runArgs": [
+        "--net=host"
+    ],
+    "workspaceFolder": "/workdir",
+    "containerUser": "gaia",
+    "mounts": [
+        "source=${localWorkspaceFolder}/../,target=/workdir,type=bind",
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+    ]
+}
