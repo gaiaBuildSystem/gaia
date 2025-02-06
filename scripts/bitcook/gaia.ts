@@ -209,7 +209,7 @@ if (process.env.VERBOSE === "true") {
 // we need to have support to all the architecures
 execSync(
     `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
-    `podman run --rm --privileged docker.io/torizon/binfmt:latest`,
+    `podman run --rm --privileged docker.io/pergamos/binfmt:9.0.2`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
