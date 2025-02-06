@@ -43,18 +43,18 @@ logger.info("_________________________________________________________________")
 logger.info("Configuring repository for Gaia Project builds")
 logger.info("_________________________________________________________________")
 
-// 1. check if the /workspace/manifest.json file exists
-if (!fs.existsSync("/workspace/manifest.json")) {
-    logger.error("The /workspace/manifest.json file does not exist")
+// 1. check if the __pwd__/manifest.json file exists
+if (!fs.existsSync("__pwd__/manifest.json")) {
+    logger.error("The __pwd__/manifest.json file does not exist")
     process.exit(404)
 }
 
-// 2. read the /workspace/manifest.json file
+// 2. read the __pwd__/manifest.json file
 const _manifest: Manifest = JSON.parse(
-    fs.readFileSync("/workspace/manifest.json", "utf8")
+    fs.readFileSync("__pwd__/manifest.json", "utf8")
 )
 
-// 3. clone the repositories into the /workspace directory
+// 3. clone the repositories into the __pwd__ directory
 function _execRepoInit (repo: Repository) {
     if (fs.existsSync(`${repo.path}/init`)) {
         logger.info(`Repository ${repo.name} have an init script`)
@@ -72,10 +72,10 @@ function _execRepoInit (repo: Repository) {
     }
 }
 
-process.chdir("/workspace")
+process.chdir("__pwd__")
 
 
-if (!fs.existsSync("/workspace/gaia")) {
+if (!fs.existsSync("__pwd__/gaia")) {
     logger.info("Cloning Gaia repository")
     const clone = "git clone https://github.com/gaiaBuildSystem/gaia.git gaia"
 
@@ -98,7 +98,7 @@ if (!fs.existsSync("/workspace/gaia")) {
     } as Repository)
 } else {
     logger.info("Updating Gaia repository")
-    const command = "cd /workspace/gaia && git fetch origin && git reset --hard origin/main"
+    const command = "cd __pwd__/gaia && git fetch origin && git reset --hard origin/main"
 
     logger.debug(`Running command: ${command}`)
 
@@ -161,7 +161,7 @@ for (const repo of _manifest.repositories) {
     _execRepoInit(repo)
 }
 
-// 4. create the /workspace/gaia.code-workspace file
+// 4. create the __pwd__/gaia.code-workspace file
 const _config = new Config()
 _config.settings = {} as Settings
 _config.settings["window.title"] = _manifest.name
@@ -207,7 +207,7 @@ for (const repo of _manifest.repositories) {
 }
 
 fs.writeFileSync(
-    "/workspace/gaia.code-workspace",
+    "__pwd__/gaia.code-workspace",
     JSON.stringify(
         _config,
         null,

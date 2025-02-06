@@ -1,6 +1,6 @@
 {
     "window.title": "Gaia Core",
-    "build_path": "/workspace",
+    "build_path": "__pwd__",
     "distro_path": "./gaia/distro-ref-qemux86-64.json",
     "typescript.format.enable": true,
     "editor.tabSize": 4,

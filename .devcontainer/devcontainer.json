@@ -37,10 +37,10 @@
     "runArgs": [
         "--net=host"
     ],
-    "workspaceFolder": "/workdir",
+    "workspaceFolder": "__pwd__",
     "containerUser": "gaia",
     "mounts": [
-        "source=${localWorkspaceFolder}/../,target=/workdir,type=bind",
+        "source=${localWorkspaceFolder}/../,target=__pwd__,type=bind",
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ]
 }

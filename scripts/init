@@ -15,6 +15,14 @@ if ! docker --help | grep -q compose; then
     exit
 fi
 
+# sed for change the __pwd__ to the current absolute path
+# this way we will not have issues with docker in docker mounts
+sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/docker-compose.yml
+sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/Containerfile
+sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/devcontainer.json
+sed -i "s#__pwd__#$(pwd)#g" ./gaia/.vscode/settings.json
+sed -i "s#__pwd__#$(pwd)#g" ./gaia/scripts/utils/repo.ts
+
 # run the build of the devcontainer
 docker compose -f ./gaia/.devcontainer/docker-compose.yml build
 
