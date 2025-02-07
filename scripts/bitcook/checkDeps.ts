@@ -5,13 +5,18 @@ import logger from "node-color-log"
 
 import { Recipe } from "./parse"
 
-export function CheckDependencies(recipes: Recipe[]): void {
+export function CheckDependencies (recipes: Recipe[]): void {
     logger.info("Checking dependencies ...")
 
     const USER_PASSWD = process.env.USER_PASSWD as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
     const DISTRO_NAME = process.env.DISTRO_NAME as string
+    const INSTALL_HOST_DEPS = process.env.INSTALL_HOST_DEPS as string
+
+    if (INSTALL_HOST_DEPS === "true") {
+        logger.debug(`INSTALL_HOST_DEPS=${INSTALL_HOST_DEPS}`)
+    }
 
     // check if the recipes have the required dependencies
     for (const recipe of recipes) {
@@ -101,6 +106,7 @@ export function CheckDependencies(recipes: Recipe[]): void {
             } else {
                 // WARN: we do not mess up with the host system
                 // check if the dependencies are installed but not install it
+                // unless the user wants to
                 for (const dep of recipe.hostDeps) {
                     logger.info(`Checking dependency ${dep} ...`)
                     // use dpkg to check if the dependency is installed
@@ -115,8 +121,32 @@ export function CheckDependencies(recipes: Recipe[]): void {
                         )
                     } catch (error) {
                         // dependency not installed
-                        logger.error(`Dependency for ${recipe.name} :: ${dep} not installed`)
-                        throw new Error(`Dependency for ${recipe.name} :: ${dep} not installed`)
+                        if (INSTALL_HOST_DEPS === "false") {
+                            logger.error(`Dependency for ${recipe.name} :: ${dep} not installed`)
+                            throw new Error(`Dependency for ${recipe.name} :: ${dep} not installed`)
+                        } else {
+                            // the user want it
+                            logger.info(`Installing host dependency ${dep} ...`)
+
+                            // install the dependency
+                            try {
+                                execSync(
+                                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                                    `/bin/bash -c "` +
+                                    `apt-get update && ` +
+                                    `apt-get install -y ${dep}` +
+                                    `"`,
+                                    {
+                                        shell: "/bin/bash",
+                                        stdio: "inherit",
+                                        encoding: "utf-8"
+                                    }
+                                )
+                            } catch (error) {
+                                logger.error(`Dependencies for ${recipe.name} :: error during dependency install`)
+                                throw new Error(`Dependencies for ${recipe.name} :: error during dependency install`)
+                            }
+                        }
                     }
                 }
             }
