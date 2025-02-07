@@ -69,14 +69,16 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("Usage: gaia [options]")
     logger.info("")
     logger.info("Options:")
-    logger.info("  --help -h        Shows this help")
-    logger.info("  --version -v     Shows the version")
-    logger.info("  --buildPath      The path where the build artifacts will be stored")
-    logger.info("  --distro         The path to the distro.json file")
-    logger.info("  --recipe         The recipe to build")
-    logger.info("  --verbose        Print all the recipes parse objects in json format")
-    logger.info("  --step           The step to execute")
-    logger.info("  --clean          Clean the build")
+    logger.info("  --help -h            Shows this help")
+    logger.info("  --version -v         Shows the version")
+    logger.info("  --buildPath          The path where the build artifacts will be stored")
+    logger.info("  --distro             The path to the distro.json file")
+    logger.info("  --installHostDeps    Automatically install the host dependencies")
+    logger.info("  --noCache            Build from scratch without any cache")
+    logger.info("  --recipe             The recipe to build")
+    logger.info("  --verbose            Print all the recipes parse objects in json format")
+    logger.info("  --step               The step to execute")
+    logger.info("  --clean              Clean the build")
     process.exit(0)
 }
 
@@ -112,9 +114,17 @@ const RECIPE = _args.recipe as string
 const STEP = _args.step as string
 const CLEAN = _args.clean as boolean
 const VERBOSE = _args.verbose as boolean
+const INSTALL_HOST_DEPS = _args.installHostDeps as boolean
+const NO_CACHE = _args.noCache as boolean
+
 
 process.env.VERBOSE = VERBOSE != null ? VERBOSE.toString() : false.toString()
 process.env.RECIPE = RECIPE != null ? RECIPE : undefined
+process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.toString() : false.toString()
+
+if (NO_CACHE === true) {
+    process.env.CLEAN_IMAGE = "true"
+}
 
 if (process.env.RECIPE !== undefined) {
     logger.debug(`Running only the recipe ${RECIPE}`)

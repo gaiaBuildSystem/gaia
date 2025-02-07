@@ -15,8 +15,10 @@ apt-get update
 apt-get install -y \
     unzip \
     curl \
+    wget \
     git \
-    sudo
+    sudo \
+    parted
 
 # install podman
 apt-get install -y podman podman-compose
