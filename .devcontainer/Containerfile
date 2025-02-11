@@ -14,14 +14,15 @@ RUN chmod +x /gaia/scripts/utils/deps && \
 WORKDIR __pwd__
 
 # create the gaia user
-RUN useradd -m -s /bin/bash gaia && \
+RUN useradd -m -u __uid__ -s /bin/bash gaia && \
     echo "gaia ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/gaia && \
     chown -R gaia:gaia /root/.bun/ && \
     chmod -R 775 /root && \
     cd /gaia && \
     /root/.bun/bin/bun install && \
-    # "install" bun on /usr/bin
-    ln -s /root/.bun/bin/bun /usr/bin/bun
+    ln -s /root/.bun/bin/bun /usr/bin/bun && \
+    echo "export GUSER_ID=__uid__" >> /etc/profile && \
+    echo "export GGROUP_ID=__gid__" >> /etc/profile
 
 USER gaia
 

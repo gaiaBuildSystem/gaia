@@ -1,7 +1,7 @@
 version: '3'
 services:
   u-boot-build:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    image: docker.io/pergamos/bsp-builder:latest
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
       - ${ORIGIN_PATH}:/assets
@@ -11,8 +11,8 @@ services:
         -j${JOBS}
 
   u-boot-config:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
-    user: 1000:1000
+    image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
       - ${ORIGIN_PATH}:/assets
@@ -22,8 +22,8 @@ services:
         ${MACHINE}_defconfig
 
   u-boot-mkimage:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
-    user: 1000:1000
+    image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
       - ${ORIGIN_PATH}:/assets
