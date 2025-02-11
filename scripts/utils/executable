@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # pass to the dir at $1 recursively and make all .ts and .sh files executable
-find $1 -type f \( -name "*.ts" -o -name "*.sh" \) -exec chmod +x {} \;
+find $1 -type f \( -name "*.ts" -o -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
