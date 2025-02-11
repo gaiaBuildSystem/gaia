@@ -3,7 +3,7 @@ import logger from "node-color-log"
 import { Recipe } from "./parse"
 import PATH from "path"
 
-export function ExecBundleIniramfs(recipes: Recipe[]): void {
+export function ExecBundleIniramfs (recipes: Recipe[]): void {
     logger.info("Executing Bundle InitRamfs ...")
 
     if (process.env.RECIPE !== undefined) {
@@ -38,7 +38,7 @@ export function ExecBundleIniramfs(recipes: Recipe[]): void {
      * build-{DISTRO_NAME}/tmp/{MACHINE}/initramfs
      */
     execSync(
-        `echo ${USER_PASSWD} | sudo -k -S ` +
+        `echo ${USER_PASSWD} | sudo -k -E -S ` +
         `${_makeInitramfs}`,
         {
             cwd: INITRAMFS_PATH,
