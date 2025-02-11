@@ -2,6 +2,7 @@ version: '3'
 services:
   u-boot-build:
     image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/u-boot:/source
       - ${ORIGIN_PATH}:/assets

@@ -24,6 +24,7 @@ const META = JSON.parse(process.env.META as string) as Recipe
 const _path = PATH.dirname(process.argv[1])
 const _paths = META.paths.toString()
 process.env.ORIGIN_PATH = _path
+process.env.PODMAN_USERNS = "keep-id"
 
 const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
 
