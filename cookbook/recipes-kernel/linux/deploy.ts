@@ -57,7 +57,7 @@ logger.success("kernel image installed")
 
 logger.info("installing Linux Kernel headers ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-install-headers`,
     {
         shell: "/bin/bash",
@@ -70,7 +70,7 @@ logger.success(`Headers installed`)
 
 logger.info("installing Kernel modules ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `echo ${USER_PASSWD} | sudo -k -E -S ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-install-modules`,
     {
         shell: "/bin/bash",

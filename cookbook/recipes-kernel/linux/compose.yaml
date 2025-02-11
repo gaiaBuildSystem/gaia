@@ -1,7 +1,7 @@
 version: '3'
 services:
   linux-build:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    image: docker.io/pergamos/bsp-builder:latest
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
       - ${ORIGIN_PATH}:/assets
@@ -13,8 +13,8 @@ services:
         -j${JOBS}
 
   linux-modules:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
-    user: 1000:1000
+    image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
       - ${ORIGIN_PATH}:/assets
@@ -27,7 +27,7 @@ services:
         -j${JOBS}
 
   linux-install-modules:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    image: docker.io/pergamos/bsp-builder:latest
     user: root
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
@@ -41,7 +41,7 @@ services:
         modules_install
 
   linux-install-headers:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
+    image: docker.io/pergamos/bsp-builder:latest
     user: root
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
@@ -55,8 +55,8 @@ services:
         headers_install
 
   linux-dtb:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
-    user: 1000:1000
+    image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
       - ${ORIGIN_PATH}:/assets
@@ -69,8 +69,8 @@ services:
         -j${JOBS}
 
   linux-config:
-    image: docker.io/commontorizon/bsp-builder-amd64:latest
-    user: 1000:1000
+    image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
       - ${ORIGIN_PATH}:/assets

@@ -8,7 +8,7 @@
             "BUILDKIT_INLINE_CACHE": "0",
             // FIXME: change here to your docker group id
             // getent group docker
-            "GID": "988"
+            "GID": "__dgid__"
         }
     },
     "customizations": {
@@ -35,7 +35,8 @@
     },
     "privileged": true,
     "runArgs": [
-        "--net=host"
+        "--net=host",
+        "--cgroupns=host"
     ],
     "workspaceFolder": "__pwd__",
     "containerUser": "gaia",

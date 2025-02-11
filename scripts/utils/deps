@@ -18,7 +18,11 @@ apt-get install -y \
     wget \
     git \
     sudo \
-    parted
+    parted \
+    dosfstools \
+    binutils \
+    whois \
+    jq
 
 # install podman
 apt-get install -y podman podman-compose
