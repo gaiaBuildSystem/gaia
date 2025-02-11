@@ -1,16 +1,6 @@
 {
     "name": "Existing Dockerfile",
-    "build": {
-        "context": "..",
-        "dockerfile": "./Containerfile",
-        "cacheFrom": "pergamos/gaia-workspace-dev:latest",
-        "args": {
-            "BUILDKIT_INLINE_CACHE": "0",
-            // FIXME: change here to your docker group id
-            // getent group docker
-            "GID": "__dgid__"
-        }
-    },
+    "image": "pergamos/gaia-workspace-dev:latest",
     "customizations": {
         "vscode": {
             "settings": {
