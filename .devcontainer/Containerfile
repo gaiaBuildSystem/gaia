@@ -1,6 +1,7 @@
 
 
-FROM debian:bookworm
+# using trixie as base image because we need podman v5.3.x
+FROM debian:trixie
 
 
 COPY . /gaia
