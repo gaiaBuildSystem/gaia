@@ -2,6 +2,7 @@ version: '3'
 services:
   linux-build:
     image: docker.io/pergamos/bsp-builder:latest
+    user: ${GUSER_ID}:${GGROUP_ID}
     volumes:
       - ${BUILD_PATH}/tmp/${MACHINE}/linux:/source
       - ${ORIGIN_PATH}:/assets

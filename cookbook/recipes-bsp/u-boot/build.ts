@@ -26,6 +26,7 @@ const _paths = META.paths.toString()
 const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
 
 process.env.ORIGIN_PATH = _path
+process.env.PODMAN_USERNS = "keep-id"
 
 function compileBootScript (): void {
     logger.info("compiling boot script ...")
