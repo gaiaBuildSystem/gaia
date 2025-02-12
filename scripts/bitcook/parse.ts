@@ -54,7 +54,7 @@ export interface Recipe {
     version: string
 }
 
-function replaceConfigEnvVars(recipe: Recipe, str: string | undefined): string {
+function replaceConfigEnvVars (recipe: Recipe, str: string | undefined): string {
     if (str != null) {
         return str.replace(/\${(\w+)}/g, (match, p1) => {
             if (p1 === "recipeOrigin") {
@@ -67,7 +67,7 @@ function replaceConfigEnvVars(recipe: Recipe, str: string | undefined): string {
         return ""
 }
 
-export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
+export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
     logger.info("Parsing recipes ...")
     let _RECIPES: string[] = []
     let RECIPES: Recipe[] = []
@@ -96,7 +96,17 @@ export function ParseRecipes(workingDir: string, distro: any): Recipe[] {
                         filePath.endsWith(".json") &&
                         PATH.basename(filePath, ".json") === PATH.basename(dir)
                     ) {
-                        jsonFiles.push(filePath)
+                        const _machineSpecificFileName: string = PATH.basename(filePath, ".json") + `-${distro.machine}.json`
+                        const _machineSpecificFilePath: string = PATH.join(dir, _machineSpecificFileName)
+
+                        if (FS.existsSync(_machineSpecificFilePath)) {
+                            logger.debug(`Found machine specific json for ${_machineSpecificFileName}`)
+                            // edge case for the machine specific json
+                            jsonFiles.push(_machineSpecificFilePath)
+                        } else {
+                            // else, we get the default json
+                            jsonFiles.push(filePath)
+                        }
                     } else if (
                         filePath.endsWith(".json")
                     ) {
