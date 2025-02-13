@@ -76,7 +76,7 @@ A hypothetic example of a `manifest.json` file:
 The manifest file must be in the root of a folder where you have cloned the Gaia Core repository. To use the `repo`util, run the following command:
 
 ```bash
-./gaia/scripts/utils/init
+./gaia/scripts/init
 ```
 
 This command will build the dev container and clone the repositories specified in the `manifest.json` file.
