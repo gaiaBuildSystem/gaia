@@ -22,37 +22,55 @@ GROUP_ID=$(id -g)
 # get the docker group id
 DGROUP_ID=$(getent group docker | cut -d: -f3)
 
-# sed for change the __pwd__ to the current absolute path
-# this way we will not have issues with docker in docker mounts
-sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/docker-compose.yml
-sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/Containerfile
-sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/devcontainer.json
-sed -i "s#__pwd__#$(pwd)#g" ./gaia/.vscode/settings.json
-sed -i "s#__pwd__#$(pwd)#g" ./gaia/scripts/utils/repo.ts
 
-# sed for change the __uid__ to the current user id
-sed -i "s#__uid__#$USER_ID#g" ./gaia/.devcontainer/docker-compose.yml
-sed -i "s#__uid__#$USER_ID#g" ./gaia/.devcontainer/Containerfile
-sed -i "s#__uid__#$USER_ID#g" ./gaia/.devcontainer/devcontainer.json
-sed -i "s#__uid__#$USER_ID#g" ./gaia/.vscode/settings.json
-sed -i "s#__uid__#$USER_ID#g" ./gaia/scripts/utils/repo.ts
+function replaces {
+    # sed for change the __pwd__ to the current absolute path
+    # this way we will not have issues with docker in docker mounts
+    sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/docker-compose.yml
+    sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/Containerfile
+    sed -i "s#__pwd__#$(pwd)#g" ./gaia/.devcontainer/devcontainer.json
+    sed -i "s#__pwd__#$(pwd)#g" ./gaia/.vscode/settings.json
+    sed -i "s#__pwd__#$(pwd)#g" ./gaia/scripts/utils/repo.ts
 
-# sed for change the __gid__ to the current group id
-sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.devcontainer/docker-compose.yml
-sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.devcontainer/Containerfile
-sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.devcontainer/devcontainer.json
-sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.vscode/settings.json
-sed -i "s#__gid__#$GROUP_ID#g" ./gaia/scripts/utils/repo.ts
+    # sed for change the __uid__ to the current user id
+    sed -i "s#__uid__#$USER_ID#g" ./gaia/.devcontainer/docker-compose.yml
+    sed -i "s#__uid__#$USER_ID#g" ./gaia/.devcontainer/Containerfile
+    sed -i "s#__uid__#$USER_ID#g" ./gaia/.devcontainer/devcontainer.json
+    sed -i "s#__uid__#$USER_ID#g" ./gaia/.vscode/settings.json
+    sed -i "s#__uid__#$USER_ID#g" ./gaia/scripts/utils/repo.ts
 
-# sed for change the __dgid__ to the current docker group id
-sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.devcontainer/docker-compose.yml
-sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.devcontainer/Containerfile
-sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.devcontainer/devcontainer.json
-sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.vscode/settings.json
-sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/scripts/utils/repo.ts
+    # sed for change the __gid__ to the current group id
+    sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.devcontainer/docker-compose.yml
+    sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.devcontainer/Containerfile
+    sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.devcontainer/devcontainer.json
+    sed -i "s#__gid__#$GROUP_ID#g" ./gaia/.vscode/settings.json
+    sed -i "s#__gid__#$GROUP_ID#g" ./gaia/scripts/utils/repo.ts
+
+    # sed for change the __dgid__ to the current docker group id
+    sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.devcontainer/docker-compose.yml
+    sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.devcontainer/Containerfile
+    sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.devcontainer/devcontainer.json
+    sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/.vscode/settings.json
+    sed -i "s#__dgid__#$DGROUP_ID#g" ./gaia/scripts/utils/repo.ts
+}
+
+replaces
 
 # run the build of the devcontainer
 docker compose -f ./gaia/.devcontainer/docker-compose.yml build
+# get the manifest
+docker compose -f ./gaia/.devcontainer/docker-compose.yml run --rm repo
+
+# at this point the repo will try to get the new stuf and will override the sed
+# so we need to run the replaces again
+replaces
 
 # run the repo
-docker compose -f ./gaia/.devcontainer/docker-compose.yml run --rm repo
+docker \
+    run \
+    -it \
+    --privileged \
+    --network host \
+    --cgroupns host \
+    -v $(pwd):$(pwd) \
+    pergamos/gaia-workspace-dev:latest
