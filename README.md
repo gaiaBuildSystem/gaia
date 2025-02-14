@@ -16,7 +16,7 @@ Deimos is the Gaia Build System's reference distribution. It is a minimal distri
 Run the following command to create an image:
 
 ```bash
-./scripts/bitcook/gaia.ts --buildPath /mnt/factory/build/gaia --distro distro-ref-amd64.json
+./scripts/bitcook/gaia.ts --buildPath /mnt/factory/build/gaia --distro distro-ref-amd64.json --noCache
 ```
 
 > [!WARNING]
@@ -24,6 +24,9 @@ The `--buildPath` argument is mandatory and must be an absolute path.
 
 > [!WARNING]
 The `--distro` argument is mandatory and must be an relative path to a distro json file.
+
+> [!WARNING]
+The `--noCache` argument is optional but should be use on the first build to create a new cache.
 
 The DeimOS images that this repo builds are only for:
 
