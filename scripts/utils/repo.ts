@@ -200,11 +200,19 @@ _config.folders.push(
 for (const repo of _manifest.repositories) {
     _config.folders.push(
         {
-            "path": `./ ${repo.path}`,
+            "path": `./${repo.path}`,
             "name": repo.name
         }
     )
 }
+
+// also add the workspace itself
+_config.folders.push(
+    {
+        "path": ".",
+        "name": "Workspace"
+    }
+)
 
 fs.writeFileSync(
     "__pwd__/gaia.code-workspace",
