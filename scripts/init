@@ -65,12 +65,5 @@ docker compose -f ./gaia/.devcontainer/docker-compose.yml run --rm repo
 # so we need to run the replaces again
 replaces
 
-# run the repo
-docker \
-    run \
-    -it \
-    --privileged \
-    --network host \
-    --cgroupns host \
-    -v $(pwd):$(pwd) \
-    pergamos/gaia-workspace-dev:latest
+# run the dev shell
+docker compose -f ./gaia/.devcontainer/docker-compose.yml run dev
