@@ -36,6 +36,7 @@ interface Manifest {
     name: string,
     description: string,
     maintainer: string,
+    revision: string,
     repositories: Repository[]
 }
 
@@ -78,11 +79,13 @@ process.chdir("__pwd__")
 if (!fs.existsSync("__pwd__/gaia")) {
     logger.info("Cloning Gaia repository")
     const clone = "git clone https://github.com/gaiaBuildSystem/gaia.git gaia"
+    const checkout = `cd gaia && checkout ${_manifest.revision}`
+    const command = `${clone} && ${checkout}`
 
-    logger.debug(`Running command: ${clone}`)
+    logger.debug(`Running command: ${command}`)
 
     try {
-        const result = execSync(clone, { stdio: "inherit" })
+        const result = execSync(command, { stdio: "inherit" })
     } catch (error) {
         const _error = error as ExecException
         logger.error("Failed to clone Gaia repository")
