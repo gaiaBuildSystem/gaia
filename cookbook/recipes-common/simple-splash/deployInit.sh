@@ -25,7 +25,7 @@ echo $USER_PASSWD | sudo -E -S cp -r $IMAGE_MNT_ROOT/usr/share/fonts/ $INITRAMFS
 # check if the SIMPLE_SPLASH_PATH is set
 if [ -z "$SIMPLE_SPLASH_PATH" ]; then
     echo "SIMPLE_SPLASH_PATH is not set, using the default image"
-    SIMPLE_SPLASH_PATH=$_path/DeimOS.png
+    SIMPLE_SPLASH_PATH=$_path/deimos.png
 fi
 
 echo $USER_PASSWD | sudo -E -S cp $SIMPLE_SPLASH_PATH $INITRAMFS_PATH/splash.png
