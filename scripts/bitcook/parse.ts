@@ -1,4 +1,4 @@
-import Ajv from "ajv"
+import Ajv from "ajv/dist/2019"
 import UTIL from "util"
 import FS from "fs"
 import PATH from "path"
@@ -6,7 +6,10 @@ import PATH from "path"
 import logger from "node-color-log"
 
 const _validateSchema = (schema: any, data: any) => {
-    const ajv = new Ajv()
+    const ajv = new Ajv({
+        strict: false
+    })
+    ajv.addMetaSchema(require("ajv/dist/refs/json-schema-draft-07.json"))
 
     const validate = ajv.compile(schema)
     const valid = validate(data)
@@ -118,25 +121,45 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             return jsonFiles
         }
 
-        const _recipes = getJsonFiles(_pathToSearch, true)
+        let _recipes = getJsonFiles(_pathToSearch, true)
 
-        // exclude the excludeRecipes
-        const excludeRecipes = distro.excludeRecipes
-        let _recipesToExclude: string[] = []
-        if (excludeRecipes && excludeRecipes.length > 0) {
-            for (const excludeRecipe of excludeRecipes) {
-                for (let i = 0; i < _recipes.length; i++) {
-                    if (_recipes[i].includes(excludeRecipe)) {
-                        _recipesToExclude.push(_recipes[i])
+
+        // check if there is the excludeRecipes key
+        if (distro.excludeRecipes == null) {
+            // should be the includeRecipes only then
+            const includeRecipes = distro.includeRecipes
+            let _recipesToInclude: string[] = []
+            if (includeRecipes && includeRecipes.length > 0) {
+                for (const includeRecipe of includeRecipes) {
+                    for (let i = 0; i < _recipes.length; i++) {
+                        if (_recipes[i].includes(includeRecipe)) {
+                            _recipesToInclude.push(_recipes[i])
+                        }
                     }
                 }
             }
-        }
 
-        // remove the recipes that was excluded
-        _recipesToExclude.forEach((recipe) => {
-            _recipes.splice(_recipes.indexOf(recipe), 1)
-        })
+            // remove the recipes that was not included
+            _recipes = _recipesToInclude
+        } else {
+            // exclude the excludeRecipes
+            const excludeRecipes = distro.excludeRecipes
+            let _recipesToExclude: string[] = []
+            if (excludeRecipes && excludeRecipes.length > 0) {
+                for (const excludeRecipe of excludeRecipes) {
+                    for (let i = 0; i < _recipes.length; i++) {
+                        if (_recipes[i].includes(excludeRecipe)) {
+                            _recipesToExclude.push(_recipes[i])
+                        }
+                    }
+                }
+            }
+
+            // remove the recipes that was excluded
+            _recipesToExclude.forEach((recipe) => {
+                _recipes.splice(_recipes.indexOf(recipe), 1)
+            })
+        }
 
         // append the recipes
         _RECIPES.push(..._recipes)

@@ -16,7 +16,8 @@
                 "wsl-amd64",
                 "wsl-arm64",
                 "rpi4b",
-                "rpi5b"
+                "rpi5b",
+                "imx95"
             ]
         },
         "version": {
@@ -64,18 +65,93 @@
                 "type": "string"
             }
         },
+        "includeRecipes": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "useInitramfs": {
             "type": "boolean",
             "default": true
         }
     },
+    "allOf": [
+        {
+            "if": {
+                "properties": {
+                    "includeRecipes": {
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "includeRecipes"
+                ]
+            },
+            "then": {
+                "not": {
+                    "required": [
+                        "excludeRecipes"
+                    ]
+                }
+            },
+            "else": {
+                "if": {
+                    "properties": {
+                        "excludeRecipes": {
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "excludeRecipes"
+                    ]
+                },
+                "then": {
+                    "not": {
+                        "required": [
+                            "includeRecipes"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "dependentSchemas": {
+                "includeRecipes": {
+                    "properties": {
+                        "excludeRecipes": false
+                    },
+                    "errorMessage": "Cannot use 'includeRecipes' and 'excludeRecipes' together."
+                },
+                "excludeRecipes": {
+                    "properties": {
+                        "includeRecipes": false
+                    },
+                    "errorMessage": "Cannot use 'excludeRecipes' and 'includeRecipes' together."
+                }
+            }
+        },
+        {
+            "oneOf": [
+                {
+                    "required": [
+                        "includeRecipes"
+                    ]
+                },
+                {
+                    "required": [
+                        "excludeRecipes"
+                    ]
+                }
+            ]
+        }
+    ],
     "required": [
         "name",
         "machine",
         "version",
         "maxImgSize",
         "arch",
-        "searchForRecipesOn",
-        "excludeRecipes"
+        "searchForRecipesOn"
     ]
 }
