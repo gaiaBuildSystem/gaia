@@ -7,7 +7,7 @@ import { CheckDependencies } from "./checkDeps"
 import { ExecBuild } from "./execBuild"
 import { ExecDeploy } from "./execDeploy"
 import { ExecClean } from "./execClean"
-import Ajv from "ajv"
+import Ajv from "ajv/dist/2019"
 import FS from "fs"
 import PATH from "path"
 import READLINE from "readline"
@@ -24,7 +24,10 @@ import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
 import { ExecBeforePackage } from "./execBeforePackage"
 
 const _validateSchema = (schema: any, data: any) => {
-    const ajv = new Ajv()
+    const ajv = new Ajv({
+        strict: false
+    })
+    ajv.addMetaSchema(require("ajv/dist/refs/json-schema-draft-07.json"))
 
     const validate = ajv.compile(schema)
     const valid = validate(data)
