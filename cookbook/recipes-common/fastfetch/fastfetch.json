@@ -6,10 +6,10 @@
         "linux/amd64",
         "linux/arm64"
     ],
-    "source": "https://github.com/fastfetch-cli/fastfetch.git",
+    "source": "https://github.com/gaiaBuildSystem/fastfetch.git",
     "ref": {
-        "linux/amd64": "7e1c426e3424ccf2258befe0da36b41d1fa594fe",
-        "linux/arm64": "7e1c426e3424ccf2258befe0da36b41d1fa594fe"
+        "linux/amd64": "98746a9a9ddb5455fb288998cc3453d575189a7e",
+        "linux/arm64": "98746a9a9ddb5455fb288998cc3453d575189a7e"
     },
     "env": {
         "ALIAS_NEOFETCH": "true"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "Building fastfetch..."
 
 cd $BUILD_PATH/tmp/$MACHINE/fastfetch
