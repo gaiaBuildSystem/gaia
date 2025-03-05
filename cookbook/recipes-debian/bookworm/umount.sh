@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # before unmounting the partitions, we need to sync the data
 sync
 
@@ -20,4 +22,22 @@ if [ ! -f $IMAGE_PATH ]; then
 fi
 
 # remove the mapping
+sleep 1
 kpartx -dv $IMAGE_PATH
+sleep 1
+
+# detach the loop device
+LOOP_DEVICE=$(losetup -j "$IMAGE_PATH" | awk -F: '{print $1}')
+if [ ! -z "$LOOP_DEVICE" ]; then
+  losetup -d "$LOOP_DEVICE"
+fi
+
+# Remove any remaining /dev/mapper entries
+if [ -d /dev/mapper ]; then
+  for device in /dev/mapper/*; do
+    if [[ "$device" != "/dev/mapper/control" ]]; then
+      echo "Trying to remove mapper device: $device"
+      dmsetup remove "$device" 2>/dev/null # Redirect errors to /dev/null
+    fi
+  done
+fi

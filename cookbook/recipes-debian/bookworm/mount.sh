@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # create the mapping
 kpartxret="$(kpartx -av $IMAGE_PATH)"
 read PART_LOOP <<<$(grep -o 'loop.' <<<"$kpartxret")
