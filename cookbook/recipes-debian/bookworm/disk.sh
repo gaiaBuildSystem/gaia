@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 mkdir -p "$BUILD_PATH/tmp/$MACHINE/deploy"
 
 # if the file already exists
