@@ -4,6 +4,7 @@ import { execSync } from "child_process"
 import logger from "node-color-log"
 
 import { Recipe } from "./parse"
+import { canExecRecipe } from "./utils/recipeMatch"
 
 export function CheckDependencies (recipes: Recipe[]): void {
     logger.info("Checking dependencies ...")
@@ -20,6 +21,8 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
     // check if the recipes have the required dependencies
     for (const recipe of recipes) {
+        if (!canExecRecipe(recipe.name)) continue
+
         // check if the recipe has a fetch script
         if (recipe.hostDeps && recipe.hostDeps.length > 0) {
             logger.info(`Checking dependencies for ${recipe.name} ...`)
