@@ -21,6 +21,7 @@ const USER_PASSWD = process.env.USER_PASSWD as string
 const USER = process.env.USER_LOGIN_USER as string
 const PSWD = process.env.USER_LOGIN_PASSWORD as string
 const ROOT_NO_PASSWD = process.env.USER_ROOT_PASSWORDLESS as string
+const ROOT_LOGIN = process.env.USER_ROOT_LOGIN as string
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
@@ -44,6 +45,22 @@ if (ROOT_NO_PASSWD === "true") {
             env: process.env
         })
     logger.debug("root is passwordless")
+}
+
+// configure root the be able to login
+if (ROOT_LOGIN === "true") {
+    const root_login =
+        `echo ${USER_PASSWD} | sudo -k -S ` +
+        `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "passwd -u root"`
+
+    execSync(root_login,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+    logger.debug("root is able to login")
 }
 
 const str_cmd =
