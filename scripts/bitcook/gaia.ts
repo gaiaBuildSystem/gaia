@@ -191,6 +191,9 @@ for (const prop of required) {
 process.env.DISTRO_MAJOR = distro.version?.major || "0"
 process.env.DISTRO_MINOR = distro.version?.minor || "0"
 process.env.DISTRO_PATCH = distro.version?.patch || "0"
+if (distro.version?.variant) {
+    process.env.DISTRO_VARIANT = distro.version.variant
+}
 
 // set the environment variable for the maximum size of the img
 process.env.MAX_IMG_SIZE = distro.maxImgSize || "1024"
