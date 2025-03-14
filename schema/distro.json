@@ -17,7 +17,7 @@
                 "wsl-arm64",
                 "rpi4b",
                 "rpi5b",
-                "imx95"
+                "imx95-verdin-evk"
             ]
         },
         "version": {
