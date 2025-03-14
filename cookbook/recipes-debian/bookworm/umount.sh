@@ -37,7 +37,8 @@ if [ -d /dev/mapper ]; then
   for device in /dev/mapper/*; do
     if [[ "$device" != "/dev/mapper/control" ]]; then
       echo "Trying to remove mapper device: $device"
-      dmsetup remove "$device" 2>/dev/null # Redirect errors to /dev/null
+      # if this errors out, it's fine, nothing to worry about
+      dmsetup remove "$device" || true
     fi
   done
 fi
