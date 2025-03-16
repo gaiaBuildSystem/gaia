@@ -3,7 +3,8 @@ import logger from "node-color-log"
 import { Recipe } from "./parse"
 import { canExecRecipe } from "./utils/recipeMatch"
 
-export function ExecBuild(recipes: Recipe[]): void {
+
+export function ExecBuild (recipes: Recipe[]): void {
     logger.info("Executing build ...")
 
     const USER_PASSWD = process.env.USER_PASSWD as string
@@ -25,7 +26,7 @@ export function ExecBuild(recipes: Recipe[]): void {
                 // set the env context
                 let _containerEnv = ""
                 for (const [_envName, _envValue] of Object.entries(process.env)) {
-                    _containerEnv += `-e ${_envName}="${_envValue}" `
+                    _containerEnv += `-e ${_envName}='${_envValue}' `
                 }
 
                 for (const buildRecipe of recipe.buildRecipes) {
