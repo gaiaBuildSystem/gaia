@@ -6,6 +6,16 @@ import logger from "node-color-log"
 import { Recipe } from "./parse"
 import { canExecRecipe } from "./utils/recipeMatch"
 
+function _getCookbookDir (recipeOrigin: string): string {
+    let _cookbookDir = ""
+    _cookbookDir = recipeOrigin.substring(
+        0,
+        recipeOrigin.indexOf("/cookbook/")
+    )
+
+    return `${_cookbookDir}/`
+}
+
 export function CheckDependencies (recipes: Recipe[]): void {
     logger.info("Checking dependencies ...")
 
@@ -46,13 +56,24 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     _hostContainerExists = false
                 }
 
+                // we need to get the path of the cookbook
+                // we have the recipeOrigin, so we need to go back until
+                // we find the cookbook/ folder
+                let _cookbookDir = _getCookbookDir(recipe.recipeOrigin)
+
                 // if not create it and install the dependencies
                 if (!_hostContainerExists) {
                     logger.info(`Creating container ${recipe.name}-${DISTRO_NAME}-host for platform ${ARCH} ...`)
 
-                    let _pathsBinding = ""
+                    let _pathsBinding = `-v ${_cookbookDir}:${_cookbookDir} `
+                    let _pathsToInit: string[] = []
+
                     for (const _path of recipe.paths) {
-                        _pathsBinding += `-v ${_path}:${_path} `
+                        const _pathCookbookDir = _getCookbookDir(_path)
+                        logger.debug(`Path ${_path} :: Cookbook path ${_pathCookbookDir}`)
+
+                        _pathsToInit.push(_pathCookbookDir)
+                        _pathsBinding += `-v ${_pathCookbookDir}:${_pathCookbookDir} `
                     }
 
                     execSync(
@@ -72,6 +93,41 @@ export function CheckDependencies (recipes: Recipe[]): void {
                             env: process.env
                         }
                     )
+
+                    // install at least some utils
+                    execSync(
+                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
+                        `/bin/bash -c "` +
+                        `apt-get update && apt-get install sudo` +
+                        `"`,
+                        {
+                            shell: "/bin/bash",
+                            stdio: "inherit",
+                            encoding: "utf-8"
+                        }
+                    )
+
+                    for (const _cookbookdir of _pathsToInit) {
+                        logger.debug(`Checking if init exists for Cookbook path [${_cookbookdir}]`)
+
+                        if (FS.existsSync(PATH.join(_cookbookdir, "init"))) {
+                            logger.info(`Run init for Cookbook path [${_cookbookdir}]`)
+
+                            execSync(
+                                `echo ${USER_PASSWD} | sudo -k -S ` +
+                                `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
+                                `/bin/bash -c "` +
+                                `cd ${_cookbookdir} && ./init` +
+                                `"`,
+                                {
+                                    shell: "/bin/bash",
+                                    stdio: "inherit",
+                                    encoding: "utf-8"
+                                }
+                            )
+                        }
+                    }
                 } else {
                     logger.info(`Container ${recipe.name}-${DISTRO_NAME}-host exists`)
                 }
