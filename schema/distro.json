@@ -42,6 +42,9 @@
                         "dev",
                         "prod"
                     ]
+                },
+                "codename": {
+                    "type": "string"
                 }
             },
             "required": [
