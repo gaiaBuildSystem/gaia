@@ -87,9 +87,15 @@
             "type": "object",
             "properties": {
                 "image": {
+                    "description": "The image of the Recipe. This property is used to define the image to be used to build the recipe.",
                     "type": "string"
                 },
                 "tag": {
+                    "description": "The tag of the Recipe. This property is used to define the tag of the image to be used to build the recipe.",
+                    "type": "string"
+                },
+                "extraConfig": {
+                    "description": "The extra configuration for the container. The Gaia will bind and do some automatically configuration to run the container based in the image:tag, but some images need extra configurations like `--entrypoint=\"\"`.",
                     "type": "string"
                 }
             },
