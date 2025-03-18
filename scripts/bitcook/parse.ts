@@ -46,6 +46,7 @@ export interface Recipe {
     containerImage: {
         image: string
         tag: string
+        extraConfig: string
     }
     hostDeps: string[]
     beforeTargetDepsRecipes: string[]
