@@ -76,11 +76,17 @@ export function CheckDependencies (recipes: Recipe[]): void {
                         _pathsBinding += `-v ${_pathCookbookDir}:${_pathCookbookDir} `
                     }
 
+                    let _extraConfig = ""
+                    if (recipe.containerImage.extraConfig) {
+                        _extraConfig = recipe.containerImage.extraConfig
+                    }
+
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
                         `podman run -d --name ${recipe.name}-${DISTRO_NAME}-host --platform ${ARCH} ` +
                         `-v ${BUILD_PATH}:${BUILD_PATH} ` +
                         `${_pathsBinding}` +
+                        `${_extraConfig} ` +
                         `${recipe.containerImage.image}:${recipe.containerImage.tag} ` +
                         `/bin/bash -c "` +
                         `tail -f /dev/null` +
