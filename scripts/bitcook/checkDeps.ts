@@ -24,6 +24,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
     const ARCH = process.env.ARCH as string
     const DISTRO_NAME = process.env.DISTRO_NAME as string
     const INSTALL_HOST_DEPS = process.env.INSTALL_HOST_DEPS as string
+    const NO_CACHE = process.env.CLEAN_IMAGE as string
 
     if (INSTALL_HOST_DEPS === "true") {
         logger.debug(`INSTALL_HOST_DEPS=${INSTALL_HOST_DEPS}`)
@@ -136,6 +137,31 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     }
                 } else {
                     logger.info(`Container ${recipe.name}-${DISTRO_NAME}-host exists`)
+                }
+
+                try {
+                    // cleanup the container
+                    execSync(
+                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `podman container cleanup ${recipe.name}-${DISTRO_NAME}-host `,
+                        {
+                            shell: "/bin/bash",
+                            stdio: "inherit",
+                            encoding: "utf-8"
+                        }
+                    )
+
+                    execSync(
+                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `podman start ${recipe.name}-${DISTRO_NAME}-host `,
+                        {
+                            shell: "/bin/bash",
+                            stdio: "inherit",
+                            encoding: "utf-8"
+                        }
+                    )
+                } catch (error) {
+                    logger.warn(`Cleanup failed for ${recipe.name} :: error during dependency install`)
                 }
 
                 // make sure the container is running
