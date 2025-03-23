@@ -125,8 +125,31 @@ process.env.VERBOSE = VERBOSE != null ? VERBOSE.toString() : false.toString()
 process.env.RECIPE = RECIPE != null ? RECIPE : undefined
 process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.toString() : false.toString()
 
+
 if (NO_CACHE === true) {
     process.env.CLEAN_IMAGE = "true"
+
+    // clean possible /var/run/libpod
+    execSync(
+        `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
+        `rm -rf /var/run/libpod`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+
+    // clean the pods
+    execSync(
+        `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
+        `podman pod rm -a`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
 }
 
 if (process.env.RECIPE !== undefined) {
