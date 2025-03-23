@@ -30,7 +30,9 @@ apt-get install -y podman podman-compose
 # install bun
 curl -fsSL https://bun.sh/install | bash
 
-ln -s /root/.bun/ /opt/bun
+if [ ! -L /opt/bun ]; then
+    ln -s /root/.bun/ /opt/bun
+fi
 
 # add it to the path
 echo "export PATH=$PATH:/opt/bun/bin" >>/etc/profile

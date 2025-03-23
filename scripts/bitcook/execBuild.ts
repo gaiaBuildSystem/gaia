@@ -10,6 +10,7 @@ export function ExecBuild (recipes: Recipe[]): void {
     const USER_PASSWD = process.env.USER_PASSWD as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
+    const FARCH = ARCH.replace("/", "-")
     const DISTRO_NAME = process.env.DISTRO_NAME as string
 
     // directly call the build scrips from the recipes
@@ -30,12 +31,14 @@ export function ExecBuild (recipes: Recipe[]): void {
                 }
 
                 for (const buildRecipe of recipe.buildRecipes) {
+                    const HOST_CONTAINER_NAME = `${recipe.name}-${DISTRO_NAME}-${FARCH}-host`
+
                     // here we need to believe that the container is already created
                     // by the parse step
                     try {
                         execSync(
                             `echo ${USER_PASSWD} | sudo -k -S ` +
-                            `podman exec -it ${_containerEnv} ${recipe.name}-${DISTRO_NAME}-host ` +
+                            `podman exec -it ${_containerEnv} ${HOST_CONTAINER_NAME} ` +
                             `/bin/bash -c "` +
                             `exec ${buildRecipe}` +
                             `"`,
