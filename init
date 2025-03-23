@@ -4,4 +4,9 @@
 # THIS ONLY MAKE SENSE INSIDE THE DEV CONTAINER
 ##
 
+cd ./scripts/utils
+./deps
+
+cd -
+
 /root/.bun/bin/bun install

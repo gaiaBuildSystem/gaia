@@ -22,6 +22,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
     const USER_PASSWD = process.env.USER_PASSWD as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
+    const FARCH = ARCH.replace("/", "-")
     const DISTRO_NAME = process.env.DISTRO_NAME as string
     const INSTALL_HOST_DEPS = process.env.INSTALL_HOST_DEPS as string
     const NO_CACHE = process.env.CLEAN_IMAGE as string
@@ -34,6 +35,8 @@ export function CheckDependencies (recipes: Recipe[]): void {
     for (const recipe of recipes) {
         if (!canExecRecipe(recipe.name)) continue
 
+        const HOST_CONTAINER_NAME = `${recipe.name}-${DISTRO_NAME}-${FARCH}-host`
+
         // check if the recipe has a fetch script
         if (recipe.hostDeps && recipe.hostDeps.length > 0) {
             logger.info(`Checking dependencies for ${recipe.name} ...`)
@@ -45,7 +48,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 try {
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
-                        `podman inspect ${recipe.name}-${DISTRO_NAME}-host`,
+                        `podman inspect ${HOST_CONTAINER_NAME}`,
                         {
                             shell: "/bin/bash",
                             stdio: "inherit",
@@ -64,7 +67,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                 // if not create it and install the dependencies
                 if (!_hostContainerExists) {
-                    logger.info(`Creating container ${recipe.name}-${DISTRO_NAME}-host for platform ${ARCH} ...`)
+                    logger.info(`Creating container ${HOST_CONTAINER_NAME} for platform ${ARCH} ...`)
 
                     let _pathsBinding = `-v ${_cookbookDir}:${_cookbookDir} `
                     let _pathsToInit: string[] = []
@@ -84,7 +87,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
-                        `podman run -d --name ${recipe.name}-${DISTRO_NAME}-host --platform ${ARCH} ` +
+                        `podman run -d --name ${HOST_CONTAINER_NAME} --platform ${ARCH} ` +
                         `-v ${BUILD_PATH}:${BUILD_PATH} ` +
                         `${_pathsBinding}` +
                         `${_extraConfig} ` +
@@ -104,7 +107,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     // install at least some utils
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
-                        `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
+                        `podman exec -it ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
                         `apt-get update && apt-get install sudo` +
                         `"`,
@@ -121,29 +124,44 @@ export function CheckDependencies (recipes: Recipe[]): void {
                         if (FS.existsSync(PATH.join(_cookbookdir, "init"))) {
                             logger.info(`Run init for Cookbook path [${_cookbookdir}]`)
 
-                            execSync(
-                                `echo ${USER_PASSWD} | sudo -k -S ` +
-                                `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
-                                `/bin/bash -c "` +
-                                `cd ${_cookbookdir} && ./init` +
-                                `"`,
-                                {
-                                    shell: "/bin/bash",
-                                    stdio: "inherit",
-                                    encoding: "utf-8"
-                                }
-                            )
+                            try {
+                                execSync(
+                                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                                    `podman exec -it ${HOST_CONTAINER_NAME} ` +
+                                    `/bin/bash -c "` +
+                                    `cd ${_cookbookdir} && ./init` +
+                                    `"`,
+                                    {
+                                        shell: "/bin/bash",
+                                        stdio: "inherit",
+                                        encoding: "utf-8"
+                                    }
+                                )
+                            } catch (error) {
+                                // destroy the container
+                                execSync(
+                                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                                    `podman rm -vf ${HOST_CONTAINER_NAME}`,
+                                    {
+                                        shell: "/bin/bash",
+                                        stdio: "inherit",
+                                        encoding: "utf-8"
+                                    }
+                                )
+
+                                throw new Error(`Init for Cookbook path [${_cookbookdir}] failed`)
+                            }
                         }
                     }
                 } else {
-                    logger.info(`Container ${recipe.name}-${DISTRO_NAME}-host exists`)
+                    logger.info(`Container ${HOST_CONTAINER_NAME} exists`)
                 }
 
                 try {
                     // cleanup the container
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
-                        `podman container cleanup ${recipe.name}-${DISTRO_NAME}-host `,
+                        `podman container cleanup ${HOST_CONTAINER_NAME} `,
                         {
                             shell: "/bin/bash",
                             stdio: "inherit",
@@ -153,7 +171,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
-                        `podman start ${recipe.name}-${DISTRO_NAME}-host `,
+                        `podman start ${HOST_CONTAINER_NAME} `,
                         {
                             shell: "/bin/bash",
                             stdio: "inherit",
@@ -167,7 +185,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 // make sure the container is running
                 execSync(
                     `echo ${USER_PASSWD} | sudo -k -S ` +
-                    `podman start ${recipe.name}-${DISTRO_NAME}-host `,
+                    `podman start ${HOST_CONTAINER_NAME} `,
                     {
                         shell: "/bin/bash",
                         stdio: "inherit",
@@ -179,7 +197,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 try {
                     execSync(
                         `echo ${USER_PASSWD} | sudo -k -S ` +
-                        `podman exec -it ${recipe.name}-${DISTRO_NAME}-host ` +
+                        `podman exec -it ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
                         `apt-get update && ` +
                         `apt-get install -y ${recipe.hostDeps.join(" ")}` +
