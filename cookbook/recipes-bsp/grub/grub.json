@@ -8,11 +8,12 @@
     "ref": {},
     "hostDeps": [
         "grub2-common",
-        "grub-pc-bin"
+        "grub-pc-bin",
+        "grub-efi-amd64-bin"
     ],
     "env": {
         "GRUB_KERNEL_CMDLINE": "console=ttyS0,115200 root=LABEL:gaia rootfstype=ext4 logo.nologo vt.global_cursor_default=0 video=1024x768",
-        "GRUB_SPLASH_PATH": "${recipeOrigin}/noStress.png"
+        "GRUB_SPLASH_PATH": "${recipeOrigin}/grub-splash.png"
     },
     "targetDeps": [],
     "fetchRecipes": [],
