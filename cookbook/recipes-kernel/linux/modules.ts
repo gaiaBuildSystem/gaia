@@ -53,7 +53,7 @@ process.env.LINUX_ARCH = LINUX_ARCH
 process.env.COMPILER = COMPILER
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `make modules_install ARCH=${LINUX_ARCH} INSTALL_MOD_PATH=${IMAGE_MNT_ROOT}`,
     {
         shell: "/bin/bash",

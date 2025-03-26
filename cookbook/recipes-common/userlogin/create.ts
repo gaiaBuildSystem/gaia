@@ -34,7 +34,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 // configure root to be passwordless
 if (ROOT_NO_PASSWD === "true") {
     const root_no_passwd =
-        `echo ${USER_PASSWD} | sudo -k -S ` +
+        `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "passwd -d root"`
 
     execSync(root_no_passwd,
@@ -50,7 +50,7 @@ if (ROOT_NO_PASSWD === "true") {
 // configure root the be able to login
 if (ROOT_LOGIN === "true") {
     const root_login =
-        `echo ${USER_PASSWD} | sudo -k -S ` +
+        `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "passwd -u root"`
 
     execSync(root_login,
@@ -64,7 +64,7 @@ if (ROOT_LOGIN === "true") {
 }
 
 const str_cmd =
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `id -u ${USER} &>/dev/null || ` + // Check if user exists
     `useradd -m ${USER} && ` +
@@ -88,7 +88,7 @@ if (
     USER_DEFAULT_SHELL !== ""
 ) {
     const str_default_shell =
-        `echo ${USER_PASSWD} | sudo -k -S ` +
+        `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
         `chsh -s ${USER_DEFAULT_SHELL} ${USER}"`
 

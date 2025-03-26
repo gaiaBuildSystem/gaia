@@ -42,7 +42,7 @@ FS.writeFileSync(
 
 // copy the issue file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/issue/issue ${IMAGE_MNT_ROOT}/etc/issue`,
     {
         shell: "/bin/bash",

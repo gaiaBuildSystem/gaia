@@ -30,7 +30,7 @@ process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ${_path}/umount.sh`,
+    `sudo -E ${_path}/umount.sh`,
     {
         shell: "/bin/bash",
         stdio: "inherit",

@@ -47,7 +47,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 let _hostContainerExists = false
                 try {
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `sudo -k ` +
                         `podman inspect ${HOST_CONTAINER_NAME}`,
                         {
                             shell: "/bin/bash",
@@ -86,7 +86,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     }
 
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `sudo -k ` +
                         `podman run -d --name ${HOST_CONTAINER_NAME} --platform ${ARCH} ` +
                         `-v ${BUILD_PATH}:${BUILD_PATH} ` +
                         `${_pathsBinding}` +
@@ -106,7 +106,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                     // install at least some utils
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `sudo -k ` +
                         `podman exec -it ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
                         `apt-get update && apt-get install sudo` +
@@ -126,7 +126,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                             try {
                                 execSync(
-                                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                                    `sudo -k ` +
                                     `podman exec -it ${HOST_CONTAINER_NAME} ` +
                                     `/bin/bash -c "` +
                                     `cd ${_cookbookdir} && ./init` +
@@ -140,7 +140,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                             } catch (error) {
                                 // destroy the container
                                 execSync(
-                                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                                    `sudo -k ` +
                                     `podman rm -vf ${HOST_CONTAINER_NAME}`,
                                     {
                                         shell: "/bin/bash",
@@ -160,7 +160,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 try {
                     // cleanup the container
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `sudo -k ` +
                         `podman container cleanup ${HOST_CONTAINER_NAME} `,
                         {
                             shell: "/bin/bash",
@@ -170,7 +170,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     )
 
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `sudo -k ` +
                         `podman start ${HOST_CONTAINER_NAME} `,
                         {
                             shell: "/bin/bash",
@@ -184,7 +184,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                 // make sure the container is running
                 execSync(
-                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                    `sudo -k ` +
                     `podman start ${HOST_CONTAINER_NAME} `,
                     {
                         shell: "/bin/bash",
@@ -196,7 +196,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 // install the dependencies
                 try {
                     execSync(
-                        `echo ${USER_PASSWD} | sudo -k -S ` +
+                        `sudo -k ` +
                         `podman exec -it ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
                         `apt-get update && ` +
@@ -240,7 +240,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                             // install the dependency
                             try {
                                 execSync(
-                                    `echo ${USER_PASSWD} | sudo -k -S ` +
+                                    `sudo -k ` +
                                     `/bin/bash -c "` +
                                     `apt-get update && ` +
                                     `apt-get install -y ${dep}` +

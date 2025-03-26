@@ -40,7 +40,7 @@ switch (ARCH) {
 
 // instructions from https://docs.docker.com/engine/install/debian/
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `apt-get update && ` +
     `apt-get install -y ca-certificates curl && ` +

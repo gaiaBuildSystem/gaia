@@ -26,7 +26,7 @@ process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${_path}/simple-splash.service ${IMAGE_MNT_ROOT}/etc/systemd/system/simple-splash.service`,
     {
         shell: "/bin/bash",
@@ -36,7 +36,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `systemctl enable simple-splash.service` +
     `"`,

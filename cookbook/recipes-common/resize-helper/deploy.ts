@@ -26,7 +26,7 @@ process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${_path}/files/resize-helper ${IMAGE_MNT_ROOT}/usr/sbin/resize-helper`,
     {
         shell: "/bin/bash",
@@ -36,7 +36,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${_path}/files/resize-helper.service ${IMAGE_MNT_ROOT}/etc/systemd/system/resize-helper.service`,
     {
         shell: "/bin/bash",
@@ -46,7 +46,7 @@ execSync(
     })
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `chmod +x /usr/sbin/resize-helper && systemctl enable resize-helper.service` +
     `"`,

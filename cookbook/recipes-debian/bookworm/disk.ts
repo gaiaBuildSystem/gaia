@@ -35,7 +35,7 @@ logger.debug(`  ${IMAGE_PATH}`)
 // create the image and the partitions
 logger.info("creating partitions ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ${_path}/disk.sh`,
+    `sudo -E ${_path}/disk.sh`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
@@ -46,7 +46,7 @@ logger.success("disk image ok")
 
 // mount and format the rootfs to be able to chroot
 execSync(
-    `echo ${USER_PASSWD} | sudo -E -S ${_path}/mount.sh`,
+    `sudo -E ${_path}/mount.sh`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
