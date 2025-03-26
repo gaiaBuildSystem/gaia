@@ -29,7 +29,7 @@ process.env.OS_RELEASE_VERSION = `${DISTRO_MAJOR}.${DISTRO_MINOR}.${DISTRO_PATCH
 
 // copy the binary to the /usr/bin
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/fastfetch/build/fastfetch ${IMAGE_MNT_ROOT}/usr/bin/fastfetch`,
     {
         shell: "/bin/bash",
@@ -41,7 +41,7 @@ execSync(
 // check if we should also create a symlink to neofetch
 if (process.env.ALIAS_NEOFETCH === "true") {
     execSync(
-        `echo ${USER_PASSWD} | sudo -k -S ` +
+        `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c ` +
         `"` +
         `ln -sf /usr/bin/fastfetch /usr/bin/neofetch` +

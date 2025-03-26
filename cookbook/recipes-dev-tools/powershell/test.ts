@@ -27,7 +27,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // install the .deb file
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `pwsh -c 'Write-Host HELLO'"`,
     {

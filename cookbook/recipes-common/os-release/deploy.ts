@@ -52,7 +52,7 @@ FS.writeFileSync(
 
 // copy the fstab file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/os-release/os-release ${IMAGE_MNT_ROOT}/etc/os-release`,
     {
         shell: "/bin/bash",

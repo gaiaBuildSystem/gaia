@@ -38,35 +38,6 @@ const _validateSchema = (schema: any, data: any) => {
     }
 }
 
-const _readPassword = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const rl = READLINE.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        })
-
-        const backUp = (rl as any)._writeToOutput
-
-        rl.question("Input your password: ", (answer) => {
-            (rl as any)._writeToOutput = backUp
-            rl.write("\n")
-
-            if (!answer || answer === "") {
-                reject("Password cannot be empty")
-            }
-
-            rl.close()
-            resolve(answer)
-        });
-
-        // prevent the password to be displayed
-        // JAVASCRIPT IS LOVE 😍
-        (rl as any)._writeToOutput = () => {
-            (rl as any).output.write("*")
-        }
-    })
-}
-
 // check the first argument, if it is -h or --help, show the help
 if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("Usage: gaia [options]")
@@ -91,17 +62,6 @@ if (process.argv[2] === "-v" || process.argv[2] === "--version") {
     process.exit(0)
 }
 
-// ask for the user the root password if not set
-if (!process.env.USER_PASSWD && process.stdin.isTTY) {
-    logger.warn("We need your user root password to continue")
-    logger.warn("This is needed to create the disk image device loopback")
-
-    const answer = await _readPassword()
-    process.env.USER_PASSWD = answer
-} else if (!process.env.USER_PASSWD) {
-    logger.warn("USER_PASSWD is not set, you must set it in the environment")
-    process.exit(69)
-}
 
 // get the path where the script was called
 const _path = process.cwd()
@@ -131,7 +91,7 @@ if (NO_CACHE === true) {
 
     // clean possible /var/run/libpod
     execSync(
-        `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
+        `sudo -E ` +
         `rm -rf /var/run/libpod`,
         {
             shell: "/bin/bash",
@@ -142,7 +102,7 @@ if (NO_CACHE === true) {
 
     // clean the pods
     execSync(
-        `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
+        `sudo -E ` +
         `podman pod rm -a`,
         {
             shell: "/bin/bash",
@@ -253,7 +213,7 @@ if (process.env.VERBOSE === "true") {
 
 // we need to have support to all the architecures
 execSync(
-    `echo ${process.env.USER_PASSWD} | sudo -E -S ` +
+    `sudo -E ` +
     `podman run --rm --privileged docker.io/pergamos/binfmt:9.0.2`,
     {
         shell: "/bin/bash",

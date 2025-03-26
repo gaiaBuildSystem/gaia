@@ -37,7 +37,7 @@ export function ExecBuild (recipes: Recipe[]): void {
                     // by the parse step
                     try {
                         execSync(
-                            `echo ${USER_PASSWD} | sudo -k -S ` +
+                            `sudo -k ` +
                             `podman exec -it ${_containerEnv} ${HOST_CONTAINER_NAME} ` +
                             `/bin/bash -c "` +
                             `exec ${buildRecipe}` +

@@ -27,7 +27,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // instructions from https://docs.docker.com/engine/install/debian/
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `apt-get install -y ` +
     `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin` +
@@ -41,7 +41,7 @@ execSync(
 
 // fixup the /etc/init.d/docker
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `sed -i 's/ulimit -Hn 524288/ulimit -n 524288/' ${IMAGE_MNT_ROOT}/etc/init.d/docker`,
     {
         shell: "/bin/bash",

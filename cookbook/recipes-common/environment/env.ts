@@ -65,7 +65,7 @@ for (const key of envKeys) {
 
 // now deploy it to the /etc/environment
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${envFile} ${IMAGE_MNT_ROOT}/etc/environment`,
     {
         shell: "/bin/bash",
@@ -76,7 +76,7 @@ execSync(
 
 // set the permissions
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `chmod 644 ${IMAGE_MNT_ROOT}/etc/environment`,
     {
         shell: "/bin/bash",

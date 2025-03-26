@@ -38,7 +38,7 @@ export function ExecBundleIniramfs (recipes: Recipe[]): void {
      * build-{DISTRO_NAME}/tmp/{MACHINE}/initramfs
      */
     execSync(
-        `echo ${USER_PASSWD} | sudo -k -E -S ` +
+        `sudo -k -E ` +
         `${_makeInitramfs}`,
         {
             cwd: INITRAMFS_PATH,

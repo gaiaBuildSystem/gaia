@@ -46,8 +46,7 @@ if (process.env.CLEAN_IMAGE === "true") {
     logger.info("unpacking rootfs ...")
 
     execSync(
-        `echo ${USER_PASSWD} | ` +
-        `sudo -E -S tar -xv -f $DISTRO_TAR_FILE -C $IMAGE_MNT_ROOT/`,
+        `sudo -E tar -xv -f $DISTRO_TAR_FILE -C $IMAGE_MNT_ROOT/`,
         {
             shell: "/bin/bash",
             stdio: "inherit",

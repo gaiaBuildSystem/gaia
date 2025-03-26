@@ -29,7 +29,7 @@ process.env.OS_RELEASE_VERSION = `${DISTRO_MAJOR}.${DISTRO_MINOR}.${DISTRO_PATCH
 
 // copy the fstab file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/neofetch/neofetch ${IMAGE_MNT_ROOT}/usr/bin/neofetch`,
     {
         shell: "/bin/bash",

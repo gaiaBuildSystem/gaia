@@ -70,7 +70,7 @@ logger.debug(`Loop device is: `)
 logger.debug(`  ${DEV_LOOP}`)
 
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `grub-install --target=x86_64-efi ` +
     `--efi-directory=${IMAGE_MNT_BOOT} ` +
     `--boot-directory=${IMAGE_MNT_BOOT} ` +
@@ -89,7 +89,7 @@ logger.info("installing bootloader splash screen ...")
 
 // move the splash image to the boot partition
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${process.env.GRUB_SPLASH_PATH} ` +
     `${IMAGE_MNT_BOOT}/splash.png`,
     {
@@ -103,7 +103,7 @@ logger.info("installing grub configuration ...")
 
 // move the grub.cfg to the boot partition
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/grub/grub.cfg ` +
     `${IMAGE_MNT_BOOT}/EFI/BOOT/grub.cfg`,
     {

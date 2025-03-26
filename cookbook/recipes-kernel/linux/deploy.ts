@@ -45,7 +45,7 @@ process.env.LINUX_ARCH = LINUX_ARCH
 
 logger.info("installing kernel image ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/linux/arch/${LINUX_ARCH}/boot/${LINUX_IMAGE} ${IMAGE_MNT_BOOT}/`,
     {
         shell: "/bin/bash",
@@ -57,7 +57,7 @@ logger.success("kernel image installed")
 
 logger.info("installing Linux Kernel headers ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `sudo -k -E ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-install-headers`,
     {
         shell: "/bin/bash",
@@ -70,7 +70,7 @@ logger.success(`Headers installed`)
 
 logger.info("installing Kernel modules ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -E -S ` +
+    `sudo -k -E ` +
     `podman-compose -f ${_path}/compose.yaml run --rm linux-install-modules`,
     {
         shell: "/bin/bash",

@@ -34,7 +34,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 // copy the fstab file to the rootfs
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${_getAssetPath(`apt_completion`)} ${IMAGE_MNT_ROOT}/usr/share/bash-completion/completions/apt`,
     {
         shell: "/bin/bash",

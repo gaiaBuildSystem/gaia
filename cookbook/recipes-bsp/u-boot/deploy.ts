@@ -29,7 +29,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 logger.info("installing u-boot image ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/u-boot/u-boot.bin ${IMAGE_MNT_BOOT}/`,
     {
         shell: "/bin/bash",
@@ -41,7 +41,7 @@ logger.success("u-boot image installed")
 
 logger.info("installing boot script ...")
 execSync(
-    `echo ${USER_PASSWD} | sudo -k -S ` +
+    `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/u-boot/boot.scr.uimg ${IMAGE_MNT_BOOT}/`,
     {
         shell: "/bin/bash",
