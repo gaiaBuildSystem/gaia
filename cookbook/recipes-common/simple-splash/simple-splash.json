@@ -6,13 +6,23 @@
         "linux/amd64",
         "linux/arm64"
     ],
-    "targetDeps": [
+    "hostAsContainer": true,
+    "containerImage": {
+        "image": "docker.io/pergamos/staticx",
+        "tag": "bookworm",
+        "extraConfig": "--privileged --pid=host --ipc=host --uts=host --net=host"
+    },
+    "hostDeps": [
         "procps",
         "systemd",
         "patchelf",
         "python3",
         "python3-pip",
         "scons",
+        "fbset",
+        "fbi"
+    ],
+    "targetDeps": [
         "fbset",
         "fbi"
     ],
