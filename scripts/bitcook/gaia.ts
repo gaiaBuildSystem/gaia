@@ -79,6 +79,7 @@ const CLEAN = _args.clean as boolean
 const VERBOSE = _args.verbose as boolean
 const INSTALL_HOST_DEPS = _args.installHostDeps as boolean
 const NO_CACHE = _args.noCache as boolean
+let PODMAN_CLEAN = false
 
 
 process.env.VERBOSE = VERBOSE != null ? VERBOSE.toString() : false.toString()
@@ -88,7 +89,27 @@ process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.to
 
 if (NO_CACHE === true) {
     process.env.CLEAN_IMAGE = "true"
+}
 
+// try to detect if podman need clean libpod & pod
+try {
+    execSync(
+        `sudo -E ` +
+        `podman ps`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        }
+    )
+} catch (e) {
+    logger.warn("podman clearing /var/run/libpod and pods ...")
+    PODMAN_CLEAN = true
+}
+
+
+if (NO_CACHE === true || PODMAN_CLEAN === true) {
     // clean possible /var/run/libpod
     execSync(
         `sudo -E ` +
@@ -104,6 +125,17 @@ if (NO_CACHE === true) {
     execSync(
         `sudo -E ` +
         `podman pod rm -a`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+
+    // stop all containers
+    execSync(
+        `sudo -E ` +
+        `podman container stop -a`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
