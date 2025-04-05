@@ -2,6 +2,9 @@
 
 set -e
 
+# Make sure root is shared
+mount --make-rshared /
+
 # create the mapping
 kpartxret="$(kpartx -av $IMAGE_PATH)"
 read PART_LOOP <<<$(grep -o 'loop.' <<<"$kpartxret")
@@ -21,8 +24,13 @@ fi
 mkdir -p $IMAGE_MNT_BOOT
 mkdir -p $IMAGE_MNT_ROOT
 
+
 mount /dev/mapper/${PART_LOOP}p1 $IMAGE_MNT_BOOT
 mount /dev/mapper/${PART_LOOP}p2 $IMAGE_MNT_ROOT
+
+mount --make-shared $IMAGE_MNT_BOOT
+mount --make-shared $IMAGE_MNT_ROOT
+
 
 # before mount the bind mounts, we need to create the mount points
 mkdir -p $IMAGE_MNT_ROOT/dev
