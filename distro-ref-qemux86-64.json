@@ -5,10 +5,10 @@
     "version": {
         "major": 0,
         "minor": 0,
-        "patch": 0,
+        "patch": 4,
         "build": 0
     },
-    "maxImgSize": 3072,
+    "maxImgSize": 1524,
     "useInitramfs": true,
     "searchForRecipesOn": [
         "cookbook"
@@ -16,6 +16,8 @@
     "excludeRecipes": [
         "u-boot",
         "microsoft",
-        "docker"
+        "docker",
+        "powershell",
+        "neofetch"
     ]
 }
