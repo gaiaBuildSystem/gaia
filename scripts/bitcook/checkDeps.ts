@@ -26,6 +26,9 @@ export function CheckDependencies (recipes: Recipe[]): void {
     const DISTRO_NAME = process.env.DISTRO_NAME as string
     const INSTALL_HOST_DEPS = process.env.INSTALL_HOST_DEPS as string
     const NO_CACHE = process.env.CLEAN_IMAGE as string
+    const MACHINE = process.env.MACHINE as string
+    const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
+    const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 
     if (INSTALL_HOST_DEPS === "true") {
         logger.debug(`INSTALL_HOST_DEPS=${INSTALL_HOST_DEPS}`)
@@ -69,7 +72,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 if (!_hostContainerExists) {
                     logger.info(`Creating container ${HOST_CONTAINER_NAME} for platform ${ARCH} ...`)
 
-                    let _pathsBinding = `-v ${_cookbookDir}:${_cookbookDir} `
+                    let _pathsBinding = ``
                     let _pathsToInit: string[] = []
 
                     for (const _path of recipe.paths) {
@@ -80,10 +83,21 @@ export function CheckDependencies (recipes: Recipe[]): void {
                         _pathsBinding += `-v ${_pathCookbookDir}:${_pathCookbookDir} `
                     }
 
+                    // mount also the root and boot
+                    if (FS.existsSync(IMAGE_MNT_ROOT)) {
+                        _pathsBinding += `-v ${IMAGE_MNT_ROOT}:${IMAGE_MNT_ROOT}:slave `
+                    }
+
+                    if (FS.existsSync(IMAGE_MNT_BOOT)) {
+                        _pathsBinding += `-v ${IMAGE_MNT_BOOT}:${IMAGE_MNT_BOOT}:slave `
+                    }
+
                     let _extraConfig = ""
                     if (recipe.containerImage.extraConfig) {
                         _extraConfig = recipe.containerImage.extraConfig
                     }
+
+                    logger.debug(`Mount bindings: ${_pathsBinding}`)
 
                     execSync(
                         `sudo -k ` +
