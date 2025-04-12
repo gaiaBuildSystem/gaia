@@ -10,8 +10,6 @@
         "linux/arm64": "25049ad560826f7dc1c4740883b0016014a59789"
     },
     "hostDeps": [
-        "podman",
-        "podman-compose",
         "git"
     ],
     "targetDeps": [

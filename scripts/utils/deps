@@ -25,7 +25,7 @@ apt-get install -y \
     jq
 
 # install podman
-apt-get install -y podman podman-compose
+apt-get install -y --no-install-recommends podman-compose
 
 # install bun
 curl -fsSL https://bun.sh/install | bash
