@@ -23,7 +23,8 @@
     "hostDeps": [
         "mount",
         "xz-utils",
-        "kpartx"
+        "kpartx",
+        "e2fsprogs"
     ],
     "targetDeps": [
         "kmod",
