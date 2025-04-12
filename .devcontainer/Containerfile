@@ -1,7 +1,7 @@
 
 
 # using trixie as base image because we need podman v5.3.x
-FROM debian:trixie
+FROM pergamos/podman:trixie
 
 
 COPY . /gaia
