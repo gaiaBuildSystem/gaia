@@ -171,31 +171,6 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     logger.info(`Container ${HOST_CONTAINER_NAME} exists`)
                 }
 
-                try {
-                    // cleanup the container
-                    execSync(
-                        `sudo -k ` +
-                        `podman container cleanup ${HOST_CONTAINER_NAME} `,
-                        {
-                            shell: "/bin/bash",
-                            stdio: "inherit",
-                            encoding: "utf-8"
-                        }
-                    )
-
-                    execSync(
-                        `sudo -k ` +
-                        `podman start ${HOST_CONTAINER_NAME} `,
-                        {
-                            shell: "/bin/bash",
-                            stdio: "inherit",
-                            encoding: "utf-8"
-                        }
-                    )
-                } catch (error) {
-                    logger.warn(`Cleanup failed for ${recipe.name} :: error during dependency install`)
-                }
-
                 // make sure the container is running
                 execSync(
                     `sudo -k ` +
@@ -227,6 +202,40 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     throw new Error(`Dependencies for ${recipe.name} :: error during dependency install`)
                 }
             } else {
+                // check if the recipe need a init
+                let _pathsToInit: string[] = []
+                for (const _path of recipe.paths) {
+                    const _pathCookbookDir = _getCookbookDir(_path)
+                    logger.debug(`Path ${_path} :: Cookbook path ${_pathCookbookDir}`)
+
+                    _pathsToInit.push(_pathCookbookDir)
+                }
+
+                for (const _cookbookdir of _pathsToInit) {
+                    logger.debug(`Checking if init exists for Cookbook path [${_cookbookdir}]`)
+
+                    if (FS.existsSync(PATH.join(_cookbookdir, "init"))) {
+                        logger.info(`Run init for Cookbook path [${_cookbookdir}]`)
+
+                        try {
+                            execSync(
+                                `sudo -k ` +
+                                `/bin/bash -c "` +
+                                `cd ${_cookbookdir} && ./init` +
+                                `"`,
+                                {
+                                    shell: "/bin/bash",
+                                    stdio: "inherit",
+                                    encoding: "utf-8"
+                                }
+                            )
+                        } catch (error) {
+                            logger.error(`Init for Cookbook path [${_cookbookdir}] failed`)
+                            throw new Error(`Init for Cookbook path [${_cookbookdir}] failed`)
+                        }
+                    }
+                }
+
                 // WARN: we do not mess up with the host system
                 // check if the dependencies are installed but not install it
                 // unless the user wants to

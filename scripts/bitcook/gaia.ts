@@ -108,8 +108,8 @@ try {
     PODMAN_CLEAN = true
 }
 
-
-if (NO_CACHE === true || PODMAN_CLEAN === true) {
+// FIXME: I have my doubts about if NO_CACHE should be used also here
+if (PODMAN_CLEAN === true) {
     // clean possible /var/run/libpod
     execSync(
         `sudo -E ` +
