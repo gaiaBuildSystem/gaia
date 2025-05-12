@@ -110,6 +110,17 @@ try {
 
 // FIXME: I have my doubts about if NO_CACHE should be used also here
 if (PODMAN_CLEAN === true) {
+    // clean the cni networks
+    execSync(
+        `sudo -k ` +
+        `rm -rf /var/lib/cni/networks`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8"
+        }
+    )
+
     // clean possible /var/run/libpod
     execSync(
         `sudo -E ` +

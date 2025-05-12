@@ -174,6 +174,16 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 // make sure the container is running
                 execSync(
                     `sudo -k ` +
+                    `podman stop ${HOST_CONTAINER_NAME} `,
+                    {
+                        shell: "/bin/bash",
+                        stdio: "inherit",
+                        encoding: "utf-8"
+                    }
+                )
+
+                execSync(
+                    `sudo -k ` +
                     `podman start ${HOST_CONTAINER_NAME} `,
                     {
                         shell: "/bin/bash",
