@@ -184,15 +184,28 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 )
 
                 logger.debug(`Starting state ${HOST_CONTAINER_NAME}`)
-                execSync(
-                    `sudo -k ` +
-                    `podman start ${HOST_CONTAINER_NAME} `,
-                    {
-                        shell: "/bin/bash",
-                        stdio: "inherit",
-                        encoding: "utf-8"
-                    }
-                )
+                try {
+                    execSync(
+                        `sudo -k ` +
+                        `podman start ${HOST_CONTAINER_NAME} `,
+                        {
+                            shell: "/bin/bash",
+                            stdio: "inherit",
+                            encoding: "utf-8"
+                        }
+                    )
+                } catch (error) {
+                    logger.warn(`Container ${HOST_CONTAINER_NAME} state is broken, trying again ...`)
+                    execSync(
+                        `sudo -k ` +
+                        `podman start ${HOST_CONTAINER_NAME} `,
+                        {
+                            shell: "/bin/bash",
+                            stdio: "inherit",
+                            encoding: "utf-8"
+                        }
+                    )
+                }
 
                 // install the dependencies
                 try {
