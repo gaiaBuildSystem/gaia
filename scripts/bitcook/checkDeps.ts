@@ -172,6 +172,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 }
 
                 // make sure the container is running
+                logger.debug(`Stopping state ${HOST_CONTAINER_NAME}`)
                 execSync(
                     `sudo -k ` +
                     `podman stop ${HOST_CONTAINER_NAME} `,
@@ -182,6 +183,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     }
                 )
 
+                logger.debug(`Starting state ${HOST_CONTAINER_NAME}`)
                 execSync(
                     `sudo -k ` +
                     `podman start ${HOST_CONTAINER_NAME} `,
