@@ -42,7 +42,7 @@ if (HOSTNAME_NAME.indexOf("${") !== -1) {
         throw new Error(`env variable ${varName} is not set`)
     }
 
-    HOSTNAME_NAME = HOSTNAME_NAME.replace(`${varName}`, process.env[varName] as string)
+    HOSTNAME_NAME = HOSTNAME_NAME.replace(`\${${varName}}`, process.env[varName] as string)
 }
 
 // write the HOSTNAME_NAME to the hostname file
