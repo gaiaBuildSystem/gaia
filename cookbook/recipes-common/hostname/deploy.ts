@@ -18,7 +18,7 @@ const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
 
 // recipe env
-const HOSTNAME_NAME = process.env.HOSTNAME_NAME as string
+let HOSTNAME_NAME = process.env.HOSTNAME_NAME as string
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
@@ -28,6 +28,21 @@ const _deployPath = `${BUILD_PATH}/tmp/${MACHINE}/hostname`
 if (!FS.existsSync(_deployPath)) {
     logger.info("deploy path does not exists, creating ...")
     FS.mkdirSync(_deployPath, { recursive: true })
+}
+
+// hostname can use env variables
+if (HOSTNAME_NAME.indexOf("${") !== -1) {
+    // get the var name that will be surrouned by ${}
+    const varName = HOSTNAME_NAME.substring(
+        HOSTNAME_NAME.indexOf("${") + 2,
+        HOSTNAME_NAME.indexOf("}")
+    )
+
+    if (process.env[varName] === undefined) {
+        throw new Error(`env variable ${varName} is not set`)
+    }
+
+    HOSTNAME_NAME = HOSTNAME_NAME.replace(`${varName}`, process.env[varName] as string)
 }
 
 // write the HOSTNAME_NAME to the hostname file
