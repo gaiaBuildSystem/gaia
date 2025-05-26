@@ -31,18 +31,18 @@ if (!FS.existsSync(_deployPath)) {
 }
 
 // hostname can use env variables
-if (HOSTNAME_NAME.indexOf("${") !== -1) {
-    // get the var name that will be surrouned by ${}
+if (HOSTNAME_NAME.indexOf("{{") !== -1) {
+    // get the var name that will be surrounded by {{}}
     const varName = HOSTNAME_NAME.substring(
-        HOSTNAME_NAME.indexOf("${") + 2,
-        HOSTNAME_NAME.indexOf("}")
+        HOSTNAME_NAME.indexOf("{{") + 2,
+        HOSTNAME_NAME.indexOf("}}")
     )
 
     if (process.env[varName] === undefined) {
         throw new Error(`env variable ${varName} is not set`)
     }
 
-    HOSTNAME_NAME = HOSTNAME_NAME.replace(`\${${varName}}`, process.env[varName] as string)
+    HOSTNAME_NAME = HOSTNAME_NAME.replace(`{{${varName}}}`, process.env[varName] as string)
 }
 
 // write the HOSTNAME_NAME to the hostname file
