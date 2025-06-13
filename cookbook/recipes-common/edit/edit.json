@@ -1,0 +1,21 @@
+{
+    "name": "edit",
+    "type": "application",
+    "priority": 0,
+    "version": "1.2.0",
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "hostDeps": [
+        "wget",
+        "tar",
+        "zstd"
+    ],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ]
+}
