@@ -33,7 +33,6 @@
         "bash",
         "bash-completion",
         "util-linux",
-        "nano",
         "htop",
         "e2fsprogs",
         "parted",
