@@ -15,7 +15,7 @@ const meta = JSON.parse(process.env.META as string)
 const _file_path = `${BUILD_PATH}/tmp/${MACHINE}/edit`
 
 let _source = `none`
-if (ARCH === "x86_64") {
+if (ARCH === "linux/amd64") {
     _source = `https://github.com/microsoft/edit/releases/download/v${meta.version}/edit-${meta.version}-x86_64-linux-gnu.tar.zst`
 } else {
     _source = `https://github.com/microsoft/edit/releases/download/v${meta.version}/edit-${meta.version}-aarch64-linux-gnu.tar.zst`
