@@ -4,10 +4,12 @@
     "priority": 0,
     "source": "https://github.com/u-boot/u-boot",
     "support": [
-        "linux/arm64"
+        "linux/arm64",
+        "linux/amd64"
     ],
     "ref": {
-        "linux/arm64": "25049ad560826f7dc1c4740883b0016014a59789"
+        "linux/arm64": "25049ad560826f7dc1c4740883b0016014a59789",
+        "linux/amd64": "8420cafc00a50910afc37f65a4b767dd94b9acc5"
     },
     "hostDeps": [
         "git"
@@ -24,5 +26,8 @@
     ],
     "deployRecipes": [
         "deploy.ts"
+    ],
+    "afterDeployRecipes": [
+        "efi-payload.ts"
     ]
 }
