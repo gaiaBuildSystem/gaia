@@ -17,6 +17,12 @@ terminal_output gfxterm
 # load the splash image
 background_image /splash.png
 
+# EFI u-boot as an app
+menuentry "U-BOOT" {
+    insmod chain
+    chainloader /EFI/BOOT/u-boot-app.efi
+}
+
 # and boot the linux kernel
 menuentry "Linux" {
     linux /bzImage {{GRUB_KERNEL_CMDLINE}}
