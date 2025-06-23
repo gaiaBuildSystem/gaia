@@ -4,3 +4,16 @@
 # Reference boot script.
 
 echo "Booting Reference ..."
+
+env set bootargs root=LABEL:gaia rootfstype=ext4
+env set bootargs ${bootargs} console=ttyS0,115200
+env set bootargs ${bootargs} logo.nologo vt.global_cursor_default=0
+env set bootargs ${bootargs} video=vesafb:off
+env set bootargs ${bootargs} ${extraargs}
+
+fatload efi 0:1 ${kernel_addr_r} bzImage
+env set kernel_size ${filesize}
+fatload efi 0:1 ${ramdisk_addr_r} initramfs.cpio.gz
+env set ramdisk_size ${filesize}
+
+zboot ${kernel_addr_r} ${kernel_size} ${ramdisk_addr_r} ${ramdisk_size}
