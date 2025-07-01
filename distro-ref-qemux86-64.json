@@ -5,7 +5,7 @@
     "version": {
         "major": 0,
         "minor": 0,
-        "patch": 4,
+        "patch": 6,
         "build": 0
     },
     "maxImgSize": 1524,
@@ -14,7 +14,6 @@
         "cookbook"
     ],
     "excludeRecipes": [
-        "u-boot",
         "microsoft",
         "docker",
         "powershell",

@@ -12,6 +12,7 @@ set gfxpayload=keep
 insmod all_video
 insmod gfxterm
 insmod png
+insmod tpm
 terminal_output gfxterm
 
 # load the splash image

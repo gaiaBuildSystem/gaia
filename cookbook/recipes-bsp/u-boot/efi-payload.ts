@@ -29,8 +29,8 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 logger.info("installing u-boot image ...")
 
-if (MACHINE === "qemux86-64") {
-    logger.warn("qemux86-64 with EFI u-boot is experimental!!")
+if (ARCH === "linux/amd64") {
+    logger.warn(`${MACHINE} with EFI u-boot is experimental!!`)
     logger.warn("YOU HAVE BEEN WARNED!!")
 
     execSync(
