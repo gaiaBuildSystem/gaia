@@ -43,7 +43,8 @@ if (ARCH === "linux/amd64") {
             env: process.env
         })
 } else {
-    throw new Error("Unsupported machine for EFI payload: " + MACHINE)
+    logger.debug(`Machine ${MACHINE} is not amd64, using u-boot.bin`)
+    process.exit(0)
 }
 
 logger.success("u-boot image installed")
