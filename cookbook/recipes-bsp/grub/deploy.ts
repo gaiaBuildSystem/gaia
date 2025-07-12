@@ -19,7 +19,7 @@ const META = JSON.parse(process.env.META as string) as Recipe
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
-const _paths = META.paths.toString()
+const _paths = META.paths
 const ORIGIN_PATH = _path
 process.env.ORIGIN_PATH = _path
 
@@ -32,7 +32,7 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
-const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
+const _getAssetPath = (_filePath: string) => getAssetPath(_filePath, _paths)
 
 logger.info(`Parsing grub.cfg ${_path}/grub.cfg.template ...`)
 

@@ -24,8 +24,8 @@ const META = JSON.parse(process.env.META as string) as Recipe
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
-const _paths = META.paths.toString()
-const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
+const _paths = META.paths
+const _getAssetPath = (_filePath: string) => getAssetPath(_filePath, _paths)
 
 const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
 const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`

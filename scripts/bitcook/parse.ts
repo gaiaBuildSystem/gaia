@@ -52,7 +52,12 @@ export interface Recipe {
     beforeTargetDepsRecipes: string[]
     targetDeps: string[]
     recipeOrigin: string
-    paths: string[]
+    paths: [
+        {
+            path: string,
+            priority: number
+        }
+    ]
     env: ProcessEnv
     merge: boolean,
     version: string
@@ -194,7 +199,10 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
 
         // add the recipe origin
         meta.recipeOrigin = PATH.dirname(`${recipe}`)
-        meta.paths = [meta.recipeOrigin]
+        meta.paths = [{
+            path: meta.recipeOrigin,
+            priority: meta.priority
+        }]
 
         if (meta.fetchRecipes != null) {
             // for all fetchRecipes, transform in absolute path
@@ -326,7 +334,10 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             const meta2: any | Recipe = recipe
 
             if (meta2.priority > _metas[recipeName].priority) {
-                _metas[recipeName].paths.push(meta2.recipeOrigin)
+                _metas[recipeName].paths.push({
+                    path: meta2.recipeOrigin,
+                    priority: meta2.priority
+                })
 
                 // override the meta1 with the meta2
                 for (const prop in meta2) {
