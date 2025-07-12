@@ -321,7 +321,9 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             _metas[recipeName] = recipe
         } else {
             // merge the data
-            const meta2 = recipe
+            // this should infer as Recipe, but we will receibe some
+            // objects from json that are not completely typed
+            const meta2: any | Recipe = recipe
 
             if (meta2.priority > _metas[recipeName].priority) {
                 _metas[recipeName].paths.push(meta2.recipeOrigin)
