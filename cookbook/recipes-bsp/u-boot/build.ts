@@ -22,8 +22,8 @@ const META = JSON.parse(process.env.META as string) as Recipe
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
-const _paths = META.paths.toString()
-const _getAssetPath = (_filePath) => getAssetPath(_filePath, _paths)
+const _paths = META.paths
+const _getAssetPath = (_filePath: string) => getAssetPath(_filePath, _paths)
 
 process.env.ORIGIN_PATH = _path
 process.env.PODMAN_USERNS = "keep-id"

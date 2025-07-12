@@ -76,7 +76,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     let _pathsToInit: string[] = []
 
                     for (const _path of recipe.paths) {
-                        const _pathCookbookDir = _getCookbookDir(_path)
+                        const _pathCookbookDir = _getCookbookDir(_path.path)
                         logger.debug(`Path ${_path} :: Cookbook path ${_pathCookbookDir}`)
 
                         _pathsToInit.push(_pathCookbookDir)
@@ -230,7 +230,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 // check if the recipe need a init
                 let _pathsToInit: string[] = []
                 for (const _path of recipe.paths) {
-                    const _pathCookbookDir = _getCookbookDir(_path)
+                    const _pathCookbookDir = _getCookbookDir(_path.path)
                     logger.debug(`Path ${_path} :: Cookbook path ${_pathCookbookDir}`)
 
                     _pathsToInit.push(_pathCookbookDir)
