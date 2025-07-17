@@ -1,10 +1,12 @@
 [Unit]
 Description=Simple Splash Service
-After=rc-local.service systemd-user-sessions.service getty.target
+After=getty@tty1.service
+Requires=getty@tty1.service
+Before=multi-user.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/pkill fbi
+ExecStart=/usr/bin/pkill -9 fbi
 
 [Install]
 WantedBy=multi-user.target
