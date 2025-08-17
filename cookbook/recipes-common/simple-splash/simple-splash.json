@@ -10,7 +10,7 @@
     "containerImage": {
         "image": "docker.io/pergamos/staticx",
         "tag": "bookworm",
-        "extraConfig": "--privileged --pid=host --ipc=host --uts=host --net=host"
+        "extraConfig": "--privileged --pid=host --ipc=host --uts=host"
     },
     "hostDeps": [
         "procps",
