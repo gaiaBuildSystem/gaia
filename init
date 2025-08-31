@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ##
 # THIS ONLY MAKE SENSE INSIDE THE DEV CONTAINER
 ##
