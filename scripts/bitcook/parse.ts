@@ -35,6 +35,7 @@ export interface Recipe {
     patchRecipes: string[]
     buildRecipes: string[]
     beforeDeployRecipes: string[]
+    deployPureRecipes: string[]
     deployRecipes: string[]
     afterDeployRecipes: string[]
     initramfsRecipes: string[]
@@ -232,6 +233,16 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             }
         } else {
             meta.buildRecipes = []
+        }
+
+        if (meta.deployPureRecipes != null) {
+            // for all deployPureRecipes, transform in absolute path
+            // FIXME: and if the path is already absolute?
+            for (let i = 0; i < meta.deployPureRecipes.length; i++) {
+                meta.deployPureRecipes[i] = `${meta.recipeOrigin}/${meta.deployPureRecipes[i]}`
+            }
+        } else {
+            meta.deployPureRecipes = []
         }
 
         if (meta.deployRecipes != null) {

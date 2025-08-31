@@ -22,6 +22,7 @@ import { ExecDeployIniramfs } from "./execDeployInitramfs"
 import { ExecBundleIniramfs } from "./execBundleInitramfs"
 import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
 import { ExecBeforePackage } from "./execBeforePackage"
+import { ExecPureDeploy } from "./execPureDeploy"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv({
@@ -272,6 +273,9 @@ if (!CLEAN) {
         ExecFetch(recipesParsed)
         ExecPatch(recipesParsed)
         ExecBuild(recipesParsed)
+
+        // for pure non debian or rootfs deploy
+        ExecPureDeploy(recipesParsed)
 
         // these steps need to have the chroot applied on the rootfs
         if (process.env.RECIPE === undefined) {
