@@ -5,7 +5,7 @@ set -e
 # run as root
 if [ "$EUID" -ne 0 ]; then
     echo "Please run as root"
-    exit
+    exit 69
 fi
 
 # update
