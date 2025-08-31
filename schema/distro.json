@@ -18,7 +18,8 @@
                 "rpi4b",
                 "rpi5b",
                 "imx95-verdin-evk",
-                "intel"
+                "intel",
+                "sl1680"
             ]
         },
         "version": {

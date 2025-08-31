@@ -151,6 +151,13 @@
                 "type": "string"
             }
         },
+        "deployPureRecipes": {
+            "description": "This property is used to define the pure deploy scripts. Pure deploy means that these does not depends on having rootfs. They should be executable capable files and will be executed in the pure deploy stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "deployRecipes": {
             "description": "This property is used to define the deploy scripts. They should be executable capable files and will be executed in the deploy stage.",
             "type": "array",
