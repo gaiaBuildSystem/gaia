@@ -23,6 +23,7 @@ import { ExecBundleIniramfs } from "./execBundleInitramfs"
 import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
 import { ExecBeforePackage } from "./execBeforePackage"
 import { ExecPureDeploy } from "./execPureDeploy"
+import { ExecAfterBundle } from "./execAfterBundle"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv({
@@ -294,6 +295,7 @@ if (!CLEAN) {
 
         // package the image
         ExecBundle(recipesParsed)
+        ExecAfterBundle(recipesParsed)
     } finally {
         ExecClean(recipesParsed)
     }
