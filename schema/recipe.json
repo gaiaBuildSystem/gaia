@@ -179,6 +179,13 @@
                 "type": "string"
             }
         },
+        "afterBundleRecipes": {
+            "description": "This property is used to define the after bundle scripts. They should be executable capable files and will be executed in the after bundle stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "cleanRecipes": {
             "description": "This property is used to define the clean scripts. They should be executable capable files and will be executed in the clean stage.",
             "type": "array",
