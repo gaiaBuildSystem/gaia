@@ -1,0 +1,19 @@
+{
+    "name": "linux",
+    "type": "kernel",
+    "priority": 0,
+    "support": [
+        "linux/arm64",
+        "linux/amd64"
+    ],
+    "hostDeps": [],
+    "targetDeps": [],
+    "fetchRecipes": [],
+    "patchRecipes": [],
+    "buildRecipes": [],
+    "beforeDeployRecipes": [
+        "deploy.ts"
+    ],
+    "deployRecipes": [],
+    "cleanRecipes": []
+}
