@@ -61,6 +61,7 @@ export interface Recipe {
         }
     ]
     env: ProcessEnv
+    customData: any
     merge: boolean,
     version: string
 }

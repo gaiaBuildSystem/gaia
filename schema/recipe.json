@@ -125,6 +125,10 @@
             "description": "The environment variables of the Recipe. This property is used by the main script to set the environment variables to build the recipe.",
             "type": "object"
         },
+        "customData": {
+            "description": "A custom object that will be shared to the build context.",
+            "type": "object"
+        },
         "fetchRecipes": {
             "description": "This property is used to define the fetch scripts. They should be executable capable files and will be executed in the fetch stage.",
             "type": "array",
