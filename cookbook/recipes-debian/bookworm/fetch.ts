@@ -42,7 +42,11 @@ if (FS.existsSync(filePath)) {
     let _podmanCmd =
         `podman pull docker.io/debian@sha256:${meta.checksum[ARCH]}` +
         ` && ` +
-        `podman image save -o ${filePath} docker.io/debian@sha256:${meta.checksum[ARCH]}`
+        `podman create docker.io/debian@sha256:${meta.checksum[ARCH]} --name temp_debian_image` +
+        ` && ` +
+        `podman export -o ${filePath} temp_debian_image` +
+        ` && ` +
+        `podman rm temp_debian_image`
 
     // download the distro tar.gz
     logger.info(`downloading ${filePath} ...`)
