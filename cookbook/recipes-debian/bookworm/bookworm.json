@@ -2,19 +2,13 @@
     "name": "debian-bookworm",
     "type": "rootfs",
     "priority": 0,
-    "source": "https://github.com/debuerreotype/docker-debian-artifacts",
-    "file": "bookworm/rootfs.tar.xz",
     "support": [
         "linux/amd64",
         "linux/arm64"
     ],
-    "ref": {
-        "linux/amd64": "44807175c12f847248c046022ef95862e5567c58",
-        "linux/arm64": "836e0afa104ba9409a98f6ba98a7b127d037b490"
-    },
     "checksum": {
-        "linux/amd64": "ae82d80feff703be4500a8bd331a5e1882cc549a323bd1b0773217c0eab2aef6",
-        "linux/arm64": "c4bb3edab66836d2e59d2e5078824b7b3d4330b62a3bef3495e73345e59619bd"
+        "linux/amd64": "a26cab9e734a7ac7365a8341775da8434eea25b8fbf8ccbc98beee24bf970bbd",
+        "linux/arm64": "bf7e8dd869a8e4bbed0b627def96eaddec1435cb8381b57908ac32f2f00149fd"
     },
     "env": {
         "BOOT_LABEL": "BOOT",
