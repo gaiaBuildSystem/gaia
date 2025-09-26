@@ -17,7 +17,6 @@ const BUILD_PATH = process.env.BUILD_PATH as string
 const meta = JSON.parse(process.env.META as string)
 
 // parse the url
-const distroURL = `${meta.source}/raw/${meta.ref[ARCH]}/${meta.file}`
 const filePath = `${BUILD_PATH}/tmp/${MACHINE}/debian/${meta.name}-${MACHINE}.tar`
 
 
@@ -43,7 +42,7 @@ if (FS.existsSync(filePath)) {
     let _podmanCmd = `podman image save -o ${filePath} docker.io/debian:sha256:${meta.checksum[ARCH]}`
 
     // download the distro tar.gz
-    logger.info(`downloading ${distroURL} ...`)
+    logger.info(`downloading ${filePath} ...`)
 
     execSync(
         _podmanCmd,
