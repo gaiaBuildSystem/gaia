@@ -42,7 +42,7 @@ if (FS.existsSync(filePath)) {
     let _podmanCmd =
         `podman pull docker.io/debian@sha256:${meta.checksum[ARCH]}` +
         ` && ` +
-        `podman create docker.io/debian@sha256:${meta.checksum[ARCH]} --name temp_debian_image` +
+        `podman create --name temp_debian_image docker.io/debian@sha256:${meta.checksum[ARCH]}` +
         ` && ` +
         `podman export -o ${filePath} temp_debian_image` +
         ` && ` +
