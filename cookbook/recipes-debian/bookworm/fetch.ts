@@ -39,7 +39,7 @@ if (FS.existsSync(filePath)) {
     }
 
     // get it from dockerhub
-    let _podmanCmd = `podman image save -o ${filePath} docker.io/debian:sha256:${meta.checksum[ARCH]}`
+    let _podmanCmd = `podman image save -o ${filePath} docker.io/debian@sha256:${meta.checksum[ARCH]}`
 
     // download the distro tar.gz
     logger.info(`downloading ${filePath} ...`)
