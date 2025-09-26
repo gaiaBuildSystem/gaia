@@ -7,8 +7,8 @@
         "linux/arm64"
     ],
     "checksum": {
-        "linux/amd64": "a26cab9e734a7ac7365a8341775da8434eea25b8fbf8ccbc98beee24bf970bbd",
-        "linux/arm64": "bf7e8dd869a8e4bbed0b627def96eaddec1435cb8381b57908ac32f2f00149fd"
+        "linux/amd64": "3f03ff2fca74e47cee05599e36e1f1258d386895a3394b3683df333f404f4e8a",
+        "linux/arm64": "53692cdc49e2b0abdd9adf36466b366aaebdbbdbb2e6a7f432e2b4fb7327fd93"
     },
     "env": {
         "BOOT_LABEL": "BOOT",
