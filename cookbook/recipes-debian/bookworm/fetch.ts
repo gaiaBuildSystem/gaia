@@ -6,7 +6,7 @@ import * as FS from "fs"
 import * as CRYPTO from "crypto"
 
 import logger from "node-color-log"
-import fetch from "node-fetch"
+import { execSync } from "child_process"
 
 // gaia need to previously set arhitecture and machine
 const ARCH = process.env.ARCH as string
@@ -18,21 +18,8 @@ const meta = JSON.parse(process.env.META as string)
 
 // parse the url
 const distroURL = `${meta.source}/raw/${meta.ref[ARCH]}/${meta.file}`
-const filePath = `${BUILD_PATH}/tmp/${MACHINE}/debian/${meta.name}-${MACHINE}.tar.xz`
+const filePath = `${BUILD_PATH}/tmp/${MACHINE}/debian/${meta.name}-${MACHINE}.tar`
 
-function checkHashsum(): boolean {
-    const hashsum = CRYPTO.createHash("sha256")
-    const fileData = FS.readFileSync(filePath)
-
-    hashsum.update(fileData)
-    const hash = hashsum.digest("hex")
-
-    if (hash === meta.checksum[ARCH]) {
-        return true
-    } else {
-        throw new Error(`hashsum mismatch: ${hash} != ${meta.checksum[ARCH]}`)
-    }
-}
 
 // if clean we clean
 if (process.env.CLEAN_IMAGE === "true") {
@@ -46,27 +33,26 @@ if (process.env.CLEAN_IMAGE === "true") {
 // check if the file exists
 if (FS.existsSync(filePath)) {
     logger.info(`file ${filePath} already exists`)
-    // check the hashsum
-    if (checkHashsum()) {
-        logger.success("hashsum ok")
-    }
 } else {
     // if the file does not exists, also the directory must not exists
     if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/debian`)) {
         FS.mkdirSync(`${BUILD_PATH}/tmp/${MACHINE}/debian`, { recursive: true })
     }
 
+    // get it from dockerhub
+    let _podmanCmd = `podman image save -o ${filePath} docker.io/debian:sha256:${meta.checksum[ARCH]}`
+
     // download the distro tar.gz
     logger.info(`downloading ${distroURL} ...`)
 
-    const res = await fetch(distroURL)
-    const buffer = await res.arrayBuffer()
+    execSync(
+        _podmanCmd,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
 
-    // write the file
-    FS.writeFileSync(filePath, Buffer.from(buffer))
-
-    // check the hashsum
-    if (checkHashsum()) {
-        logger.success("hashsum ok")
-    }
+    logger.success(`file ${filePath} downloaded`)
 }

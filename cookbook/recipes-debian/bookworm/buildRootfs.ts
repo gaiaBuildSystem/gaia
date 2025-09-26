@@ -29,7 +29,7 @@ const _path = PATH.dirname(process.argv[1])
 
 // read the meta data
 const meta = JSON.parse(process.env.META as string)
-const DISTRO_TAR_FILE = `${BUILD_PATH}/tmp/${MACHINE}/debian/${meta.name}-${MACHINE}.tar.xz`
+const DISTRO_TAR_FILE = `${BUILD_PATH}/tmp/${MACHINE}/debian/${meta.name}-${MACHINE}.tar`
 process.env.DISTRO_TAR_FILE = DISTRO_TAR_FILE
 
 const IMAGE_PATH =
