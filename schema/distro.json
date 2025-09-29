@@ -19,7 +19,8 @@
                 "rpi5b",
                 "imx95-verdin-evk",
                 "intel",
-                "sl1680"
+                "sl1680",
+                "winglet"
             ]
         },
         "version": {
