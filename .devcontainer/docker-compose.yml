@@ -18,6 +18,9 @@ services:
       - __pwd__:__pwd__
       - /etc/subuid:/etc/subuid:ro
       - /etc/subgid:/etc/subgid:ro
+    environment:
+      - GUSER_ID=__uid__
+      - GGROUP_ID=__gid__
     privileged: true
     network_mode: host
     cgroup: host
