@@ -16,6 +16,8 @@ services:
   dev:
     volumes:
       - __pwd__:__pwd__
+      - /etc/subuid:/etc/subuid:ro
+      - /etc/subgid:/etc/subgid:ro
     privileged: true
     network_mode: host
     cgroup: host
