@@ -17,6 +17,7 @@
                 "wsl-arm64",
                 "rpi4b",
                 "rpi5b",
+                "imx8mp-verdin",
                 "imx95-verdin-evk",
                 "intel",
                 "sl1680",
