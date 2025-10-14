@@ -41,7 +41,7 @@ const _defconfig = FS.readFileSync(_getAssetPath(`${MACHINE}/${MACHINE}_defconfi
 FS.writeFileSync(`${BUILD_PATH}/tmp/${MACHINE}/u-boot-ram/configs/${MACHINE}_defconfig`, _defconfig)
 logger.success(`defconfig ${MACHINE}_defconfig parsed`)
 
-logger.info(`Building u-boot for ${MACHINE} :: ${ARCH} ...`)
+logger.info(`Building u-boot-ram for ${MACHINE} :: ${ARCH} ...`)
 
 // get how many cores we have
 process.env.JOBS = require("os").cpus().length
@@ -49,7 +49,7 @@ process.env.JOBS = require("os").cpus().length
 logger.info(`Configuring ...`)
 execSync(
     `sudo -k -E ` +
-    `podman-compose -f ${_getAssetPath(`compose.yaml`)} run --rm u-boot-config`,
+    `podman-compose -f ${_getAssetPath(`compose.yaml`)} run --rm u-boot-ram-config`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
@@ -62,7 +62,7 @@ logger.success(`Configuration done`)
 logger.info(`Building ...`)
 execSync(
     `sudo -k -E ` +
-    `podman-compose -f ${_getAssetPath(`compose.yaml`)} run --rm u-boot-build`,
+    `podman-compose -f ${_getAssetPath(`compose.yaml`)} run --rm u-boot-ram-build`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
