@@ -28,43 +28,6 @@ const _getAssetPath = (_filePath: string) => getAssetPath(_filePath, _paths)
 process.env.ORIGIN_PATH = _path
 process.env.PODMAN_USERNS = "keep-id"
 
-function compileBootScript (): void {
-    logger.info("compiling boot script ...")
-
-    let _arch = ""
-    let _compiler = ""
-    switch (ARCH) {
-        case "linux/amd64":
-            _arch = "x86_64"
-            _compiler = "x86_64-linux-gnu-"
-            break
-        case "linux/arm64":
-            _arch = "arm64"
-            _compiler = "aarch64-linux-gnu-"
-            break
-        default:
-            throw new Error(`unsupported architecture ${ARCH}`)
-    }
-
-    process.env.MIN_ARCH = _arch
-    process.env.COMPILER = _compiler
-
-    // in a generic environment, we need to set the origin path
-    process.env.ORIGIN_PATH = PATH.dirname(_getAssetPath(`${MACHINE}`))
-
-    execSync(
-        `sudo -k -E ` +
-        `podman-compose -f ${_getAssetPath("compose.yaml")} run --rm u-boot-mkimage`,
-        {
-            shell: "/bin/bash",
-            stdio: "inherit",
-            encoding: "utf-8",
-            env: process.env
-        })
-
-    logger.success("boot script compiled")
-}
-
 // set the working directory
 process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/u-boot-ram`)
 
@@ -77,9 +40,6 @@ const _defconfig = FS.readFileSync(_getAssetPath(`${MACHINE}/${MACHINE}_defconfi
     .replace(/{{v3}}/g, DISTRO_PATCH)
 FS.writeFileSync(`${BUILD_PATH}/tmp/${MACHINE}/u-boot-ram/configs/${MACHINE}_defconfig`, _defconfig)
 logger.success(`defconfig ${MACHINE}_defconfig parsed`)
-
-// build
-compileBootScript()
 
 logger.info(`Building u-boot for ${MACHINE} :: ${ARCH} ...`)
 
