@@ -17,7 +17,7 @@ if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/u-boot-ram`)) {
     // clone
     logger.info(`cloning ${meta.source} ...`)
     execSync(
-        `git clone ${meta.source} ${BUILD_PATH}/tmp/${MACHINE}/u-boot u-boot-ram`,
+        `git clone ${meta.source} ${BUILD_PATH}/tmp/${MACHINE}/u-boot-ram`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
