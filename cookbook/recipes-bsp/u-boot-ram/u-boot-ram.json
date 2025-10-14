@@ -1,0 +1,25 @@
+{
+    "name": "u-boot-ram",
+    "type": "bootloader",
+    "priority": 0,
+    "source": "https://github.com/gaiaBuildSystem/u-boot",
+    "support": [
+        "linux/arm64"
+    ],
+    "ref": {
+        "linux/arm64": "25049ad560826f7dc1c4740883b0016014a59789"
+    },
+    "hostDeps": [
+        "git"
+    ],
+    "targetDeps": [
+        "u-boot-tools"
+    ],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "patchRecipes": [],
+    "buildRecipes": [
+        "build.ts"
+    ]
+}
