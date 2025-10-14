@@ -15,6 +15,7 @@
     ],
     "excludeRecipes": [
         "grub",
+        "u-boot-ram",
         "microsoft",
         "docker",
         "powershell"
