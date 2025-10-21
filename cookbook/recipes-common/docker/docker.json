@@ -9,6 +9,12 @@
     "env": {
         "DOCKER_ALTERNATIVES_ADMINDIR": "/var/lib/dpkg/alternatives"
     },
+    "targetDeps": [
+        "iptables",
+        "netbase",
+        "libnftables1",
+        "libxtables12"
+    ],
     "beforeDeployRecipes": [
         "addSource.ts"
     ],

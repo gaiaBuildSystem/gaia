@@ -29,6 +29,10 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 execSync(
     `sudo -k ` +
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+    `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --install /usr/sbin/iptables iptables /usr/sbin/iptables-nft 20 && ` +
+    `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --install /usr/sbin/iptables iptables /usr/sbin/iptables-legacy 10 && ` +
+    `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --install /usr/sbin/ip6tables ip6tables /usr/sbin/ip6tables-nft 20 && ` +
+    `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --install /usr/sbin/ip6tables ip6tables /usr/sbin/ip6tables-legacy 10 && ` +
     `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --set iptables /usr/sbin/iptables-legacy && ` +
     `update-alternatives --admindir ${DOCKER_ALTERNATIVES_ADMINDIR} --set ip6tables /usr/sbin/ip6tables-legacy` +
     `"`,
