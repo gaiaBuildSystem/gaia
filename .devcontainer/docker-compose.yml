@@ -16,8 +16,7 @@ services:
   dev:
     volumes:
       - __pwd__:__pwd__
-      - /etc/subuid:/etc/subuid:ro
-      - /etc/subgid:/etc/subgid:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
     environment:
       - GUSER_ID=__uid__
       - GGROUP_ID=__gid__
