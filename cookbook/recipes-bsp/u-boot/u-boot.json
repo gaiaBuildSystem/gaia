@@ -9,7 +9,7 @@
     ],
     "ref": {
         "linux/arm64": "25049ad560826f7dc1c4740883b0016014a59789",
-        "linux/amd64": "8f3b4df598d5e8c3c41a63f9e3445506af3af6ad"
+        "linux/amd64": "bba6b29a7524946404e66aba39ebd9c2fd35ccfe"
     },
     "hostDeps": [
         "git"
