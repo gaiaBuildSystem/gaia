@@ -25,25 +25,30 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
-execSync(
-    `sudo -k ` +
-    `cp ${_path}/drm-splash.service ${IMAGE_MNT_ROOT}/etc/systemd/system/drm-splash.service`,
-    {
-        shell: "/bin/bash",
-        stdio: "inherit",
-        encoding: "utf-8",
-        env: process.env
-    })
+if (process.env.DRM_SPLASH_NO_DEPLOY_INITRAMFS === "1") {
+    logger.info("DRM_SPLASH_NO_DEPLOY_INITRAMFS is set, skipping drm-splash service deploy")
+} else {
+    execSync(
+        `sudo -k ` +
+        `cp ${_path}/drm-splash.service ${IMAGE_MNT_ROOT}/etc/systemd/system/drm-splash.service`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
 
-execSync(
-    `sudo -k ` +
-    `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-    `systemctl enable drm-splash.service` +
-    `"`,
-    {
-        shell: "/bin/bash",
-        stdio: "inherit",
-        encoding: "utf-8",
-        env: process.env
-    })
+    execSync(
+        `sudo -k ` +
+        `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+        `systemctl enable drm-splash.service` +
+        `"`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+}
+
 logger.success("ok, drm-splash service config is ok")
