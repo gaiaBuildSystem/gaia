@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DRM_SPLASH_NO_DEPLOY_INITRAMFS" ]; then
+    exit 0
+fi
+
 _path=$(dirname "$0")
 
 # copy the static binaries to the initramfs folder
