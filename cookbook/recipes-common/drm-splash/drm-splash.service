@@ -1,0 +1,12 @@
+[Unit]
+Description=Simple Splash Service
+After=getty@tty1.service
+Requires=getty@tty1.service
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pkill -9 drmi
+
+[Install]
+WantedBy=multi-user.target

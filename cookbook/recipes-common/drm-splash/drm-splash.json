@@ -1,0 +1,40 @@
+{
+    "name": "drm-splash",
+    "type": "init",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "source": "https://github.com/gaiaBuildSystem/drm_display.git",
+    "ref": {
+        "linux/amd64": "0001e60a2cd580893ab5e7b50b421b8117de7880",
+        "linux/arm64": "0001e60a2cd580893ab5e7b50b421b8117de7880"
+    },
+    "hostAsContainer": true,
+    "containerImage": {
+        "image": "docker.io/pergamos/staticx",
+        "tag": "bookworm",
+        "extraConfig": "--privileged --pid=host --ipc=host --uts=host"
+    },
+    "hostDeps": [
+        "build-essential",
+        "wget",
+        "libdrm-dev"
+    ],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "buildRecipes": [
+        "build.sh"
+    ],
+    "deployRecipes": [
+        "deploy.ts"
+    ],
+    "afterDeployRecipes": [
+        "config.ts"
+    ],
+    "initramfsRecipes": [
+        "deployInit.sh"
+    ]
+}

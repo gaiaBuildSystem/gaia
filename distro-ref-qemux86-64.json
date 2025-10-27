@@ -18,6 +18,7 @@
         "microsoft",
         "docker",
         "powershell",
-        "neofetch"
+        "neofetch",
+        "simple-splash"
     ]
 }

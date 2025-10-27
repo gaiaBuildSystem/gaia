@@ -18,6 +18,7 @@
         "u-boot-ram",
         "microsoft",
         "docker",
-        "powershell"
+        "powershell",
+        "simple-splash"
     ]
 }
