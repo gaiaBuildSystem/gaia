@@ -63,6 +63,15 @@ for (const key of envKeys) {
     )
 }
 
+// allways set the MACHINE
+FS.writeFileSync(
+    envFile,
+    `MACHINE=${MACHINE}\n`,
+    {
+        flag: "a"
+    }
+)
+
 // now deploy it to the /etc/environment
 execSync(
     `sudo -k ` +
