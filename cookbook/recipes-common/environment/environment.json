@@ -7,8 +7,7 @@
         "linux/arm64"
     ],
     "env": {
-        "GAIA_DISTRO": "deimos",
-        "MACHINE": "$MACHINE"
+        "GAIA_DISTRO": "deimos"
     },
     "deployRecipes": [
         "env.ts"
