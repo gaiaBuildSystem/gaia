@@ -134,6 +134,17 @@ if (PODMAN_CLEAN === true) {
             env: process.env
         })
 
+    // clean the /tmp/storage-run
+    execSync(
+        `sudo -E ` +
+        `rm -rf /tmp/storage-run*`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+
     // clean the pods
     execSync(
         `sudo -E ` +
