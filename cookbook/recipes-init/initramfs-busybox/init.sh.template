@@ -24,6 +24,9 @@ echo "Hi from initramfs"
 cmdline=$(cat /proc/cmdline)
 set -- $cmdline
 
+# WE NEED THE MACHINE
+export MACHINE={{MACHINE}}
+
 for arg in "$@"; do
     key="${arg%=*}"
     value="${arg#*=}"
