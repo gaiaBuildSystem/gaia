@@ -6,6 +6,14 @@ if [ -n "$DRM_SPLASH_NO_DEPLOY_INITRAMFS" ]; then
     exit 0
 fi
 
+cd /
+staticx /usr/bin/fbset fbset
+staticx /usr/bin/fbi fbi
+
+
+# copy the static binaries to the initramfs folder
+mv /fbset $INITRAMFS_PATH/bin/fbset
+
 _path=$(dirname "$0")
 
 # copy the static binaries to the initramfs folder
