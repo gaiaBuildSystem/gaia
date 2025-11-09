@@ -29,4 +29,4 @@ fi
 cp $SIMPLE_SPLASH_PATH $INITRAMFS_PATH/splash.png
 
 # deploy the script
-cp $_path/busybox/00-splash.sh $INITRAMFS_PATH/scripts/00-splash.sh
+cp $_path/busybox/10-splash.sh $INITRAMFS_PATH/scripts/10-splash.sh
