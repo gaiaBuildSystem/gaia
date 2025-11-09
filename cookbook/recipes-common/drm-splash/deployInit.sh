@@ -8,8 +8,6 @@ fi
 
 cd /
 staticx /usr/bin/fbset fbset
-staticx /usr/bin/fbi fbi
-
 
 # copy the static binaries to the initramfs folder
 mv /fbset $INITRAMFS_PATH/bin/fbset
