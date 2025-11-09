@@ -28,7 +28,7 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
 const _getAssetPath = (_filePath: string) => getAssetPath(_filePath, _paths)
 
-logger.info(`Parsing init.sh ${_path}/init.sh.templae ...`)
+logger.info(`Parsing init.sh ${_path}/init.sh.template ...`)
 
 // get it from the recipe origin or from here
 const _init_template_Path = _getAssetPath(`init.sh.template`)
@@ -42,15 +42,19 @@ const _init_sh =
         MACHINE
     )
 
-// dump the parsed file
-FS.writeFileSync(
-    `${INITRAMFS_PATH}/init`,
-    _init_sh
-)
+// dump the parsed file using sudo tee
+execSync(
+    `sudo -k tee ${INITRAMFS_PATH}/init > /dev/null`,
+    {
+        input: _init_sh,
+        shell: "/bin/bash",
+        stdio: ["pipe", "inherit", "inherit"],
+        encoding: "utf-8",
+        env: process.env
+    })
 
 execSync(
-    `sudo -k ` +
-    `chmod +x ${INITRAMFS_PATH}/init`,
+    `sudo -k chmod +x ${INITRAMFS_PATH}/init`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
