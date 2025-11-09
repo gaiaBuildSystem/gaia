@@ -20,7 +20,14 @@
     "hostDeps": [
         "build-essential",
         "wget",
-        "libdrm-dev"
+        "libdrm-dev",
+        "procps",
+        "systemd",
+        "patchelf",
+        "python3",
+        "python3-pip",
+        "scons",
+        "fbset"
     ],
     "fetchRecipes": [
         "fetch.ts"
