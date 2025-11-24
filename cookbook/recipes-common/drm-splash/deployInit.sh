@@ -2,15 +2,18 @@
 
 set -e
 
-if [ -n "$DRM_SPLASH_NO_DEPLOY_INITRAMFS" ]; then
-    exit 0
-fi
-
 cd /
 staticx /usr/bin/fbset fbset
 
 # copy the static binaries to the initramfs folder
 mv /fbset $INITRAMFS_PATH/bin/fbset
+
+# copy the static binaries to the initramfs folder
+cp $BUILD_PATH/tmp/$MACHINE/drm-splash/set_mode $INITRAMFS_PATH/bin/drmset
+
+if [ -n "$DRM_SPLASH_NO_DEPLOY_INITRAMFS" ]; then
+    exit 0
+fi
 
 _path=$(dirname "$0")
 

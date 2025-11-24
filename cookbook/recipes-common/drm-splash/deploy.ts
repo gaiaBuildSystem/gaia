@@ -38,4 +38,15 @@ execSync(
         env: process.env
     })
 
+// copy the utils to the /usr/bin
+execSync(
+    `sudo -k ` +
+    `cp ${BUILD_PATH}/tmp/${MACHINE}/drm-splash/set_mode ${IMAGE_MNT_ROOT}/usr/bin/drmset`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
 logger.success("ok, drm-splash is ok")
