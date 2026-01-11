@@ -278,6 +278,19 @@ execSync(
         env: process.env
     })
 
+// NO_CACHE implies CLEAN for initramfs
+if (NO_CACHE === true && USE_INITRAMFS === true) {
+    execSync(
+        `rm -rf ${process.env.INITRAMFS_PATH}`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        }
+    )
+}
+
 if (!CLEAN) {
     try {
         // now we start
