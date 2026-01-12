@@ -281,7 +281,7 @@ execSync(
 // NO_CACHE implies CLEAN for initramfs
 if (NO_CACHE === true && USE_INITRAMFS === true) {
     execSync(
-        `rm -rf ${process.env.INITRAMFS_PATH}`,
+        `sudo rm -rf ${process.env.INITRAMFS_PATH}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
