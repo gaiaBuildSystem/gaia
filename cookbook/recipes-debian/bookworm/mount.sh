@@ -6,8 +6,24 @@ set -e
 mount --make-rshared /
 
 # create the mapping
-kpartxret="$(kpartx -av $IMAGE_PATH)"
-read PART_LOOP <<<$(grep -o 'loop.' <<<"$kpartxret")
+kpartxret="$(kpartx -av "$IMAGE_PATH")"
+
+# ensure device nodes are ready before proceeding
+udevadm settle || true
+
+# derive the base loop device reliably (supports multi-digit loop numbers)
+DEV_LOOP=$(losetup -j "$IMAGE_PATH" | awk -F ':' '{print $1}' | xargs basename)
+
+if [ -z "$DEV_LOOP" ]; then
+    # fallback to parsing kpartx output if losetup returns nothing
+    DEV_LOOP=$(echo "$kpartxret" | awk '/add map/ {print $3}' | head -n1 | sed -E 's/p[0-9]+$//')
+fi
+if [ -z "$DEV_LOOP" ]; then
+    echo "Failed to determine loop device for $IMAGE_PATH"
+    exit 1
+fi
+
+PART_LOOP="$DEV_LOOP"
 
 # format it ??
 if [ "$CLEAN_IMAGE" == "true" ]; then
@@ -43,3 +59,9 @@ mount -o bind /dev $IMAGE_MNT_ROOT/dev
 mount -o bind /dev/pts $IMAGE_MNT_ROOT/dev/pts
 mount -t proc none $IMAGE_MNT_ROOT/proc
 mount -t sysfs none $IMAGE_MNT_ROOT/sys
+
+if [ "$MOUNT_DEBUG" == "true" ]; then
+    # debug interactive shell
+    echo "Entering debug shell. Type 'exit' to continue."
+    /bin/bash -i
+fi
