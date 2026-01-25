@@ -24,6 +24,7 @@ import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
 import { ExecBeforePackage } from "./execBeforePackage"
 import { ExecPureDeploy } from "./execPureDeploy"
 import { ExecAfterBundle } from "./execAfterBundle"
+import { ExecSBOM } from "./execSBOM"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv({
@@ -50,6 +51,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("  --buildPath          The path where the build artifacts will be stored")
     logger.info("  --distro             The path to the distro.json file")
     logger.info("  --installHostDeps    Automatically install the host dependencies")
+    logger.info("  --sbom               Generate SBOM files for the built artifacts")
     logger.info("  --noCache            Build from scratch without any cache")
     logger.info("  --recipe             The recipe to build")
     logger.info("  --verbose            Print all the recipes parse objects in json format")
@@ -80,6 +82,7 @@ const STEP = _args.step as string
 const CLEAN = _args.clean as boolean
 const VERBOSE = _args.verbose as boolean
 const INSTALL_HOST_DEPS = _args.installHostDeps as boolean
+const SBOM = _args.sbom as boolean
 const NO_CACHE = _args.noCache as boolean
 let PODMAN_CLEAN = false
 
@@ -91,6 +94,12 @@ process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.to
 
 if (NO_CACHE === true) {
     process.env.CLEAN_IMAGE = "true"
+}
+
+if (SBOM === true) {
+    process.env.DO_SBOM = "true"
+} else {
+    process.env.DO_SBOM = "false"
 }
 
 // try to detect if podman need clean libpod & pod
@@ -320,6 +329,7 @@ if (!CLEAN) {
         // package the image
         ExecBundle(recipesParsed)
         ExecAfterBundle(recipesParsed)
+        ExecSBOM(recipesParsed)
     } finally {
         ExecClean(recipesParsed)
     }

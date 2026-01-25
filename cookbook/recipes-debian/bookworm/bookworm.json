@@ -18,7 +18,9 @@
         "mount",
         "xz-utils",
         "kpartx",
-        "e2fsprogs"
+        "e2fsprogs",
+        "pipx",
+        "lz4"
     ],
     "targetDeps": [
         "kmod",
@@ -46,6 +48,9 @@
     ],
     "deployRecipes": [
         "update.ts"
+    ],
+    "sbomRecipes": [
+        "sbom.ts"
     ],
     "cleanRecipes": [
         "umount.ts"
