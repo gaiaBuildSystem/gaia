@@ -1,6 +1,6 @@
 <p align="center">
     <img
-        src="https://github.com/gaiaBuildSystem/.github/raw/main/profile/GaiaBuildSystemLogoDebCircle.png"
+        src="https://github.com/gaiaBuildSystem/.github/blob/main/profile/GaiaNewLogoCircle.png?raw=true"
         height="212"
     />
 </p>
