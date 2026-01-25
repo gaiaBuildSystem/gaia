@@ -386,10 +386,30 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
                     ) {
                         // check if the prop is an array
                         if (Array.isArray(_metas[recipeName][prop])) {
-                            _metas[recipeName][prop] = [
-                                ...meta2[prop],
-                                ..._metas[recipeName][prop]
-                            ]
+                            // deduplicate scripts by basename - keep higher priority (meta2) version
+                            if (prop.includes("Recipes")) {
+                                const meta2Basenames = new Set(
+                                    meta2[prop].map(
+                                        (script: string) =>
+                                            PATH.basename(script)
+                                    )
+                                )
+
+                                const filteredExisting = _metas[recipeName][prop].filter(
+                                    (script: string) =>
+                                        !meta2Basenames.has(PATH.basename(script))
+                                )
+
+                                _metas[recipeName][prop] = [
+                                    ...meta2[prop],
+                                    ...filteredExisting
+                                ]
+                            } else {
+                                _metas[recipeName][prop] = [
+                                    ...meta2[prop],
+                                    ..._metas[recipeName][prop]
+                                ]
+                            }
                         } else {
                             // so, we have an object, we need to merge the keys
                             for (const key in meta2[prop]) {
