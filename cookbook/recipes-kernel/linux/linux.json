@@ -2,14 +2,14 @@
     "name": "linux",
     "type": "kernel",
     "priority": 0,
-    "source": "https://github.com/torvalds/linux",
+    "source": "https://github.com/gaiaBuildSystem/linux.git",
     "support": [
         "linux/arm64",
         "linux/amd64"
     ],
     "ref": {
         "linux/arm64": "e8f897f4afef0031fe618a8e94127a0934896aba",
-        "linux/amd64": "0dd3ee31125508cd67f7e7172247f05b7fd1753a"
+        "linux/amd64": "5dfbc5357c34bdf81c84aa78bc8e3d6d9ba10aad"
     },
     "hostDeps": [
         "git",
