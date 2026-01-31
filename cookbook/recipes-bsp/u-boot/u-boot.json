@@ -30,5 +30,8 @@
     ],
     "afterDeployRecipes": [
         "efi-payload.ts"
+    ],
+    "sbomRecipes": [
+        "uboot-sbom.ts"
     ]
 }
