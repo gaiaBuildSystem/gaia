@@ -26,5 +26,8 @@
     "deployRecipes": [
         "deploy.ts"
     ],
-    "cleanRecipes": []
+    "cleanRecipes": [],
+    "sbomRecipes": [
+        "linux-sbom.ts"
+    ]
 }

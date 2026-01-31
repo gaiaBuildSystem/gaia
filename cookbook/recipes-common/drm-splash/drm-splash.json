@@ -8,8 +8,8 @@
     ],
     "source": "https://github.com/gaiaBuildSystem/drm_display.git",
     "ref": {
-        "linux/amd64": "6048514c063052cd9e57da5fda283685469dd044",
-        "linux/arm64": "6048514c063052cd9e57da5fda283685469dd044"
+        "linux/amd64": "ce98006e28dbf330ac231adce1a96919c2d5a3ab",
+        "linux/arm64": "ce98006e28dbf330ac231adce1a96919c2d5a3ab"
     },
     "hostAsContainer": true,
     "containerImage": {
@@ -43,5 +43,8 @@
     ],
     "initramfsRecipes": [
         "deployInit.sh"
+    ],
+    "sbomRecipes": [
+        "drm-splash-sbom.ts"
     ]
 }

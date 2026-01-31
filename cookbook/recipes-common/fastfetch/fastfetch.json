@@ -1,12 +1,13 @@
 {
     "name": "fastfetch",
-    "type": "config",
+    "type": "application",
     "priority": 0,
     "support": [
         "linux/amd64",
         "linux/arm64"
     ],
     "source": "https://github.com/gaiaBuildSystem/fastfetch.git",
+    "version": "2.38.0",
     "ref": {
         "linux/amd64": "65c1e36ae76040195fd9ede831f0fbbaf9e4e774",
         "linux/arm64": "65c1e36ae76040195fd9ede831f0fbbaf9e4e774"
@@ -45,5 +46,8 @@
     ],
     "deployRecipes": [
         "deploy.ts"
+    ],
+    "sbomRecipes": [
+        "fastfetch-sbom.ts"
     ]
 }

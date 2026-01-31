@@ -17,5 +17,8 @@
     ],
     "deployRecipes": [
         "deploy.ts"
+    ],
+    "sbomRecipes": [
+        "msedit-sbom.ts"
     ]
 }
