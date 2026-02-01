@@ -126,6 +126,49 @@ export function ExecSBOM (recipes: Recipe[]): void {
                         duplicate = true
                         break
                     }
+
+                    // if the same package but different version exists
+                    // send a warning
+                    if (
+                        existingComp.name === component.name &&
+                        existingComp.type === component.type &&
+                        existingComp.version !== component.version
+                    ) {
+                        logger.warn(
+                            `Component [${component.name}] has multiple versions: ` +
+                            `[${existingComp.version}@${existingComp.group}] and [${component.version}@${component.group}]`
+                        )
+
+                        // if they are from the same group
+                        // we keep the version with more chars
+                        if (existingComp.group === component.group) {
+                            if (
+                                component.version!.length >
+                                existingComp.version!.length
+                            ) {
+                                // replace existing component
+                                _cdx_sbom.components.delete(existingComp)
+                                duplicate = false
+                            } else {
+                                duplicate = true
+                            }
+                        }
+
+                        // if they are from different groups
+                        // we keep the non Debian package
+                        else {
+                            if (
+                                existingComp.group?.toLowerCase().includes("debian") &&
+                                !component.group?.toLowerCase().includes("debian")
+                            ) {
+                                // replace existing component
+                                _cdx_sbom.components.delete(existingComp)
+                                duplicate = false
+                            } else {
+                                duplicate = true
+                            }
+                        }
+                    }
                 }
 
                 if (!duplicate)
