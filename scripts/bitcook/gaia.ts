@@ -52,6 +52,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("  --distro             The path to the distro.json file")
     logger.info("  --installHostDeps    Automatically install the host dependencies")
     logger.info("  --sbom               Generate SBOM files for the built artifacts")
+    logger.info("  --onlySbom           Just generate the SBOM files, needs that a build with --sbom was done before")
     logger.info("  --noCache            Build from scratch without any cache")
     logger.info("  --recipe             The recipe to build")
     logger.info("  --verbose            Print all the recipes parse objects in json format")
@@ -83,6 +84,7 @@ const CLEAN = _args.clean as boolean
 const VERBOSE = _args.verbose as boolean
 const INSTALL_HOST_DEPS = _args.installHostDeps as boolean
 const SBOM = _args.sbom as boolean
+const ONLY_SBOM = _args.onlySbom as boolean
 const NO_CACHE = _args.noCache as boolean
 let PODMAN_CLEAN = false
 
@@ -302,34 +304,42 @@ if (NO_CACHE === true && USE_INITRAMFS === true) {
 
 if (!CLEAN) {
     try {
-        // now we start
-        CheckDependencies(recipesParsed)
-        ExecFetch(recipesParsed)
-        ExecPatch(recipesParsed)
-        ExecBuild(recipesParsed)
+        if (!ONLY_SBOM) {
+            // now we start
+            CheckDependencies(recipesParsed)
+            ExecFetch(recipesParsed)
+            ExecPatch(recipesParsed)
+            ExecBuild(recipesParsed)
 
-        // for pure non debian or rootfs deploy
-        ExecPureDeploy(recipesParsed)
+            // for pure non debian or rootfs deploy
+            ExecPureDeploy(recipesParsed)
 
-        // these steps need to have the chroot applied on the rootfs
-        if (process.env.RECIPE === undefined) {
-            ExecBeforePackage(recipesParsed)
-            ExecPackage(recipesParsed)
-            ExecBeforeDeploy(recipesParsed)
-            ExecDeploy(recipesParsed)
-            ExecAfterDeploy(recipesParsed)
+            // these steps need to have the chroot applied on the rootfs
+            if (process.env.RECIPE === undefined) {
+                ExecBeforePackage(recipesParsed)
+                ExecPackage(recipesParsed)
+                ExecBeforeDeploy(recipesParsed)
+                ExecDeploy(recipesParsed)
+                ExecAfterDeploy(recipesParsed)
+            }
+
+            if (USE_INITRAMFS) {
+                ExecDeployIniramfs(recipesParsed)
+                ExecAfterDeployIniramfs(recipesParsed)
+                ExecBundleIniramfs(recipesParsed)
+            }
+
+            // package the image
+            ExecBundle(recipesParsed)
+            ExecAfterBundle(recipesParsed)
         }
 
-        if (USE_INITRAMFS) {
-            ExecDeployIniramfs(recipesParsed)
-            ExecAfterDeployIniramfs(recipesParsed)
-            ExecBundleIniramfs(recipesParsed)
+        if (
+            SBOM === true ||
+            ONLY_SBOM === true
+        ) {
+            ExecSBOM(recipesParsed)
         }
-
-        // package the image
-        ExecBundle(recipesParsed)
-        ExecAfterBundle(recipesParsed)
-        ExecSBOM(recipesParsed)
     } finally {
         ExecClean(recipesParsed)
     }
