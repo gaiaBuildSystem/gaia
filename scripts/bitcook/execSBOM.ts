@@ -3,6 +3,7 @@ import logger from "node-color-log"
 import FS from "fs"
 import PATH from "path"
 import * as CDX from "@cyclonedx/cyclonedx-library"
+import { PackageURL } from 'packageurl-js'
 import { Recipe } from "./parse"
 
 
@@ -109,6 +110,16 @@ export function ExecSBOM (recipes: Recipe[]): void {
                         purl: compData.purl || undefined
                     }
                 )
+
+                if (
+                    component.purl != undefined &&
+                    component.group === "debian"
+                ) {
+                    // TODO: we need to make this debian version dinamic
+                    component.purl = PackageURL.fromString(
+                        `${component.purl}&distro=debian-12`
+                    )
+                }
 
                 // Copy bom-ref if present
                 if (compData['bom-ref']) {
