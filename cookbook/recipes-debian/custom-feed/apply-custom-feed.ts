@@ -61,6 +61,19 @@ if (
 ) {
     FS.mkdirSync(DEBIAN_FEEDS_PATH, { recursive: true })
 
+    // make sure we have curl and gnupg in the image to apply the feeds
+    execSync(
+        `sudo -k ` +
+        `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+        `apt-get update && apt-get install -y curl gnupg` +
+        `"`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+
     for (const feed of CUSTOM_FEED_DATA.feeds) {
         // replace the custom-feeds.template file
         const _feed_template_path = _getAssetPath(
@@ -142,18 +155,6 @@ if (
             })
 
         // apply the gpg key
-        execSync(
-            `sudo -k ` +
-            `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-            `apt-get update && apt-get install -y curl gnupg` +
-            `"`,
-            {
-                shell: "/bin/bash",
-                stdio: "inherit",
-                encoding: "utf-8",
-                env: process.env
-            })
-
         execSync(
             `sudo -k ` +
             `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
