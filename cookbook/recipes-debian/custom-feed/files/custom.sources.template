@@ -1,0 +1,5 @@
+Types: deb
+URIs: {{feedUri}}
+Suites: {{suites}}
+Components: {{components}}
+Signed-By: /usr/share/keyrings/{{gpgKeyUrl}}
