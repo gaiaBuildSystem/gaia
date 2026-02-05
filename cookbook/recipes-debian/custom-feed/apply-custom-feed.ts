@@ -98,7 +98,7 @@ if (
 
         // replace also the custom.sources.template
         const _sources_template_path = _getAssetPath(
-            "files/custom-sources.template"
+            "files/custom.sources.template"
         )
         const _sources_output_path = PATH.join(
             DEBIAN_FEEDS_PATH,
