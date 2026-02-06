@@ -166,6 +166,19 @@ if (
                 encoding: "utf-8",
                 env: process.env
             })
+
+        // run a os upgrade to apply the feed
+        execSync(
+            `sudo -k ` +
+            `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+            `apt-get update && apt-get upgrade -y` +
+            `"`,
+            {
+                shell: "/bin/bash",
+                stdio: "inherit",
+                encoding: "utf-8",
+                env: process.env
+            })
     }
 } else {
     logger.warn("No Custom Debian feed data found, skipping...")
