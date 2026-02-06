@@ -171,7 +171,7 @@ if (
         execSync(
             `sudo -k ` +
             `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-            `apt-get update && apt-get upgrade -y` +
+            `apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y` +
             `"`,
             {
                 shell: "/bin/bash",
