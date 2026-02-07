@@ -1,5 +1,6 @@
 #!/bin/bash
 
-systemctl stop systemd-timesyncd
-systemctl disable systemd-timesyncd
-systemctl mask systemd-timesyncd
+# TODO: this was needed for some reason, but is not needed anymore?
+# systemctl stop systemd-timesyncd
+# systemctl disable systemd-timesyncd
+# systemctl mask systemd-timesyncd
