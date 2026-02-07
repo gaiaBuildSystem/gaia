@@ -11,7 +11,7 @@
         "systemd-sysv",
         "systemd-timesyncd"
     ],
-    "deployRecipes": [
+    "afterTargetDepsRecipes": [
         "config.ts"
     ]
 }
