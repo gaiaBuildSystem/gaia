@@ -40,11 +40,17 @@ execSync(
 
 // make some configurations
 execSync(
-    `sudo -E ${_path}/config.sh`,
+    `sudo -k ` +
+    `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+    `apt-get install -y --reinstall systemd-timesyncd && ` +
+    `systemctl unmask systemd-timesyncd && ` +
+    `systemctl enable systemd-timesyncd` +
+    `"`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
         encoding: "utf-8",
         env: process.env
     })
+
 logger.success("ok, systemd config is ok")
