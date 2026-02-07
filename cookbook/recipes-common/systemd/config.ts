@@ -6,7 +6,7 @@ import logger from "node-color-log"
 import { execSync } from "child_process"
 
 // run update in the chroot
-logger.info("deploy configured fstab ...")
+logger.info("config systemd ...")
 
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
