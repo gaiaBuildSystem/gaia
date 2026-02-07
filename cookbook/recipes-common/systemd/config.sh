@@ -4,3 +4,8 @@
 # systemctl stop systemd-timesyncd
 # systemctl disable systemd-timesyncd
 # systemctl mask systemd-timesyncd
+
+apt-get install -y systemd-timesyncd
+
+systemctl unmask systemd-timesyncd
+systemctl enable systemd-timesyncd
