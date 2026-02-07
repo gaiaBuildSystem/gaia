@@ -22,6 +22,7 @@ import { ExecDeployIniramfs } from "./execDeployInitramfs"
 import { ExecBundleIniramfs } from "./execBundleInitramfs"
 import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
 import { ExecBeforePackage } from "./execBeforePackage"
+import { ExecAfterPackage } from "./execAfterPackage"
 import { ExecPureDeploy } from "./execPureDeploy"
 import { ExecAfterBundle } from "./execAfterBundle"
 import { ExecSBOM } from "./execSBOM"
@@ -318,6 +319,7 @@ if (!CLEAN) {
             if (process.env.RECIPE === undefined) {
                 ExecBeforePackage(recipesParsed)
                 ExecPackage(recipesParsed)
+                ExecAfterPackage(recipesParsed)
                 ExecBeforeDeploy(recipesParsed)
                 ExecDeploy(recipesParsed)
                 ExecAfterDeploy(recipesParsed)

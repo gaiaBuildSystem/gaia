@@ -54,6 +54,7 @@ export interface Recipe {
     hostDeps: string[]
     beforeTargetDepsRecipes: string[]
     targetDeps: string[]
+    afterTargetDepsRecipes: string[]
     recipeOrigin: string
     paths: [
         {
@@ -265,6 +266,15 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             }
         } else {
             meta.beforeTargetDepsRecipes = []
+        }
+
+        if (meta.afterTargetDepsRecipes != null) {
+            // FIXME: and if the path is already absolute?
+            for (let i = 0; i < meta.afterTargetDepsRecipes.length; i++) {
+                meta.afterTargetDepsRecipes[i] = `${meta.recipeOrigin}/${meta.afterTargetDepsRecipes[i]}`
+            }
+        } else {
+            meta.afterTargetDepsRecipes = []
         }
 
         if (meta.beforeDeployRecipes != null) {
