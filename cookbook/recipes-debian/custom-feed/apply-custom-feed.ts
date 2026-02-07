@@ -12,6 +12,7 @@ logger.info("Applying custom Debian feed ...")
 
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
+const DISTRO_NAME = process.env.DISTRO_NAME as string
 const MAX_IMG_SIZE = process.env.MAX_IMG_SIZE as string
 const BUILD_PATH = process.env.BUILD_PATH as string
 const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
@@ -54,6 +55,10 @@ if (CUSTOM_FEED_DATA == undefined) {
 const DEBIAN_FEEDS_PATH = PATH.join(
     BUILD_PATH, "tmp", MACHINE, "deb-feeds"
 )
+
+// for ostree based distros the apt preferences file is located in
+// /usr instead of the root
+const _ostree = (DISTRO_NAME == "PhobOS") ? "/usr" : ""
 
 if (
     CUSTOM_FEED_DATA.feeds != undefined &&
@@ -172,6 +177,19 @@ if (
             `sudo -k ` +
             `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
             `apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y` +
+            `"`,
+            {
+                shell: "/bin/bash",
+                stdio: "inherit",
+                encoding: "utf-8",
+                env: process.env
+            })
+
+        // TODO: THIS IS A FUCKING UGLY HACK, THIS STINKS LIKE A 1 YEAR BODY LEAVED TO ROT
+        execSync(
+            `sudo -k ` +
+            `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+            `sed -i 's/systemd (<< 256~rc4-1~), //g' ${_ostree}/var/lib/dpkg/status && sed -i 's/systemd (<< 256~rc4-1~)//g' ${_ostree}/var/lib/dpkg/status && rm -rf ${_ostree}/var/lib/apt/lists/* && apt-get update` +
             `"`,
             {
                 shell: "/bin/bash",
