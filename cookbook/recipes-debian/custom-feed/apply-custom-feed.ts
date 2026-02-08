@@ -66,11 +66,11 @@ if (
 ) {
     FS.mkdirSync(DEBIAN_FEEDS_PATH, { recursive: true })
 
-    // make sure we have curl and gnupg in the image to apply the feeds
+    // make sure we have curl, gnupg and debian-archive-keyring in the image
     execSync(
         `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-        `apt-get update && apt-get install -y curl gnupg` +
+        `apt-get install -y --reinstall debian-archive-keyring && apt-get update && apt-get install -y curl gnupg` +
         `"`,
         {
             shell: "/bin/bash",
@@ -128,10 +128,30 @@ if (
         )
 
         const _raw_gpgKeyFileName = PATH.basename(feed.gpgKeyUrl)
-        const _gpgKeyFileName = _raw_gpgKeyFileName.replace(
+        let _gpgKeyFileName = _raw_gpgKeyFileName.replace(
             ".asc",
             ".gpg"
         )
+
+        // apply the gpg key
+        if (_gpgKeyFileName != "") {
+            execSync(
+                `sudo -k ` +
+                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+                `curl -fsSL ${feed.gpgKeyUrl} | gpg --dearmor > /usr/share/keyrings/${_gpgKeyFileName}` +
+                `"`,
+                {
+                    shell: "/bin/bash",
+                    stdio: "inherit",
+                    encoding: "utf-8",
+                    env: process.env
+                })
+
+            _gpgKeyFileName = `Signed-By: /usr/share/keyrings/${_gpgKeyFileName}`
+        } else {
+            logger.warn(`No GPG key URL provided for feed ${feed.name}, using default from debian-archive-keyring package...`)
+            _gpgKeyFileName = ""
+        }
 
         _sources_template = _sources_template
             .replace(/{{feedUri}}/g, feed.feedUri)
@@ -156,33 +176,6 @@ if (
                 encoding: "utf-8",
                 env: process.env
             })
-
-        // apply the gpg key
-        if (_raw_gpgKeyFileName.includes(".gpg")) {
-            execSync(
-                `sudo -k ` +
-                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-                `curl -fsSL ${feed.gpgKeyUrl} -o /usr/share/keyrings/${_gpgKeyFileName}` +
-                `"`,
-                {
-                    shell: "/bin/bash",
-                    stdio: "inherit",
-                    encoding: "utf-8",
-                    env: process.env
-                })
-        } else {
-            execSync(
-                `sudo -k ` +
-                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-                `curl -fsSL ${feed.gpgKeyUrl} | gpg --dearmor > /usr/share/keyrings/${_gpgKeyFileName}` +
-                `"`,
-                {
-                    shell: "/bin/bash",
-                    stdio: "inherit",
-                    encoding: "utf-8",
-                    env: process.env
-                })
-        }
 
         // run a os upgrade to apply the feed
         execSync(
