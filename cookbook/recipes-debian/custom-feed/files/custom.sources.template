@@ -2,4 +2,4 @@ Types: deb
 URIs: {{feedUri}}
 Suites: {{suites}}
 Components: {{components}}
-{{gpgKeyUrl}}
+Signed-By: /usr/share/keyrings/{{gpgKeyUrl}}

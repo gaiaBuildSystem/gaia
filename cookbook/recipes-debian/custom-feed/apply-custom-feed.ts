@@ -70,7 +70,7 @@ if (
     execSync(
         `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-        `apt-get install -y --reinstall debian-archive-keyring && apt-get update && apt-get install -y curl gnupg` +
+        `apt-get update && apt-get install -y curl gnupg` +
         `"`,
         {
             shell: "/bin/bash",
@@ -134,24 +134,17 @@ if (
         )
 
         // apply the gpg key
-        if (_gpgKeyFileName != "") {
-            execSync(
-                `sudo -k ` +
-                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-                `curl -fsSL ${feed.gpgKeyUrl} | gpg --dearmor > /usr/share/keyrings/${_gpgKeyFileName}` +
-                `"`,
-                {
-                    shell: "/bin/bash",
-                    stdio: "inherit",
-                    encoding: "utf-8",
-                    env: process.env
-                })
-
-            _gpgKeyFileName = `Signed-By: /usr/share/keyrings/${_gpgKeyFileName}`
-        } else {
-            logger.warn(`No GPG key URL provided for feed ${feed.name}, using default from debian-archive-keyring package...`)
-            _gpgKeyFileName = ""
-        }
+        execSync(
+            `sudo -k ` +
+            `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+            `curl -fsSL ${feed.gpgKeyUrl} | gpg --dearmor > /usr/share/keyrings/${_gpgKeyFileName}` +
+            `"`,
+            {
+                shell: "/bin/bash",
+                stdio: "inherit",
+                encoding: "utf-8",
+                env: process.env
+            })
 
         _sources_template = _sources_template
             .replace(/{{feedUri}}/g, feed.feedUri)
