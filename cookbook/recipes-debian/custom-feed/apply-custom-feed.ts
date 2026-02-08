@@ -36,11 +36,11 @@ process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 interface DebianFeedConfig {
     feeds?: [{
         name: string
-        feedUrl: string
         feedUri: string
         suites: string
         components: string
         gpgKeyUrl: string
+        pin: string
         pinPriority: number
     }]
 }
@@ -94,7 +94,7 @@ if (
         )
 
         _feed_template = _feed_template
-            .replace(/{{feedUrl}}/g, feed.feedUrl)
+            .replace(/{{pin}}/g, feed.pin)
             .replace(/{{pinPriority}}/g, feed.pinPriority.toString())
         FS.writeFileSync(
             _feed_output_path,
