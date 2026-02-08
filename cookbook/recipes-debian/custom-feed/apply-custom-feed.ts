@@ -127,13 +127,11 @@ if (
             _sources_template_path, "utf-8"
         )
 
-        const _gpgKeyFileName =
-            PATH.basename(
-                feed.gpgKeyUrl
-            ).replace(
-                ".asc",
-                ".gpg"
-            )
+        const _raw_gpgKeyFileName = PATH.basename(feed.gpgKeyUrl)
+        const _gpgKeyFileName = _raw_gpgKeyFileName.replace(
+            ".asc",
+            ".gpg"
+        )
 
         _sources_template = _sources_template
             .replace(/{{feedUri}}/g, feed.feedUri)
@@ -160,17 +158,31 @@ if (
             })
 
         // apply the gpg key
-        execSync(
-            `sudo -k ` +
-            `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-            `curl -fsSL ${feed.gpgKeyUrl} | gpg --dearmor > /usr/share/keyrings/${_gpgKeyFileName}` +
-            `"`,
-            {
-                shell: "/bin/bash",
-                stdio: "inherit",
-                encoding: "utf-8",
-                env: process.env
-            })
+        if (_raw_gpgKeyFileName.includes(".gpg")) {
+            execSync(
+                `sudo -k ` +
+                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+                `curl -fsSL ${feed.gpgKeyUrl} -o /usr/share/keyrings/${_gpgKeyFileName}` +
+                `"`,
+                {
+                    shell: "/bin/bash",
+                    stdio: "inherit",
+                    encoding: "utf-8",
+                    env: process.env
+                })
+        } else {
+            execSync(
+                `sudo -k ` +
+                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+                `curl -fsSL ${feed.gpgKeyUrl} | gpg --dearmor > /usr/share/keyrings/${_gpgKeyFileName}` +
+                `"`,
+                {
+                    shell: "/bin/bash",
+                    stdio: "inherit",
+                    encoding: "utf-8",
+                    env: process.env
+                })
+        }
 
         // run a os upgrade to apply the feed
         execSync(
