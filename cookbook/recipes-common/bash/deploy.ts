@@ -45,4 +45,25 @@ execSync(
         encoding: "utf-8",
         env: process.env
     })
+
+// could be that the some user was already created,
+// then we need to update the .bashrc for that user as well
+// let's list all the users in the /home directory and copy the .bashrc
+// for all of them
+const users = FS.readdirSync(`${IMAGE_MNT_ROOT}/home`)
+for (const user of users) {
+    const userHome = `${IMAGE_MNT_ROOT}/home/${user}`
+    if (FS.existsSync(userHome) && FS.lstatSync(userHome).isDirectory()) {
+        execSync(
+            `sudo -k ` +
+            `cp ${_path}/.bashrc ${userHome}/.bashrc`,
+            {
+                shell: "/bin/bash",
+                stdio: "inherit",
+                encoding: "utf-8",
+                env: process.env
+            })
+    }
+}
+
 logger.success("ok, bash config is ok")
