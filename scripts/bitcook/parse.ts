@@ -40,6 +40,7 @@ export interface Recipe {
     afterDeployRecipes: string[]
     initramfsRecipes: string[]
     afterDeployInitramfsRecipes: string[]
+    afterBundleInitramfsRecipes: string[]
     bundleRecipes: string[]
     afterBundleRecipes: string[]
     sbomRecipes: string[]
@@ -313,6 +314,15 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             }
         } else {
             meta.afterDeployInitramfsRecipes = []
+        }
+
+        if (meta.afterBundleInitramfsRecipes != null) {
+            // FIXME: and if the path is already absolute?
+            for (let i = 0; i < meta.afterBundleInitramfsRecipes.length; i++) {
+                meta.afterBundleInitramfsRecipes[i] = `${meta.recipeOrigin}/${meta.afterBundleInitramfsRecipes[i]}`
+            }
+        } else {
+            meta.afterBundleInitramfsRecipes = []
         }
 
         if (meta.bundleRecipes != null) {

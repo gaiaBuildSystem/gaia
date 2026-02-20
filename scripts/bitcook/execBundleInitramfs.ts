@@ -19,8 +19,10 @@ export function ExecBundleIniramfs (recipes: Recipe[]): void {
     const USER_PASSWD = process.env.USER_PASSWD as string
     const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
     const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
+    const DEPLOY_PATH = `${BUILD_PATH}/tmp/${MACHINE}/deploy`
     process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
     process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
+    process.env.DEPLOY_PATH = DEPLOY_PATH
 
     // get the actual script path, not the process.cwd
     const _path = PATH.dirname(process.argv[1])
