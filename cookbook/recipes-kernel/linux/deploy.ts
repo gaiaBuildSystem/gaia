@@ -16,6 +16,7 @@ const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
+const DEPLOY_PATH = `${BUILD_PATH}/tmp/${MACHINE}/deploy`
 
 if (process.env.KERNEL_LINUX_DEPLOY === "false") {
     logger.warn("Skipping Kernel Linux Deploy")
@@ -47,6 +48,24 @@ logger.info("installing kernel image ...")
 execSync(
     `sudo -k ` +
     `cp ${BUILD_PATH}/tmp/${MACHINE}/linux/arch/${LINUX_ARCH}/boot/${LINUX_IMAGE} ${IMAGE_MNT_BOOT}/`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+execSync(
+    `sudo -k ` +
+    `cp ${BUILD_PATH}/tmp/${MACHINE}/linux/arch/${LINUX_ARCH}/boot/${LINUX_IMAGE} ${DEPLOY_PATH}/vmlinux`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+execSync(
+    `sudo -k ` +
+    `cp ${BUILD_PATH}/tmp/${MACHINE}/linux/vmlinux ${DEPLOY_PATH}/vmlinux-debug`,
     {
         shell: "/bin/bash",
         stdio: "inherit",
