@@ -26,6 +26,7 @@ import { ExecAfterPackage } from "./execAfterPackage"
 import { ExecPureDeploy } from "./execPureDeploy"
 import { ExecAfterBundle } from "./execAfterBundle"
 import { ExecSBOM } from "./execSBOM"
+import { ExecAfterBundleInitramfs } from "./execAfterBundleInitramfs"
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv({
@@ -329,6 +330,7 @@ if (!CLEAN) {
                 ExecDeployIniramfs(recipesParsed)
                 ExecAfterDeployIniramfs(recipesParsed)
                 ExecBundleIniramfs(recipesParsed)
+                ExecAfterBundleInitramfs(recipesParsed)
             }
 
             // package the image

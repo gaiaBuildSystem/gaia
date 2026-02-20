@@ -15,6 +15,8 @@ gzip -c ./initramfs.cpio >./initramfs.cpio.gz
 # copy it to the boot directory
 echo "Copying initramfs to boot directory"
 echo "$(pwd)/initramfs.cpio.gz -> $IMAGE_MNT_BOOT/initramfs.cpio.gz"
+# before move it copy it to the deploy
+cp ./initramfs.cpio.gz $DEPLOY_PATH/initramfs.cpio.gz
 mv ./initramfs.cpio.gz $IMAGE_MNT_BOOT/initramfs.cpio.gz
 
 # clean up

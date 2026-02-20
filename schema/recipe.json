@@ -216,6 +216,13 @@
                 "type": "string"
             }
         },
+        "afterBundleInitramfsRecipes": {
+            "description": "This property is used to define the after bundle initramfs scripts. They should be executable capable files and will be executed in the after bundle initramfs stage.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "sbomRecipes": {
             "description": "This property is used to define the SBOM scripts. They should be executable capable files and will be executed in the SBOM stage.",
             "type": "array",
