@@ -168,9 +168,12 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             }
 
             // remove the recipes that was excluded
-            _recipesToExclude.forEach((recipe) => {
-                _recipes.splice(_recipes.indexOf(recipe), 1)
-            })
+            for (const recipe of _recipesToExclude) {
+                const ix = _recipes.indexOf(recipe)
+                if (ix > -1) {
+                    _recipes.splice(ix, 1)
+                }
+            }
         }
 
         // append the recipes
