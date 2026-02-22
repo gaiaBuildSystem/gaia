@@ -302,6 +302,16 @@ if (NO_CACHE === true && USE_INITRAMFS === true) {
             env: process.env
         }
     )
+
+    execSync(
+        `podman pod rm -f -a`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        }
+    )
 }
 
 if (!CLEAN) {

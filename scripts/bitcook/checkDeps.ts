@@ -101,7 +101,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
 
                     execSync(
                         `sudo -k ` +
-                        `podman run -d --name ${HOST_CONTAINER_NAME} --platform ${ARCH} --net=host ` +
+                        `podman run -d --name ${HOST_CONTAINER_NAME} --replace --platform ${ARCH} --net=host ` +
                         `-v ${BUILD_PATH}:${BUILD_PATH} ` +
                         `${_pathsBinding}` +
                         `${_extraConfig} ` +
