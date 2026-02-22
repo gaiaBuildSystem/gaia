@@ -7,7 +7,7 @@ set -e
 ##
 
 cd ./scripts/utils
-./deps
+sudo ./deps
 
 cd -
 
