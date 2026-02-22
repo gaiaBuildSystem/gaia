@@ -21,6 +21,7 @@ services:
       - GUSER_ID=__uid__
       - GGROUP_ID=__gid__
     privileged: true
+    pid: host
     network_mode: host
     cgroup: host
     image: pergamos/gaia-workspace-dev:latest
