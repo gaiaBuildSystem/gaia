@@ -40,13 +40,13 @@ if (FS.existsSync(filePath)) {
 
     // get it from dockerhub
     let _podmanCmd =
-        `podman pull docker.io/debian@sha256:${meta.checksum[ARCH]}` +
+        `sudo podman pull docker.io/debian@sha256:${meta.checksum[ARCH]}` +
         ` && ` +
-        `podman create --name temp_debian_image docker.io/debian@sha256:${meta.checksum[ARCH]}` +
+        `sudo podman create --name temp_debian_image docker.io/debian@sha256:${meta.checksum[ARCH]}` +
         ` && ` +
-        `podman export -o ${filePath} temp_debian_image` +
+        `sudo podman export -o ${filePath} temp_debian_image` +
         ` && ` +
-        `podman rm temp_debian_image`
+        `sudo podman rm temp_debian_image`
 
     // download the distro tar.gz
     logger.info(`downloading ${filePath} ...`)
