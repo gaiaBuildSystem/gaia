@@ -304,6 +304,7 @@ if (NO_CACHE === true && USE_INITRAMFS === true) {
     )
 
     execSync(
+        `sudo -E ` +
         `podman pod rm -f -a`,
         {
             shell: "/bin/bash",
