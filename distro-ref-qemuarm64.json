@@ -20,5 +20,6 @@
         "docker",
         "powershell",
         "simple-splash"
-    ]
+    ],
+    "$schema": "./schema/distro-core.json"
 }

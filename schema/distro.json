@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "distro.json",
     "title": "The Distro Manifest Schema",
     "type": "object",
     "properties": {
@@ -9,23 +10,7 @@
         },
         "machine": {
             "description": "The machine type",
-            "type": "string",
-            "enum": [
-                "qemux86-64",
-                "qemuarm64",
-                "wsl-amd64",
-                "wsl-arm64",
-                "rpi4b",
-                "rpi5b",
-                "imx8mp-verdin",
-                "imx93-frdm",
-                "imx95-verdin-evk",
-                "smarc-imx95",
-                "intel",
-                "sl1680",
-                "sl2619",
-                "luna"
-            ]
+            "type": "string"
         },
         "version": {
             "type": "object",

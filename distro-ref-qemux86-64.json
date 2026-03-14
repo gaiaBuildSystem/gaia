@@ -20,5 +20,6 @@
         "powershell",
         "neofetch",
         "simple-splash"
-    ]
+    ],
+    "$schema": "./schema/distro-core.json"
 }

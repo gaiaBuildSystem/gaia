@@ -28,11 +28,15 @@ import { ExecAfterBundle } from "./execAfterBundle"
 import { ExecSBOM } from "./execSBOM"
 import { ExecAfterBundleInitramfs } from "./execAfterBundleInitramfs"
 
-const _validateSchema = (schema: any, data: any) => {
+const _validateSchema = (schema: any, data: any, refs: any[] = []) => {
     const ajv = new Ajv({
         strict: false
     })
     ajv.addMetaSchema(require("ajv/dist/refs/json-schema-draft-07.json"))
+
+    for (const ref of refs) {
+        ajv.addSchema(ref)
+    }
 
     const validate = ajv.compile(schema)
     const valid = validate(data)
@@ -211,32 +215,25 @@ const distro = require(`${_path}/${DISTRO}`)
 distro.path = PATH.dirname(`${_path}/${DISTRO}`)
 
 // validate the distro JSON with their schema
-// start from a deep copy of the base schema so we don't mutate the cached module
+// load the base schema (all validation rules) and inject the machine enum from
+// whichever schema the distro file declares via $schema (vendor or core).
+// We do not pass $ref-based schemas to AJV since it cannot do filesystem resolution.
 const _baseSchema = JSON.parse(
     FS.readFileSync(`${_script_path}/../../schema/distro.json`, "utf-8")
 )
 
-// for each searchForRecipesOn path, check if the cookbook root (parent of that
-// path) contains a schema/distro.json that extends the machine enum
-if (Array.isArray(distro.searchForRecipesOn)) {
-    for (const searchPath of distro.searchForRecipesOn) {
-        const _cookbookRoot = PATH.resolve(distro.path, searchPath, "..")
-        const _vendorSchemaPath = PATH.join(_cookbookRoot, "schema", "distro.json")
-        if (FS.existsSync(_vendorSchemaPath)) {
-            logger.info(`Found vendor schema extension: ${_vendorSchemaPath}`)
-            const _vendorSchema = JSON.parse(FS.readFileSync(_vendorSchemaPath, "utf-8"))
-            if (Array.isArray(_vendorSchema.machines) && _vendorSchema.machines.length > 0) {
-                _baseSchema.properties.machine.enum = [
-                    ..._baseSchema.properties.machine.enum,
-                    ..._vendorSchema.machines.filter(
-                        (m: string) => !_baseSchema.properties.machine.enum.includes(m)
-                    )
-                ]
-            }
-        }
-    }
+const _distroSchemaPath = distro["$schema"]
+    ? PATH.resolve(distro.path, distro["$schema"])
+    : `${_script_path}/../../schema/distro-core.json`
+
+const _distroSchema = JSON.parse(FS.readFileSync(_distroSchemaPath, "utf-8"))
+const _machineEnum = _distroSchema?.properties?.machine?.enum
+
+if (Array.isArray(_machineEnum)) {
+    _baseSchema.properties.machine.enum = _machineEnum
 }
 
+// logger.debug(`final machine schema: ${JSON.stringify(_baseSchema.properties.machine)}`)
 _validateSchema(_baseSchema, distro)
 
 // set the name of the build path with the distro name
