@@ -211,10 +211,33 @@ const distro = require(`${_path}/${DISTRO}`)
 distro.path = PATH.dirname(`${_path}/${DISTRO}`)
 
 // validate the distro JSON with their schema
-_validateSchema(
-    require(`${_script_path}/../../schema/distro.json`),
-    distro
+// start from a deep copy of the base schema so we don't mutate the cached module
+const _baseSchema = JSON.parse(
+    FS.readFileSync(`${_script_path}/../../schema/distro.json`, "utf-8")
 )
+
+// for each searchForRecipesOn path, check if the cookbook root (parent of that
+// path) contains a schema/distro.json that extends the machine enum
+if (Array.isArray(distro.searchForRecipesOn)) {
+    for (const searchPath of distro.searchForRecipesOn) {
+        const _cookbookRoot = PATH.resolve(distro.path, searchPath, "..")
+        const _vendorSchemaPath = PATH.join(_cookbookRoot, "schema", "distro.json")
+        if (FS.existsSync(_vendorSchemaPath)) {
+            logger.info(`Found vendor schema extension: ${_vendorSchemaPath}`)
+            const _vendorSchema = JSON.parse(FS.readFileSync(_vendorSchemaPath, "utf-8"))
+            if (Array.isArray(_vendorSchema.machines) && _vendorSchema.machines.length > 0) {
+                _baseSchema.properties.machine.enum = [
+                    ..._baseSchema.properties.machine.enum,
+                    ..._vendorSchema.machines.filter(
+                        (m: string) => !_baseSchema.properties.machine.enum.includes(m)
+                    )
+                ]
+            }
+        }
+    }
+}
+
+_validateSchema(_baseSchema, distro)
 
 // set the name of the build path with the distro name
 BUILD_PATH = `${BUILD_PATH}/build-${distro.name}`
