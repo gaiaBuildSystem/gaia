@@ -22,6 +22,7 @@ const BUILD_PATH = process.env.BUILD_PATH as string
 const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
+const IMAGE_NAME = process.env.IMAGE_NAME as string
 const USER_PASSWD = process.env.USER_PASSWD as string
 
 // get the actual script path, not the process.cwd
@@ -33,7 +34,7 @@ const DISTRO_TAR_FILE = `${BUILD_PATH}/tmp/${MACHINE}/debian/${meta.name}-${MACH
 process.env.DISTRO_TAR_FILE = DISTRO_TAR_FILE
 
 const IMAGE_PATH =
-    `${BUILD_PATH}/tmp/${MACHINE}/deploy/${MACHINE}-${DISTRO_MAJOR}-${DISTRO_MINOR}-${DISTRO_PATCH}.img`
+    `${BUILD_PATH}/tmp/${MACHINE}/deploy/${IMAGE_NAME}`
 process.env.IMAGE_PATH = IMAGE_PATH
 
 const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`

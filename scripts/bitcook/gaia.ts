@@ -293,6 +293,9 @@ if (USE_INITRAMFS) {
     process.env.INITRAMFS_PATH = `${BUILD_PATH}/tmp/${MACHINE}/initramfs`
 }
 
+process.env.IMAGE_NAME =
+    `${DISTRO_NAME}-${process.env.MACHINE}-${process.env.DISTRO_MAJOR}-${process.env.DISTRO_MINOR}-${process.env.DISTRO_PATCH}.img`
+
 // debug
 if (process.env.VERBOSE === "true") {
     logger.debug("\n\nParsed recipes: \n" + JSON.stringify(recipesParsed, null, 4))

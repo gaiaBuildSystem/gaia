@@ -17,6 +17,7 @@ const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
 const USER_PASSWD = process.env.USER_PASSWD as string
+const IMAGE_NAME = process.env.IMAGE_NAME as string
 const DO_SBOM = process.env.DO_SBOM as string
 const META = JSON.parse(process.env.META as string) as Recipe
 
@@ -24,7 +25,7 @@ const META = JSON.parse(process.env.META as string) as Recipe
 const _path = PATH.dirname(process.argv[1])
 
 const IMAGE_PATH =
-    `${BUILD_PATH}/tmp/${MACHINE}/deploy/${MACHINE}-${DISTRO_MAJOR}-${DISTRO_MINOR}-${DISTRO_PATCH}.img`
+    `${BUILD_PATH}/tmp/${MACHINE}/deploy/${IMAGE_NAME}`
 process.env.IMAGE_PATH = IMAGE_PATH
 
 const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
