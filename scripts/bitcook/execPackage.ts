@@ -50,7 +50,7 @@ export function ExecPackage (recipes: Recipe[]): void {
             // install the deps
             execSync(
                 `sudo -k ` +
-                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get install -y ${deps}"`,
+                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get install -y --no-upgrade ${deps}"`,
                 {
                     shell: "/bin/bash",
                     stdio: "inherit",
