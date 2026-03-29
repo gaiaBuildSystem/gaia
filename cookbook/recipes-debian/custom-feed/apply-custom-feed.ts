@@ -66,11 +66,11 @@ if (
 ) {
     FS.mkdirSync(DEBIAN_FEEDS_PATH, { recursive: true })
 
-    // make sure we have curl, gnupg and debian-archive-keyring in the image
+    // make sure we have curl, gnupg and lz4 in the image
     execSync(
         `sudo -k ` +
         `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-        `apt-get update && apt-get install -y curl gnupg` +
+        `apt-get update && apt-get install -y curl gnupg lz4` +
         `"`,
         {
             shell: "/bin/bash",
@@ -184,10 +184,47 @@ if (
             })
 
         // TODO: THIS IS A FUCKING UGLY HACK, THIS STINKS LIKE A 1 YEAR BODY LEAVED TO ROT
+        // the toradex Packages files in apt lists contain "systemd (<< 256~rc4-1~)" in
+        // the Breaks field of libc6. after editing dpkg/status to remove it, apt-get update
+        // re-downloads the lists and brings it back — causing apt to see a mismatch between
+        // the installed metadata and the repo metadata for the same version.
+        // fix: install a shell script + apt Post-Invoke hook so it runs after every update.
+        const _aptStripScriptContent = [
+            `#!/bin/sh`,
+            `for f in $(find /var/lib/apt/lists/ -name '*.lz4'); do`,
+            `    lz4cat "$f" \\`,
+            `        | sed 's/systemd (<< 256~rc4-1~), //g' \\`,
+            `        | sed 's/systemd (<< 256~rc4-1~)//g' \\`,
+            `        | lz4 -qf > "$f.tmp" \\`,
+            `    && mv "$f.tmp" "$f"`,
+            `done`,
+        ].join("\n") + "\n"
+
+        const _aptHookContent = `APT::Update::Post-Invoke { "/usr/local/bin/strip-systemd-breaks.sh"; };\n`
+
+        const _aptStripScriptPath = PATH.join(DEBIAN_FEEDS_PATH, "strip-systemd-breaks.sh")
+        const _aptHookPath = PATH.join(DEBIAN_FEEDS_PATH, "99-strip-systemd-breaks")
+        FS.writeFileSync(_aptStripScriptPath, _aptStripScriptContent, "utf-8")
+        FS.writeFileSync(_aptHookPath, _aptHookContent, "utf-8")
+
+        execSync(
+            `sudo -k cp ${_aptStripScriptPath} ${IMAGE_MNT_ROOT}/usr/local/bin/strip-systemd-breaks.sh && ` +
+            `sudo -k chmod +x ${IMAGE_MNT_ROOT}/usr/local/bin/strip-systemd-breaks.sh && ` +
+            `sudo -k cp ${_aptHookPath} ${IMAGE_MNT_ROOT}/etc/apt/apt.conf.d/99-strip-systemd-breaks`,
+            {
+                shell: "/bin/bash",
+                stdio: "inherit",
+                encoding: "utf-8",
+                env: process.env
+            })
+
         execSync(
             `sudo -k ` +
             `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
-            `sed -i 's/systemd (<< 256~rc4-1~), //g' ${_ostree}/var/lib/dpkg/status && sed -i 's/systemd (<< 256~rc4-1~)//g' ${_ostree}/var/lib/dpkg/status && rm -rf ${_ostree}/var/lib/apt/lists/* && apt-get update` +
+            `sed -i 's/systemd (<< 256~rc4-1~), //g' ${_ostree}/var/lib/dpkg/status && ` +
+            `sed -i 's/systemd (<< 256~rc4-1~)//g' ${_ostree}/var/lib/dpkg/status && ` +
+            `rm -rf ${_ostree}/var/lib/apt/lists/* && ` +
+            `apt-get update` +
             `"`,
             {
                 shell: "/bin/bash",
