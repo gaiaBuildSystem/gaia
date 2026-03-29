@@ -191,12 +191,15 @@ if (
         // fix: install a shell script + apt Post-Invoke hook so it runs after every update.
         const _aptStripScriptContent = [
             `#!/bin/sh`,
-            `for f in $(find /var/lib/apt/lists/ -name '*.lz4'); do`,
-            `    lz4cat "$f" \\`,
-            `        | sed 's/systemd (<< 256~rc4-1~), //g' \\`,
-            `        | sed 's/systemd (<< 256~rc4-1~)//g' \\`,
-            `        | lz4 -qf > "$f.tmp" \\`,
-            `    && mv "$f.tmp" "$f"`,
+            `for d in /var/lib/apt/lists /usr/var/lib/apt/lists; do`,
+            `    [ -d "$d" ] || continue`,
+            `    for f in $(find "$d" -name '*.lz4'); do`,
+            `        lz4cat "$f" \\`,
+            `            | sed 's/systemd (<< 256~rc4-1~), //g' \\`,
+            `            | sed 's/systemd (<< 256~rc4-1~)//g' \\`,
+            `            | lz4 -qf > "$f.tmp" \\`,
+            `        && mv "$f.tmp" "$f"`,
+            `    done`,
             `done`,
         ].join("\n") + "\n"
 
