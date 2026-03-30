@@ -54,6 +54,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("Options:")
     logger.info("  --buildPath          The path where the build artifacts will be stored")
     logger.info("  --clean              Clean the build")
+    logger.info("  --dev                Run in development mode, the fetch step will be skipped")
     logger.info("  --distro             The path to the distro.json file")
     logger.info("  --help -h            Shows this help")
     logger.info("  --installHostDeps    Automatically install the host dependencies")
@@ -84,6 +85,7 @@ const _script_path = __dirname
 const _args = require("minimist")(process.argv.slice(2))
 let BUILD_PATH = _args.buildPath as string
 const DISTRO = _args.distro as string
+const DEV = _args.dev as boolean
 const RECIPE = _args.recipe as string
 const STEP = _args.step as string
 const CLEAN = _args.clean as boolean
@@ -343,7 +345,15 @@ if (!CLEAN) {
         if (!ONLY_SBOM) {
             // now we start
             CheckDependencies(recipesParsed)
-            ExecFetch(recipesParsed)
+
+            // only execute the fetch step if not in dev mode,
+            // in dev mode we assume that the sources are already fetched and
+            // we want to skip this step because the sources are being
+            // modified and we don't want to overwrite them
+            if (DEV !== true) {
+                ExecFetch(recipesParsed)
+            }
+
             ExecPatch(recipesParsed)
             ExecBuild(recipesParsed)
 
