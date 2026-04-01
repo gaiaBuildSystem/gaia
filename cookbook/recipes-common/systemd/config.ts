@@ -25,6 +25,19 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
+// make the symlink
+execSync(
+    `sudo -k ` +
+    `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
+    `ln -sf /lib/systemd/systemd /sbin/init` +
+    `"`,
+    {
+        shell: "/bin/bash",
+        stdio: "inherit",
+        encoding: "utf-8",
+        env: process.env
+    })
+
 // enable systemd services
 execSync(
     `sudo -k ` +
@@ -44,7 +57,8 @@ execSync(
     `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "` +
     `apt-get install -y --reinstall systemd-timesyncd && ` +
     `systemctl unmask systemd-timesyncd && ` +
-    `systemctl enable systemd-timesyncd` +
+    `systemctl enable systemd-timesyncd && ` +
+    `systemctl enable NetworkManager` +
     `"`,
     {
         shell: "/bin/bash",

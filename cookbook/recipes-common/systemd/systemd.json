@@ -9,7 +9,8 @@
     "targetDeps": [
         "systemd",
         "systemd-sysv",
-        "systemd-timesyncd"
+        "systemd-timesyncd",
+        "network-manager"
     ],
     "afterTargetDepsRecipes": [
         "config.ts"
