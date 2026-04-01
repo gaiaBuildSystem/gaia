@@ -35,7 +35,6 @@
         "dbus",
         "udev",
         "network-manager",
-        "elogind",
         "polkitd",
         "net-tools",
         "resolvconf"
