@@ -9,15 +9,34 @@ import logger from "node-color-log"
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
 const BUILD_PATH = process.env.BUILD_PATH as string
+const GAIA_WORKSPACE = process.env.GAIA_WORKSPACE as string
 
 // read the meta data
 const meta = JSON.parse(process.env.META as string)
 
-if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/linux`)) {
-    // clone
-    logger.info(`cloning ${meta.source} ...`)
+// Derive a filesystem-safe directory name from the source URL so that
+// different kernel repos coexist under .common-fetch without collisions.
+// e.g. "https://github.com/gaiaBuildSystem/linux.git" → "github.com-gaiaBuildSystem-linux"
+const _sourceKey = meta.source
+    .replace(/^https?:\/\//, "")
+    .replace(/\.git$/, "")
+    .replace(/\//g, "-")
+
+// The common repo is shared across ALL machines that use the same source URL.
+// Only the heavy git objects are stored here — downloaded once.
+const COMMON_REPO_PATH = `${GAIA_WORKSPACE}/.common-fetch/${_sourceKey}`
+
+// The machine-specific path stays exactly where build.ts / deploy.ts / compose.yaml
+// expect it, but it is now a git worktree backed by the common repo.
+const MACHINE_LINUX_PATH = `${BUILD_PATH}/tmp/${MACHINE}/linux`
+
+// --- Common repo: clone once, then just fetch ---
+
+if (!FS.existsSync(COMMON_REPO_PATH)) {
+    FS.mkdirSync(COMMON_REPO_PATH, { recursive: true })
+    logger.info(`cloning ${meta.source} into common cache ${COMMON_REPO_PATH} ...`)
     execSync(
-        `git clone ${meta.source} ${BUILD_PATH}/tmp/${MACHINE}/linux`,
+        `git clone ${meta.source} ${COMMON_REPO_PATH}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
@@ -25,11 +44,9 @@ if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/linux`)) {
         }
     )
 } else {
-    // possible to get new stuff
-    logger.info(`fetching ${meta.source} ...`)
-    process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/linux`)
+    logger.info(`fetching ${meta.source} in common cache ...`)
     execSync(
-        `git fetch`,
+        `git -C ${COMMON_REPO_PATH} fetch`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
@@ -38,18 +55,31 @@ if (!FS.existsSync(`${BUILD_PATH}/tmp/${MACHINE}/linux`)) {
     )
 }
 
-// set the working directory
-process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/linux`)
+// --- Machine worktree: add once, then just checkout ---
 
-// checkout
-logger.info(`checkout ${meta.ref[ARCH]} ...`)
-execSync(
-    `git checkout ${meta.ref[ARCH]}`,
-    {
-        shell: "/bin/bash",
-        stdio: "inherit",
-        encoding: "utf-8"
-    }
-)
+if (!FS.existsSync(MACHINE_LINUX_PATH)) {
+    // Ensure the parent directory exists before adding the worktree
+    FS.mkdirSync(`${BUILD_PATH}/tmp/${MACHINE}`, { recursive: true })
 
-logger.success(`${meta.name} cloned to ${BUILD_PATH}/tmp/${MACHINE}/linux`)
+    logger.info(`adding git worktree for ${MACHINE} at ${MACHINE_LINUX_PATH} ...`)
+    execSync(
+        `git -C ${COMMON_REPO_PATH} worktree add --detach ${MACHINE_LINUX_PATH} ${meta.ref[ARCH]}`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8"
+        }
+    )
+} else {
+    logger.info(`checkout ${meta.ref[ARCH]} in worktree ${MACHINE_LINUX_PATH} ...`)
+    execSync(
+        `git -C ${MACHINE_LINUX_PATH} checkout ${meta.ref[ARCH]}`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8"
+        }
+    )
+}
+
+logger.success(`${meta.name} ready at ${MACHINE_LINUX_PATH} (common cache: ${COMMON_REPO_PATH})`)

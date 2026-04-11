@@ -242,6 +242,9 @@ _validateSchema(_baseSchema, distro)
 BUILD_PATH = `${BUILD_PATH}/build-${distro.name}`
 process.env.BUILD_PATH = BUILD_PATH
 
+// expose the workspace root so recipes can place shared caches here
+process.env.GAIA_WORKSPACE = _path
+
 // also make sure that the build path exists
 if (!FS.existsSync(BUILD_PATH)) {
     FS.mkdirSync(BUILD_PATH, { recursive: true })
