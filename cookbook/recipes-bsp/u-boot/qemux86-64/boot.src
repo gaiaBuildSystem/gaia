@@ -25,4 +25,6 @@ env set kernel_size ${filesize}
 fatload efi 0:1 ${ramdisk_addr_r} initramfs.cpio.gz
 env set ramdisk_size ${filesize}
 
+saveenv
+
 zboot ${kernel_addr_r} ${kernel_size} ${ramdisk_addr_r} ${ramdisk_size}
