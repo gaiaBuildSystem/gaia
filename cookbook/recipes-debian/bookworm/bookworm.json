@@ -20,7 +20,8 @@
         "kpartx",
         "e2fsprogs",
         "pipx",
-        "lz4"
+        "lz4",
+        "xterm"
     ],
     "targetDeps": [
         "kmod",
