@@ -17,6 +17,7 @@ fi
 fdt addr ${fdt_addr}
 # now we edit the model
 fdt set / model "PhobOS Emulator"
+fdt set / compatible "phobos,emulator"
 
 env set bootargs root=LABEL:gaia rootfstype=ext4
 env set bootargs ${bootargs} console=ttyAMA0,115200
