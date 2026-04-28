@@ -8,7 +8,7 @@
         "linux/amd64"
     ],
     "ref": {
-        "linux/arm64": "25049ad560826f7dc1c4740883b0016014a59789",
+        "linux/arm64": "387b74c14e2102bf3a02678f36f162b71341dd4a",
         "linux/amd64": "bba6b29a7524946404e66aba39ebd9c2fd35ccfe"
     },
     "hostDeps": [
