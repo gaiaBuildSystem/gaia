@@ -8,7 +8,7 @@
         "linux/amd64"
     ],
     "ref": {
-        "linux/arm64": "387b74c14e2102bf3a02678f36f162b71341dd4a",
+        "linux/arm64": "f25bf956018ce93e5a4595b1c200f5fb61c77674",
         "linux/amd64": "bba6b29a7524946404e66aba39ebd9c2fd35ccfe"
     },
     "hostDeps": [
@@ -29,7 +29,8 @@
         "fw.ts"
     ],
     "afterDeployRecipes": [
-        "efi-payload.ts"
+        "efi-payload.ts",
+        "splash.ts"
     ],
     "sbomRecipes": [
         "uboot-sbom.ts"
