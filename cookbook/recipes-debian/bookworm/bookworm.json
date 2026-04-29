@@ -20,8 +20,7 @@
         "kpartx",
         "e2fsprogs",
         "pipx",
-        "lz4",
-        "xterm"
+        "lz4"
     ],
     "targetDeps": [
         "kmod",
@@ -38,7 +37,8 @@
         "network-manager",
         "polkitd",
         "net-tools",
-        "resolvconf"
+        "resolvconf",
+        "xterm"
     ],
     "fetchRecipes": [
         "fetch.ts"
