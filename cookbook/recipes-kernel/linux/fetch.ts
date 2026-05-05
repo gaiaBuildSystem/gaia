@@ -63,7 +63,7 @@ if (!FS.existsSync(MACHINE_LINUX_PATH)) {
 
     logger.info(`adding git worktree for ${MACHINE} at ${MACHINE_LINUX_PATH} ...`)
     execSync(
-        `git -C ${COMMON_REPO_PATH} worktree add --detach ${MACHINE_LINUX_PATH} ${meta.ref[ARCH]}`,
+        `git -C ${COMMON_REPO_PATH} worktree add -f --detach ${MACHINE_LINUX_PATH} ${meta.ref[ARCH]}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
