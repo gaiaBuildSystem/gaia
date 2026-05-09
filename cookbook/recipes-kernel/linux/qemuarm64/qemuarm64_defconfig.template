@@ -4588,6 +4588,12 @@ CONFIG_ARCH_USE_MEMTEST=y
 # end of Kernel Testing and Coverage
 # end of Kernel hacking
 
+# tpm
+CONFIG_TCG_TPM=y
+CONFIG_TCG_TIS=y
+CONFIG_TCG_TIS_CORE=y
+CONFIG_TCG_TIS_MMIO=y
+
 # Behälter
 CONFIG_VETH=y
 CONFIG_BRIDGE=y
