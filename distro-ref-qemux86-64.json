@@ -4,8 +4,8 @@
     "arch": "linux/amd64",
     "version": {
         "major": 0,
-        "minor": 0,
-        "patch": 6,
+        "minor": 1,
+        "patch": 0,
         "build": 0
     },
     "maxImgSize": 1524,
