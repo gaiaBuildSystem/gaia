@@ -54,4 +54,15 @@ if (process.env.CLEAN_IMAGE === "true") {
             encoding: "utf-8",
             env: process.env
         })
+
+    // this is our moment to add the custom non-free debian.sources
+    execSync(
+        `sudo -k ` +
+        `cp -f ${_path}/files/debian.sources ${IMAGE_MNT_ROOT}/etc/apt/sources.list.d/debian.sources`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
 }
