@@ -1,32 +1,34 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
+
+import { createRequire } from "node:module"
+const require = createRequire(import.meta.url)
 
 import logger from "node-color-log"
-import { ParseRecipes } from "./parse"
-import { ExecFetch } from "./execFetch"
-import { CheckDependencies } from "./checkDeps"
-import { ExecBuild } from "./execBuild"
-import { ExecDeploy } from "./execDeploy"
-import { ExecClean } from "./execClean"
-import Ajv from "ajv/dist/2019"
-import FS from "fs"
-import PATH from "path"
-import READLINE from "readline"
-import UTIL from "util"
-import { ExecPackage } from "./execPackage"
-import { ExecBundle } from "./execBundle"
-import { ExecPatch } from "./execPatch"
-import { ExecBeforeDeploy } from "./execBeforeDeploy"
-import { ExecAfterDeploy } from "./execAfterDeploy"
-import { execSync } from "child_process"
-import { ExecDeployIniramfs } from "./execDeployInitramfs"
-import { ExecBundleIniramfs } from "./execBundleInitramfs"
-import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs"
-import { ExecBeforePackage } from "./execBeforePackage"
-import { ExecAfterPackage } from "./execAfterPackage"
-import { ExecPureDeploy } from "./execPureDeploy"
-import { ExecAfterBundle } from "./execAfterBundle"
-import { ExecSBOM } from "./execSBOM"
-import { ExecAfterBundleInitramfs } from "./execAfterBundleInitramfs"
+import { ParseRecipes } from "./parse.ts"
+import { ExecFetch } from "./execFetch.ts"
+import { CheckDependencies } from "./checkDeps.ts"
+import { ExecBuild } from "./execBuild.ts"
+import { ExecDeploy } from "./execDeploy.ts"
+import { ExecClean } from "./execClean.ts"
+import Ajv from "ajv/dist/2019.js"
+import FS from "node:fs"
+import PATH from "node:path"
+import UTIL from "node:util"
+import { ExecPackage } from "./execPackage.ts"
+import { ExecBundle } from "./execBundle.ts"
+import { ExecPatch } from "./execPatch.ts"
+import { ExecBeforeDeploy } from "./execBeforeDeploy.ts"
+import { ExecAfterDeploy } from "./execAfterDeploy.ts"
+import { execSync } from "node:child_process"
+import { ExecDeployIniramfs } from "./execDeployInitramfs.ts"
+import { ExecBundleIniramfs } from "./execBundleInitramfs.ts"
+import { ExecAfterDeployIniramfs } from "./execAfterDeployInitramfs.ts"
+import { ExecBeforePackage } from "./execBeforePackage.ts"
+import { ExecAfterPackage } from "./execAfterPackage.ts"
+import { ExecPureDeploy } from "./execPureDeploy.ts"
+import { ExecAfterBundle } from "./execAfterBundle.ts"
+import { ExecSBOM } from "./execSBOM.ts"
+import { ExecAfterBundleInitramfs } from "./execAfterBundleInitramfs.ts"
 
 const _validateSchema = (schema: any, data: any, refs: any[] = []) => {
     const ajv = new Ajv({
@@ -79,7 +81,7 @@ if (process.argv[2] === "-v" || process.argv[2] === "--version") {
 const _path = process.cwd()
 
 // get the path where the script is located
-const _script_path = __dirname
+const _script_path = PATH.dirname(new URL(import.meta.url).pathname)
 
 // parse arguments
 const _args = require("minimist")(process.argv.slice(2))
@@ -98,7 +100,9 @@ let PODMAN_CLEAN = false
 
 
 process.env.VERBOSE = VERBOSE != null ? VERBOSE.toString() : false.toString()
-process.env.RECIPE = RECIPE != null ? RECIPE : undefined
+if (RECIPE != null) {
+    process.env.RECIPE = RECIPE
+}
 process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.toString() : false.toString()
 
 
@@ -265,10 +269,10 @@ for (const prop of required) {
 }
 
 // set the environment variable for the version
-process.env.DISTRO_MAJOR = distro.version?.major || "0"
-process.env.DISTRO_MINOR = distro.version?.minor || "0"
-process.env.DISTRO_PATCH = distro.version?.patch || "0"
-process.env.DISTRO_BUILD = distro.version?.build || "0"
+process.env.DISTRO_MAJOR = String(distro.version?.major ?? 0)
+process.env.DISTRO_MINOR = String(distro.version?.minor ?? 0)
+process.env.DISTRO_PATCH = String(distro.version?.patch ?? 0)
+process.env.DISTRO_BUILD = String(distro.version?.build ?? 0)
 
 if (distro.version?.variant) {
     process.env.DISTRO_VARIANT = distro.version.variant
@@ -279,10 +283,10 @@ if (distro.version?.codename) {
 }
 
 // set the environment variable for the maximum size of the img
-process.env.MAX_IMG_SIZE = distro.maxImgSize || "1024"
+process.env.MAX_IMG_SIZE = String(distro.maxImgSize ?? 1024)
 
 // check if we should add the initramfs
-process.env.USE_INITRAMFS = distro.useInitramfs || "false"
+process.env.USE_INITRAMFS = String(distro.useInitramfs ?? false)
 const USE_INITRAMFS = distro.useInitramfs || false
 
 // parse the recipes

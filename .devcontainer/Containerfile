@@ -17,11 +17,11 @@ WORKDIR __pwd__
 # create the gaia user
 RUN useradd -m -u __uid__ -s /bin/bash gaia && \
     echo "gaia ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/gaia && \
-    chown -R gaia:gaia /root/.bun/ && \
+    chown -R gaia:gaia /root/.deno/ && \
     chmod -R 775 /root && \
     cd /gaia && \
-    /root/.bun/bin/bun install && \
-    ln -s /root/.bun/bin/bun /usr/bin/bun && \
+    /root/.deno/bin/deno install && \
+    ln -s /root/.deno/bin/deno /usr/bin/deno && \
     echo "export GUSER_ID=__uid__" >> /etc/profile && \
     echo "export GGROUP_ID=__gid__" >> /etc/profile
 

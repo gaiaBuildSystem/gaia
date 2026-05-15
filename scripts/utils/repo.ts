@@ -1,8 +1,8 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
-import fs from "fs"
+import fs from "node:fs"
 import logger from "node-color-log"
-import { execSync, ExecException } from "child_process"
+import { execSync, ExecException } from "node:child_process"
 
 interface Folder {
     path: string

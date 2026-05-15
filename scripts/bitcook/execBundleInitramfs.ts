@@ -1,7 +1,7 @@
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 import logger from "node-color-log"
-import { Recipe } from "./parse"
-import PATH from "path"
+import { Recipe } from "./parse.ts"
+import PATH from "node:path"
 
 export function ExecBundleIniramfs (recipes: Recipe[]): void {
     logger.info("Executing Bundle InitRamfs ...")

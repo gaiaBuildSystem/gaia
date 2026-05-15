@@ -1,9 +1,12 @@
-import Ajv from "ajv/dist/2019"
-import UTIL from "util"
-import FS from "fs"
-import PATH from "path"
-
+import { createRequire } from "node:module"
+import Ajv from "ajv/dist/2019.js"
+import UTIL from "node:util"
+import FS from "node:fs"
+import PATH from "node:path"
 import logger from "node-color-log"
+
+const require = createRequire(import.meta.url)
+const __dirname = PATH.dirname(new URL(import.meta.url).pathname)
 
 const _validateSchema = (schema: any, data: any) => {
     const ajv = new Ajv({

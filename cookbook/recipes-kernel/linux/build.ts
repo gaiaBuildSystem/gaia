@@ -1,11 +1,12 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
-import PATH from "path"
-import FS from "fs"
-import { execSync } from "child_process"
+import PATH from "node:path"
+import FS from "node:fs"
+import { execSync } from "node:child_process"
+import OS from "node:os"
 import logger from "node-color-log"
-import { Recipe } from "../../../scripts/bitcook/parse"
-import { getAssetPath } from "../../../scripts/bitcook/utils/getAssetPath"
+import { Recipe } from "../../../scripts/bitcook/parse.ts"
+import { getAssetPath } from "../../../scripts/bitcook/utils/getAssetPath.ts"
 
 // gaia need to previously set arhitecture and machine
 const ARCH = process.env.ARCH as string
@@ -73,7 +74,7 @@ logger.success(`defconfig ${MACHINE}_defconfig parsed`)
 logger.info(`Building Linux Kernel for ${MACHINE} :: ${ARCH} ...`)
 
 // get how many cores we have
-process.env.JOBS = require("os").cpus().length
+process.env.JOBS = String(OS.cpus().length)
 
 logger.info(`Updating builder image ...`)
 execSync(

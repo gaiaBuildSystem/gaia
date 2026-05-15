@@ -1,7 +1,7 @@
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 import logger from "node-color-log"
-import { Recipe } from "./parse"
-import { canExecRecipe } from "./utils/recipeMatch"
+import { Recipe } from "./parse.ts"
+import { canExecRecipe } from "./utils/recipeMatch.ts"
 
 export function ExecAfterBundleInitramfs (recipes: Recipe[]): void {
     logger.info("Executing After Bundle InitRamfs ...")

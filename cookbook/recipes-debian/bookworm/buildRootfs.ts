@@ -1,4 +1,4 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
 /**
  * The true is that this should be a deploy step, not a build step.
@@ -7,10 +7,10 @@
  * next deploy steps.
  */
 
-import PATH from "path"
-import FS from "fs"
+import PATH from "node:path"
+import FS from "node:fs"
 import logger from "node-color-log"
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 
 // create the disk image
 logger.info("creating disk image ...")

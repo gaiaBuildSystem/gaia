@@ -1,12 +1,12 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
-import PATH from "path"
-import FS from "fs"
+import PATH from "node:path"
+import FS from "node:fs"
 import logger from "node-color-log"
 import { PackageURL } from 'packageurl-js'
 import * as CDX from "@cyclonedx/cyclonedx-library"
-import { execSync, spawnSync } from "child_process"
-import { Recipe } from "../../../scripts/bitcook/parse"
+import { execSync, spawnSync } from "node:child_process"
+import { Recipe } from "../../../scripts/bitcook/parse.ts"
 
 
 const ARCH = process.env.ARCH as string

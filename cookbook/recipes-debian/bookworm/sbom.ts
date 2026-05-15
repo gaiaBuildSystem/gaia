@@ -1,9 +1,9 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
-import PATH from "path"
-import FS from "fs"
+import PATH from "node:path"
+import FS from "node:fs"
 import logger from "node-color-log"
-import { execSync, spawnSync } from "child_process"
+import { execSync, spawnSync } from "node:child_process"
 
 // run update in the chroot
 logger.info("checking if the distro rootfs is ok ...")

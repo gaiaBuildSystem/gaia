@@ -2,12 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "bun",
+            "type": "node",
             "request": "launch",
-            "name": "Debug Bun",
+            "name": "Debug Deno",
             "program": "${file}",
             "cwd": "${workspaceFolder}/../",
-            "runtime": "/opt/bun/bin/bun",
+            "runtimeExecutable": "/opt/deno/bin/deno",
+            "runtimeArgs": [
+                "run",
+                "--allow-all",
+                "--inspect-wait"
+            ],
+            "attachSimplePort": 9229,
             "args": [
                 "--buildPath",
                 "${config:build_path}",

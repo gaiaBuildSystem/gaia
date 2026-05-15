@@ -1,8 +1,8 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
-import PATH from "path"
+import PATH from "node:path"
 import logger from "node-color-log"
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string

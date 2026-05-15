@@ -1,10 +1,10 @@
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 import logger from "node-color-log"
-import FS from "fs"
-import PATH from "path"
+import FS from "node:fs"
+import PATH from "node:path"
 import * as CDX from "@cyclonedx/cyclonedx-library"
 import { PackageURL } from 'packageurl-js'
-import { Recipe } from "./parse"
+import { Recipe } from "./parse.ts"
 
 
 

@@ -1,9 +1,9 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
-import * as FS from "fs"
+import * as FS from "node:fs"
 
 import logger from "node-color-log"
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 
 // gaia need to previously set arhitecture and machine
 const ARCH = process.env.ARCH as string

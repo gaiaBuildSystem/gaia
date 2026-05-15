@@ -11,4 +11,4 @@ sudo ./deps
 
 cd -
 
-/root/.bun/bin/bun install
+/root/.deno/bin/deno install

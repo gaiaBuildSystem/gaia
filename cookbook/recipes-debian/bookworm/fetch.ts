@@ -1,12 +1,12 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
 // TODO: allways check the https://docker.debian.net/ for the latest version
 
-import * as FS from "fs"
-import * as CRYPTO from "crypto"
+import * as FS from "node:fs"
+import * as CRYPTO from "node:crypto"
 
 import logger from "node-color-log"
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
 
 // gaia need to previously set arhitecture and machine
 const ARCH = process.env.ARCH as string

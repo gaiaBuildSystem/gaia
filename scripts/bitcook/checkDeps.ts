@@ -1,10 +1,10 @@
-import FS from "fs"
-import PATH from "path"
-import { execSync } from "child_process"
+import FS from "node:fs"
+import PATH from "node:path"
+import { execSync } from "node:child_process"
 import logger from "node-color-log"
 
-import { Recipe } from "./parse"
-import { canExecRecipe } from "./utils/recipeMatch"
+import { Recipe } from "./parse.ts"
+import { canExecRecipe } from "./utils/recipeMatch.ts"
 
 function _getCookbookDir (recipeOrigin: string): string {
     let _cookbookDir = ""

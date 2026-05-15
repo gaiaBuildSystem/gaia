@@ -1,4 +1,4 @@
-#!/opt/bun/bin/bun
+#!/usr/bin/env -S deno run --allow-all
 
 import logger from "node-color-log"
 
