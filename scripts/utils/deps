@@ -22,7 +22,8 @@ apt-get install -y \
     dosfstools \
     binutils \
     whois \
-    jq
+    jq \
+    locales
 
 # install podman
 apt-get install -y --no-install-recommends podman-compose
