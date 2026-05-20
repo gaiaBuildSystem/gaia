@@ -1,0 +1,67 @@
+#!/bin/bash
+
+_bitcook_completion() {
+    local cur prev opts steps
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    opts="--buildPath --clean --dev --distro --help --installHostDeps --noCache --onlySbom --recipe --sbom --step --verbose --version -h -v"
+
+    steps="fetch patch build pure-deploy before-package package after-package before-deploy deploy after-deploy deploy-initramfs after-deploy-initramfs bundle-initramfs after-bundle-initramfs bundle after-bundle sbom clean"
+
+    case "${prev}" in
+        --buildPath)
+            COMPREPLY=( $(compgen -d -- "${cur}") )
+            return 0
+            ;;
+        --distro)
+            COMPREPLY=( $(compgen -f -X '!*.json' -- "${cur}") )
+            return 0
+            ;;
+        --step)
+            COMPREPLY=( $(compgen -W "${steps}" -- "${cur}") )
+            return 0
+            ;;
+        --recipe)
+            # try to find the distro flag already typed in the command line
+            local distro_file=""
+            local i
+            for (( i=1; i < COMP_CWORD; i++ )); do
+                if [[ "${COMP_WORDS[i]}" == "--distro" && $((i+1)) -lt COMP_CWORD ]]; then
+                    distro_file="${COMP_WORDS[i+1]}"
+                    break
+                fi
+            done
+
+            if [[ -n "${distro_file}" && -f "${distro_file}" ]]; then
+                local recipes
+                recipes=$(
+                    grep -oP '"name"\s*:\s*"\K[^"]+' "${distro_file}" 2>/dev/null ||
+                    python3 -c "
+import json, sys
+try:
+    d = json.load(open('${distro_file}'))
+    recipes = d.get('recipes', [])
+    for r in recipes:
+        if isinstance(r, dict):
+            print(r.get('name', ''))
+        elif isinstance(r, str):
+            print(r)
+except Exception:
+    pass
+" 2>/dev/null
+                )
+                COMPREPLY=( $(compgen -W "${recipes}" -- "${cur}") )
+            fi
+            return 0
+            ;;
+    esac
+
+    if [[ "${cur}" == -* ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+    fi
+}
+
+complete -F _bitcook_completion bitcook

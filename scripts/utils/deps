@@ -2,6 +2,8 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # run as root
 if [ "$EUID" -ne 0 ]; then
     echo "Please run as root"
@@ -23,7 +25,8 @@ apt-get install -y \
     binutils \
     whois \
     jq \
-    locales
+    locales \
+    bash-completion
 
 # install podman
 apt-get install -y --no-install-recommends podman-compose
@@ -37,3 +40,7 @@ fi
 
 # add it to the path
 echo "export PATH=$PATH:/opt/deno/bin" >>/etc/profile
+
+# install bash completion for bitcook
+install -Dm644 "${SCRIPT_DIR}/bitcook-completion" \
+    /usr/share/bash-completion/completions/bitcook
