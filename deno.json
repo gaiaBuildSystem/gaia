@@ -1,4 +1,9 @@
 {
+    "imports": {
+        "ajv/dist/2019.js": "npm:ajv@^8.17.0/dist/2019.js",
+        "ajv/dist/refs/json-schema-draft-07.json": "npm:ajv@^8.17.0/dist/refs/json-schema-draft-07.json",
+        "node-color-log": "npm:node-color-log@^11.0.0"
+    },
     "compilerOptions": {
         "strict": true
     },
