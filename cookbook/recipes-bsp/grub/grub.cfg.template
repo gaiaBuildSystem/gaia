@@ -4,7 +4,9 @@ set default=0
 set timeout_style=hidden
 set timeout=1
 
-set root=(hd0,1)
+if ! search --label --set=root BOOT-INTEL; then
+    search --label --set=root BOOT
+fi
 
 # graphical mode
 set gfxmode=auto
