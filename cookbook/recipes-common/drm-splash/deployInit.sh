@@ -27,3 +27,5 @@ cp $DRM_SPLASH_PATH $INITRAMFS_PATH/splash.png
 
 # deploy the script
 cp $_path/busybox/10-splash.sh $INITRAMFS_PATH/scripts/10-splash.sh
+# make sure that the script is executable
+chmod +x $INITRAMFS_PATH/scripts/10-splash.sh
