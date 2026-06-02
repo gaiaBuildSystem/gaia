@@ -47,6 +47,8 @@ mount /dev/mapper/${PART_LOOP}p2 $IMAGE_MNT_ROOT
 mount --make-shared $IMAGE_MNT_BOOT
 mount --make-shared $IMAGE_MNT_ROOT
 
+# also make sure that the fat partiton has their label as a file inside it
+echo "LABEL:$BOOT_LABEL" > $IMAGE_MNT_BOOT/${BOOT_LABEL}
 
 # before mount the bind mounts, we need to create the mount points
 mkdir -p $IMAGE_MNT_ROOT/dev
