@@ -86,6 +86,14 @@ export function ExecSBOM (recipes: Recipe[]): void {
             version: `${DISTRO_MAJOR}.${DISTRO_MINOR}.${DISTRO_PATCH}.${DISTRO_BUILD}`,
         }
     )
+    _cdx_sbom.metadata.supplier = _setSupplierInfo(
+        "Gaia Build System",
+        "https://github.com/gaiaBuildSystem/gaia",
+        "Matheus Castello",
+        "matheus@castello.eng.br",
+        "+55 19 99257-7997"
+    )
+    _cdx_sbom.metadata.timestamp = new Date()
     const _tools_component = new CDX.Models.Component(
         CDX.Enums.ComponentType.Application,
         "gaia",
