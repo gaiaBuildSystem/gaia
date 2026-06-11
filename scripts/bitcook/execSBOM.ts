@@ -5,8 +5,27 @@ import PATH from "node:path"
 import * as CDX from "@cyclonedx/cyclonedx-library"
 import { PackageURL } from 'packageurl-js'
 import { Recipe } from "./parse.ts"
+import process from "node:process";
 
-
+function _setSupplierInfo(
+    orgName: string,
+    orgUrlSite: string,
+    name: string,
+    email: string,
+    phone: string
+): CDX.Models.OrganizationalEntity {
+    return new CDX.Models.OrganizationalEntity({
+        contact: new CDX.Models.OrganizationalContactRepository([
+            new CDX.Models.OrganizationalContact({
+                name: name,
+                email: email,
+                phone: phone
+            })
+        ]),
+        name: orgName,
+        url: new Set([orgUrlSite])
+    })
+}
 
 export function ExecSBOM (recipes: Recipe[]): void {
     logger.info("Executing SBOM ...")
@@ -69,7 +88,16 @@ export function ExecSBOM (recipes: Recipe[]): void {
     )
     const _tools_component = new CDX.Models.Component(
         CDX.Enums.ComponentType.Application,
-        "gaia"
+        "gaia",
+        {
+            supplier: _setSupplierInfo(
+                "Gaia Build System",
+                "https://github.com/gaiaBuildSystem/gaia",
+                "Matheus Castello",
+                "matheus@castello.eng.br",
+                "+55 19 99257-7997"
+            )
+        }
     )
     _tools_component.version = "0.0.0"
     _tools_component.externalReferences.add(
@@ -119,6 +147,14 @@ export function ExecSBOM (recipes: Recipe[]): void {
                     component.purl = PackageURL.fromString(
                         `${component.purl}&distro=debian-12`
                     )
+                    // also fixup the supplier
+                    component.supplier = _setSupplierInfo(
+                        "Debian",
+                        "https://www.debian.org",
+                        "Debian Security Team",
+                        "security@debian.org",
+                        ""
+                    );
                 }
 
                 // Copy bom-ref if present
