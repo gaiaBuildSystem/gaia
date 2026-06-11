@@ -10,7 +10,7 @@ import { CheckDependencies } from "./checkDeps.ts"
 import { ExecBuild } from "./execBuild.ts"
 import { ExecDeploy } from "./execDeploy.ts"
 import { ExecClean } from "./execClean.ts"
-import Ajv from "ajv/dist/2019.js"
+import { Ajv2019 } from "ajv/dist/2019.js"
 import FS from "node:fs"
 import PATH from "node:path"
 import UTIL from "node:util"
@@ -29,9 +29,10 @@ import { ExecPureDeploy } from "./execPureDeploy.ts"
 import { ExecAfterBundle } from "./execAfterBundle.ts"
 import { ExecSBOM } from "./execSBOM.ts"
 import { ExecAfterBundleInitramfs } from "./execAfterBundleInitramfs.ts"
+import process from "node:process";
 
 const _validateSchema = (schema: any, data: any, refs: any[] = []) => {
-    const ajv = new Ajv({
+    const ajv = new Ajv2019({
         strict: false
     })
     ajv.addMetaSchema(require("ajv/dist/refs/json-schema-draft-07.json"))
