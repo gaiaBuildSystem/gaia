@@ -162,7 +162,18 @@ export function ExecSBOM (recipes: Recipe[]): void {
                         "Debian Security Team",
                         "security@debian.org",
                         ""
-                    );
+                    )
+                } else if (
+                    component.purl != undefined &&
+                    component.supplier == null
+                ) {
+                    component.supplier = _setSupplierInfo(
+                        "Gaia Build System",
+                        "https://github.com/gaiaBuildSystem/gaia",
+                        "Matheus Castello",
+                        "matheus@castello.eng.br",
+                        "+55 19 99257-7997"
+                    )
                 }
 
                 // Copy bom-ref if present
