@@ -4,7 +4,8 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # create timestamped log file
-LOG_FILE="bitcook_$(date +%Y%m%d_%H%M%S).log"
+mkdir -p ".logs"
+LOG_FILE="./.logs/bitcook_$(date +%Y%m%d_%H%M%S).log"
 
 # call the gaia and save both stdout and stderr while displaying them
 $SCRIPT_DIR/scripts/bitcook/gaia.ts $@ 2>&1 | tee $LOG_FILE
