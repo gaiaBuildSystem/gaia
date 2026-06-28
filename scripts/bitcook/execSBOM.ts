@@ -30,17 +30,14 @@ function _setSupplierInfo(
 export function ExecSBOM (recipes: Recipe[]): void {
     logger.info("Executing SBOM ...")
 
-    const ARCH = process.env.ARCH as string
     const MACHINE = process.env.MACHINE as string
-    const MAX_IMG_SIZE = process.env.MAX_IMG_SIZE as string
     const DISTRO_NAME = process.env.DISTRO_NAME as string
+    const DISTRO_VARIANT = process.env.DISTRO_VARIANT as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
     const DISTRO_MINOR = process.env.DISTRO_MINOR as string
     const DISTRO_PATCH = process.env.DISTRO_PATCH as string
     const DISTRO_BUILD = process.env.DISTRO_BUILD as string
-    const USER_PASSWD = process.env.USER_PASSWD as string
-    const DO_SBOM = process.env.DO_SBOM as string
 
     const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
     const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
@@ -76,8 +73,11 @@ export function ExecSBOM (recipes: Recipe[]): void {
     // merge SBOMs
     logger.info("Merging SBOMs ...")
 
+    const MAIN_SBOM_FILE = `${DISTRO_NAME}-${MACHINE}-${DISTRO_VARIANT}-${DISTRO_MAJOR}-${DISTRO_MINOR}-${DISTRO_PATCH}-${DISTRO_BUILD}-sbom.cdx.json`
+    const MAIN_SBOM_PATH =
+        `${BUILD_PATH}/tmp/${MACHINE}/sbom/${MAIN_SBOM_FILE}`
+
     // then create the final SBOM file
-    const finalSbomPath = `${BUILD_PATH}/tmp/${MACHINE}/sbom/${DISTRO_NAME}-${MACHINE}-sbom.cdx.json`
     const _cdx_sbom = new CDX.Models.Bom()
     _cdx_sbom.metadata.component = new CDX.Models.Component(
         CDX.Enums.ComponentType.OperatingSystem,
@@ -123,7 +123,7 @@ export function ExecSBOM (recipes: Recipe[]): void {
     const sbomFiles = FS.readdirSync(sbomDir)
         .filter(file =>
             file.endsWith(".json") &&
-            !file.includes(`${DISTRO_NAME}-${MACHINE}-sbom.cdx.json`) // skip the final output file if it exists
+            !file.includes(`${MAIN_SBOM_FILE}`) // skip the final output file if it exists
         )
         .map(file => PATH.join(sbomDir, file))
 
@@ -251,7 +251,7 @@ export function ExecSBOM (recipes: Recipe[]): void {
     ).serialize(_cdx_sbom)
 
     FS.writeFileSync(
-        finalSbomPath,
+        MAIN_SBOM_PATH,
         JSON.stringify(
             JSON.parse(serialized), null, 2
         ),
