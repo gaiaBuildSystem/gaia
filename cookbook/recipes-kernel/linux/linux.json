@@ -8,8 +8,8 @@
         "linux/amd64"
     ],
     "ref": {
-        "linux/arm64": "028ef9c96e96197026887c0f092424679298aae8",
-        "linux/amd64": "028ef9c96e96197026887c0f092424679298aae8"
+        "linux/arm64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6",
+        "linux/amd64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6"
     },
     "hostDeps": [
         "git",
