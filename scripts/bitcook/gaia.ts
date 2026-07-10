@@ -348,6 +348,20 @@ if (NO_CACHE === true && USE_INITRAMFS === true) {
     )
 }
 
+if (SBOM) {
+    logger.info("SBOM generation enabled ...")
+    logger.info("cleaning old fragments ...")
+    execSync(
+        `sudo rm -rf ${process.env.BUILD_PATH}/tmp/${process.env.MACHINE}/sbom`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        }
+    )
+}
+
 if (!CLEAN) {
     try {
         if (!ONLY_SBOM) {
