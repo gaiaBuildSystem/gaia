@@ -63,6 +63,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("  --installHostDeps    Automatically install the host dependencies")
     logger.info("  --noCache            Build from scratch without any cache")
     logger.info("  --onlySbom           Just generate the SBOM files, needs that a build with --sbom was done before")
+    logger.info("  --overrideEnv        Use the env variables set on the shell instead of the ones from the cookbook")
     logger.info("  --recipe             The recipe to build")
     logger.info("  --sbom               Generate SBOM files for the built artifacts")
     logger.info("  --step               The step to execute")
@@ -96,6 +97,7 @@ const VERBOSE = _args.verbose as boolean
 const INSTALL_HOST_DEPS = _args.installHostDeps as boolean
 const SBOM = _args.sbom as boolean
 const ONLY_SBOM = _args.onlySbom as boolean
+const OVERRIDE_ENV = _args.overrideEnv as boolean
 const NO_CACHE = _args.noCache as boolean
 let PODMAN_CLEAN = false
 
@@ -105,6 +107,7 @@ if (RECIPE != null) {
     process.env.RECIPE = RECIPE
 }
 process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.toString() : false.toString()
+process.env.GAIA_OVERRIDE_ENV = OVERRIDE_ENV != null ? OVERRIDE_ENV.toString() : false.toString()
 
 
 if (NO_CACHE === true) {

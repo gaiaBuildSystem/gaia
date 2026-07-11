@@ -401,6 +401,18 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
             meta.env = {}
         }
 
+        // we need to check if the env override is active
+        if (process.env.GAIA_OVERRIDE_ENV === "true") {
+            // iterate on the meta.env and check if the
+            // env exists on the process.env, if so, override it
+            for (const env in meta.env) {
+                if (process.env[env] != null) {
+                    logger.warn(`Overriding env ${env} with value from shell`)
+                    meta.env[env] = process.env[env] as string
+                }
+            }
+        }
+
         // add it to the array
         RECIPES.push(meta)
     }
