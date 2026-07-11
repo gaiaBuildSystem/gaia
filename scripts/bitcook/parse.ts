@@ -1,15 +1,17 @@
 import { createRequire } from "node:module"
-import Ajv from "ajv/dist/2019.js"
+import { Ajv2019 } from "ajv/dist/2019.js"
 import UTIL from "node:util"
 import FS from "node:fs"
 import PATH from "node:path"
 import logger from "node-color-log"
+import process from "node:process";
 
 const require = createRequire(import.meta.url)
 const __dirname = PATH.dirname(new URL(import.meta.url).pathname)
 
+// deno-lint-ignore no-explicit-any
 const _validateSchema = (schema: any, data: any) => {
-    const ajv = new Ajv({
+    const ajv = new Ajv2019({
         strict: false
     })
     ajv.addMetaSchema(require("ajv/dist/refs/json-schema-draft-07.json"))
@@ -28,6 +30,29 @@ export interface Dict<T> {
 }
 
 export interface ProcessEnv extends Dict<string> {
+}
+
+export interface DistroVersion {
+    major: number
+    minor: number
+    patch: number
+    build: number
+    variant?: "ota" | "bootc" | "dev" | "prod"
+    codename?: string
+}
+
+export interface Distro {
+    name: string
+    machine: string
+    version: DistroVersion
+    maxImgSize: number
+    arch: "linux/amd64" | "linux/arm64"
+    searchForRecipesOn: string[]
+    includeRecipes?: string[]
+    excludeRecipes?: string[]
+    useInitramfs?: boolean
+    // runtime value injected in gaia.ts to resolve relative recipe paths
+    path: string
 }
 
 export interface Recipe {
@@ -67,6 +92,7 @@ export interface Recipe {
         }
     ]
     env: ProcessEnv
+    // deno-lint-ignore no-explicit-any
     customData: any
     merge: boolean,
     version: string
@@ -74,7 +100,7 @@ export interface Recipe {
 
 function replaceConfigEnvVars (recipe: Recipe, str: string | undefined): string {
     if (str != null) {
-        return str.replace(/\${(\w+)}/g, (match, p1) => {
+        return str.replace(/\${(\w+)}/g, (_, p1) => {
             if (p1 === "recipeOrigin") {
                 return recipe.recipeOrigin
             }
@@ -85,9 +111,9 @@ function replaceConfigEnvVars (recipe: Recipe, str: string | undefined): string 
         return ""
 }
 
-export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
+export function ParseRecipes (_: string, distro: Distro): Recipe[] {
     logger.info("Parsing recipes ...")
-    let _RECIPES: string[] = []
+    const _RECIPES: string[] = []
     let RECIPES: Recipe[] = []
     const _schema = require(`${__dirname}/../../schema/recipe.json`)
 
@@ -143,7 +169,7 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
         if (distro.excludeRecipes == null) {
             // should be the includeRecipes only then
             const includeRecipes = distro.includeRecipes
-            let _recipesToInclude: string[] = []
+            const _recipesToInclude: string[] = []
             if (includeRecipes && includeRecipes.length > 0) {
                 for (const includeRecipe of includeRecipes) {
                     for (let i = 0; i < _recipes.length; i++) {
@@ -159,7 +185,7 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
         } else {
             // exclude the excludeRecipes
             const excludeRecipes = distro.excludeRecipes
-            let _recipesToExclude: string[] = []
+            const _recipesToExclude: string[] = []
             if (excludeRecipes && excludeRecipes.length > 0) {
                 for (const excludeRecipe of excludeRecipes) {
                     for (let i = 0; i < _recipes.length; i++) {
@@ -380,7 +406,8 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
     }
 
     // and if we get some override ??
-    let _metas: any = []
+    // deno-lint-ignore no-explicit-any
+    const _metas: any = []
 
     for (const recipe of RECIPES) {
         const recipeName = recipe.name
@@ -391,6 +418,7 @@ export function ParseRecipes (workingDir: string, distro: any): Recipe[] {
             // merge the data
             // this should infer as Recipe, but we will receibe some
             // objects from json that are not completely typed
+            // deno-lint-ignore no-explicit-any
             const meta2: any | Recipe = recipe
 
             if (meta2.priority > _metas[recipeName].priority) {
