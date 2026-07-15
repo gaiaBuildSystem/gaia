@@ -328,7 +328,7 @@ async function run (): Promise<void> {
 
                 try {
                     execSync(
-                        `{ ${turn.answer.command}; } 2>&1 | tee ${_outputTmpFile}`,
+                        `set -o pipefail; { ${turn.answer.command}; } 2>&1 | tee ${_outputTmpFile}`,
                         {
                             shell: "/bin/bash",
                             stdio: "inherit",
@@ -354,6 +354,10 @@ async function run (): Promise<void> {
                         )
 
                         history.push(turn2)
+
+                        printSeparator()
+                        console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn2.answer.answer}`)
+                        console.log("")
                     }
                 }
             }
