@@ -18,11 +18,20 @@ var GlobalContext =
     `USE THIS PATH AS BASE FOR THE COMMANDS SUGGESTIONS EVERYTHING WITH A PATH, AVOID cd WHENEVER POSSIBLE:\n` +
     `${_pwd}\n\n` +
     `The project workdir has the following folders that are possible repos:\n` +
-    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}`
+    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n`
+
+// deno-lint-ignore no-var
+var GlobalErrorCount = 0
+const MAX_ERROR_COUNT = 4
+
+type AskResponse = {
+    answer: string
+    command?: string
+}
 
 type ChatTurn = {
     question: string
-    answer: string
+    answer: AskResponse
     timestamp: string
 }
 
@@ -154,10 +163,7 @@ function _buildQuestionWithContext (input: string): string {
     return input
 }
 
-async function buildAnswer (question: string): Promise<{
-    answer: string,
-    command?: string
-}> {
+async function buildAnswer (question: string): Promise<AskResponse> {
     let input = question.trim()
 
     if (input.length === 0) {
@@ -243,6 +249,17 @@ function askQuestion (rl: Interface, promptText: string): Promise<string | null>
     })
 }
 
+async function _doQuestion (question: string): Promise<ChatTurn> {
+    const answer = await buildAnswer(question)
+    const turn: ChatTurn = {
+        question,
+        answer: answer,
+        timestamp: new Date().toISOString()
+    }
+
+    return turn
+}
+
 async function run (): Promise<void> {
     const rl = createChatInterface()
 
@@ -298,25 +315,20 @@ async function run (): Promise<void> {
                 continue
             }
 
-            const answer = await buildAnswer(question)
-            const turn: ChatTurn = {
-                question,
-                answer: answer.answer,
-                timestamp: new Date().toISOString()
-            }
-
+            const turn = await _doQuestion(question)
             history.push(turn)
 
             printSeparator()
-            console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${answer.answer}`)
+            console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer.answer}`)
             console.log("")
 
-            if (AUTO_EXECUTE_COMMAND && answer.command) {
-                console.log(`${COLOR_GREEN}Executing command:${COLOR_RESET} ${answer.command}`)
+            if (AUTO_EXECUTE_COMMAND && turn.answer.command) {
+                const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
+                console.log(`${COLOR_GREEN}Executing command:${COLOR_RESET} ${turn.answer.command}`)
 
                 try {
                     execSync(
-                        `${answer.command}`,
+                        `{ ${turn.answer.command}; } 2>&1 | tee ${_outputTmpFile}`,
                         {
                             shell: "/bin/bash",
                             stdio: "inherit",
@@ -324,8 +336,25 @@ async function run (): Promise<void> {
                             env: process.env
                         }
                     )
+
+                    GlobalErrorCount = 0
                 } catch (_) {
-                    // simple do nothing
+                    // let's continue the loop in the agent inputting the
+                    // next question as the error
+                    // we need to also have some way to stop if we have so
+                    // many levels of errors
+                    GlobalErrorCount++
+
+                    if (GlobalErrorCount < MAX_ERROR_COUNT) {
+                        const _outputTmpFileContent =
+                            Deno.readTextFileSync(_outputTmpFile)
+
+                        const turn2 = await _doQuestion(
+                            `The command "${turn.answer.command}" failed to execute, logs: ${_outputTmpFileContent}\n`
+                        )
+
+                        history.push(turn2)
+                    }
                 }
             }
         }
