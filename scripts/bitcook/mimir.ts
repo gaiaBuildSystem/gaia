@@ -82,7 +82,7 @@ function printHistory (): void {
         const turn = history[i]
         console.log(`  ${i + 1}. ${COLOR_RED}[${turn.timestamp}]${COLOR_RESET}`)
         console.log(`     ${COLOR_BLUE}User:${COLOR_RESET} ${turn.question}`)
-        console.log(`     ${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer}`)
+        console.log(`     ${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer.answer}`)
     }
     console.log("")
 }
@@ -260,6 +260,100 @@ async function _doQuestion (question: string): Promise<ChatTurn> {
     return turn
 }
 
+async function _loop (question: string) {
+    if (question === "/exit") {
+        console.log("Goodbye.")
+        process.exit(0)
+    }
+
+    if (question === "/help") {
+        printHelp()
+        return
+    }
+
+    if (question === "/clear") {
+        history.length = 0
+        console.log("History cleared.")
+        console.log("")
+        return
+    }
+
+    if (question === "/history") {
+        printHistory()
+        return
+    }
+
+    if (question === "/enableAutoExecuteCommand") {
+        AUTO_EXECUTE_COMMAND = true
+        console.log("Auto-execution of commands is now enabled.")
+        console.log()
+        return
+    }
+
+    // not documented /context
+    if (question === "/context") {
+        console.log(_buildQuestionWithContext(""))
+        console.log()
+        return
+    }
+
+    const turn = await _doQuestion(question)
+    history.push(turn)
+
+    printSeparator()
+    console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer.answer}`)
+    console.log("")
+
+    if (AUTO_EXECUTE_COMMAND && turn.answer.command) {
+        const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
+        console.log(`${COLOR_GREEN}Executing command:${COLOR_RESET} ${turn.answer.command}`)
+
+        try {
+            // remove the previous output file if it exists
+            try {
+                Deno.removeSync(_outputTmpFile)
+            } catch {
+                // ignore if the file does not exist
+            }
+
+            execSync(
+                `set -o pipefail; { ${turn.answer.command}; } 2>&1 | tee ${_outputTmpFile}`,
+                {
+                    shell: "/bin/bash",
+                    stdio: "inherit",
+                    encoding: "utf-8",
+                    env: process.env
+                }
+            )
+
+            GlobalErrorCount = 0
+        } catch (error) {
+            // let's continue the loop in the agent inputting the
+            // next question as the error
+            // we need to also have some way to stop if we have so
+            // many levels of errors
+            GlobalErrorCount++
+
+            if (GlobalErrorCount < MAX_ERROR_COUNT) {
+                // Prefer captured command output, but fallback to the thrown error message.
+                let _outputTmpFileContent = ""
+
+                try {
+                    _outputTmpFileContent = Deno.readTextFileSync(_outputTmpFile)
+                } catch {
+                    const e = error as Error
+                    _outputTmpFileContent = e.message
+                }
+
+                // wow, AI knows how to do recursion?
+                await _loop(
+                    `The command "${turn.answer.command}" failed to execute, logs: ${_outputTmpFileContent}\n`
+                )
+            }
+        }
+    }
+}
+
 async function run (): Promise<void> {
     const rl = createChatInterface()
 
@@ -270,7 +364,7 @@ async function run (): Promise<void> {
             const raw = await askQuestion(rl, `${COLOR_BLUE}User>${COLOR_RESET} `)
 
             if (raw === null) {
-                continue
+                return
             }
 
             const question = raw.trim()
@@ -279,88 +373,7 @@ async function run (): Promise<void> {
                 continue
             }
 
-            if (question === "/exit") {
-                console.log("Goodbye.")
-                return
-            }
-
-            if (question === "/help") {
-                printHelp()
-                continue
-            }
-
-            if (question === "/clear") {
-                history.length = 0
-                console.log("History cleared.")
-                console.log("")
-                continue
-            }
-
-            if (question === "/history") {
-                printHistory()
-                continue
-            }
-
-            if (question === "/enableAutoExecuteCommand") {
-                AUTO_EXECUTE_COMMAND = true
-                console.log("Auto-execution of commands is now enabled.")
-                console.log()
-                continue
-            }
-
-            // not documented /context
-            if (question === "/context") {
-                console.log(_buildQuestionWithContext(""))
-                console.log()
-                continue
-            }
-
-            const turn = await _doQuestion(question)
-            history.push(turn)
-
-            printSeparator()
-            console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer.answer}`)
-            console.log("")
-
-            if (AUTO_EXECUTE_COMMAND && turn.answer.command) {
-                const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
-                console.log(`${COLOR_GREEN}Executing command:${COLOR_RESET} ${turn.answer.command}`)
-
-                try {
-                    execSync(
-                        `set -o pipefail; { ${turn.answer.command}; } 2>&1 | tee ${_outputTmpFile}`,
-                        {
-                            shell: "/bin/bash",
-                            stdio: "inherit",
-                            encoding: "utf-8",
-                            env: process.env
-                        }
-                    )
-
-                    GlobalErrorCount = 0
-                } catch (_) {
-                    // let's continue the loop in the agent inputting the
-                    // next question as the error
-                    // we need to also have some way to stop if we have so
-                    // many levels of errors
-                    GlobalErrorCount++
-
-                    if (GlobalErrorCount < MAX_ERROR_COUNT) {
-                        const _outputTmpFileContent =
-                            Deno.readTextFileSync(_outputTmpFile)
-
-                        const turn2 = await _doQuestion(
-                            `The command "${turn.answer.command}" failed to execute, logs: ${_outputTmpFileContent}\n`
-                        )
-
-                        history.push(turn2)
-
-                        printSeparator()
-                        console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn2.answer.answer}`)
-                        console.log("")
-                    }
-                }
-            }
+            await _loop(question)
         }
     } finally {
         rl.close()
