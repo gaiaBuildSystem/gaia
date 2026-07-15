@@ -314,15 +314,19 @@ async function run (): Promise<void> {
             if (AUTO_EXECUTE_COMMAND && answer.command) {
                 console.log(`${COLOR_GREEN}Executing command:${COLOR_RESET} ${answer.command}`)
 
-                execSync(
-                    `${answer.command}`,
-                    {
-                        shell: "/bin/bash",
-                        stdio: "inherit",
-                        encoding: "utf-8",
-                        env: process.env
-                    }
-                )
+                try {
+                    execSync(
+                        `${answer.command}`,
+                        {
+                            shell: "/bin/bash",
+                            stdio: "inherit",
+                            encoding: "utf-8",
+                            env: process.env
+                        }
+                    )
+                } catch (_) {
+                    // simple do nothing
+                }
             }
         }
     } finally {
