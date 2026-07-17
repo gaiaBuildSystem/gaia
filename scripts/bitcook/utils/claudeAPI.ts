@@ -15,8 +15,17 @@ type StreamLine = {
     command?: string | null
 }
 
+export type ChatTurn = {
+    question: string
+    answer: AskResponse
+    timestamp: string
+}
+
 export class ClaudeAPIClient {
     private baseUrl: string
+    private _additionalContext = ""
+    private _maxHistoryContext = 4
+    private _history: ChatTurn[] = []
 
     constructor (
         baseUrl: string = process.env.MIMIR_API_URL || "http://phobos.dev.br:8000"
@@ -24,13 +33,54 @@ export class ClaudeAPIClient {
         this.baseUrl = baseUrl
     }
 
+    private _buildQuestionWithContext (input: string): string {
+        // let's include on the context paths for then the AI will make
+        // the right assuptions for the commands
+        let context = ``
+
+        // if there is history, let's include the last 4 turns in the
+        // question to provide context to Mimir
+        if (this._history.length > 0) {
+            const lastTurns = this._history.slice(-this._maxHistoryContext)
+            context = lastTurns.map((turn) => {
+                return `User: ${turn.question}\nMimir: ${turn.answer.explanation}`
+            }).join("\n\n")
+
+            input = `${this._additionalContext}\n${context}\n` +
+                `The lines above are only for context, if the next user question does not require context, you can ignore it.\n` +
+                `\nUser: ${input}`
+
+        } else {
+            input = `${this._additionalContext}\n\nUser: ${input}`
+        }
+
+        return input
+    }
+
+    public setMaxHistoryContext (max: number) {
+        this._maxHistoryContext = max
+    }
+
+    public setAdditionalContext (context: string) {
+        this._additionalContext = context
+    }
+
+    public getHistory (): ChatTurn[] {
+        return this._history
+    }
+
+    public clearHistory (): void {
+        this._history.length = 0
+    }
+
     async ask (question: string, onProgress?: (text: string) => void): Promise<AskResponse> {
+        const _question = this._buildQuestionWithContext(question)
         const response = await fetch(`${this.baseUrl}/ask`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ question })
+            body: JSON.stringify({ question: _question })
         })
 
         if (!response.ok) {
@@ -81,6 +131,12 @@ export class ClaudeAPIClient {
         if (!result) {
             throw new Error("mimir API stream ended without a result")
         }
+
+        this._history.push({
+            question,
+            answer: result,
+            timestamp: new Date().toISOString()
+        })
 
         return result
     }

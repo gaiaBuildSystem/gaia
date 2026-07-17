@@ -1,0 +1,39 @@
+
+<container style="
+        width: 100%;
+        height: 100%;
+        padding: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1;"
+>
+
+    <container id="logsContainer"
+        style="
+            border: rounded;
+            border-title: Mimir;
+            flex: 1;
+            padding: 1;
+            overflow-y: scroll;
+        "
+    >
+        <container id="welcomeContainer">
+            <text id="welcome"></text>
+            <text>/enableAutoExecuteCommand</text>
+            <text>/history</text>
+            <text>/clear</text>
+            <text>/exit</text>
+        </container>
+    </container>
+
+    <input
+        id="messageInput"
+        style="
+            width: 100%;
+            border: thin;
+        "
+    />
+
+    <text id="commandHint" style="color: #808080;" text=""></text>
+
+</container>

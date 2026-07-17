@@ -1,0 +1,348 @@
+import process from "node:process"
+import { spawn } from "node:child_process"
+import {
+    melker,
+    createElement,
+    MelkerEngine
+} from "@melker/melker/lib"
+import { installRawAnsiComponent } from "./melkerAnsi.ts"
+import { ClaudeAPIClient } from "./claudeAPI.ts"
+
+
+installRawAnsiComponent()
+
+// deno-lint-ignore no-var
+var _outIx = 0
+// deno-lint-ignore no-var
+var GlobalErrorCount = 0
+const MAX_ERROR_COUNT = 4
+
+// deno-lint-ignore no-var
+var AUTO_EXECUTE_COMMAND = false
+// deno-lint-ignore no-var
+var MAIN_CONTAINER_WIDTH = 0
+
+const COMMANDS = [
+    "/enableAutoExecuteCommand",
+    "/help",
+    "/history",
+    "/clear",
+    "/exit"
+]
+
+// llm client
+const mimir = new ClaudeAPIClient()
+const _pwd = process.cwd()
+const _dirs = Deno.readDirSync(_pwd)
+mimir.setAdditionalContext(
+    `Project workdir, or PWD, is the following,` +
+    `USE THIS PATH AS BASE FOR THE COMMANDS SUGGESTIONS EVERYTHING WITH A PATH, AVOID cd WHENEVER POSSIBLE:\n` +
+    `${_pwd}\n\n` +
+    `The project workdir has the following folders that are possible repos:\n` +
+    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n`
+)
+
+
+// prints a single informational line into the logs container, used by the
+// internal commands below to give feedback without involving the LLM
+function pushInfo (ctx: MelkerEngine, text: string, color = "#26dc20") {
+    const logsContainer = ctx.document.getElementById("logsContainer")
+    const _info = melker`
+                <container style="flex-direction: row;">
+                    <text style="color: ${color};" text="${text}\n" />
+                </container>
+            `
+    logsContainer!.children?.push(_info)
+    ctx.scrollToBottom("logsContainer")
+}
+
+// commands starting with `value` (only meaningful once `value` starts with "/")
+export function getCommandSuggestions (value: string): string[] {
+    const trimmed = value.trim()
+
+    if (!trimmed.startsWith("/")) {
+        return []
+    }
+
+    return COMMANDS.filter((cmd) => cmd.startsWith(trimmed))
+}
+
+// updates the hint line under the input as the user types, showing either
+// the single completion Enter would accept or the list of candidates
+export function updateCommandHint (ctx: MelkerEngine, value: string): void {
+    const hint = ctx.document.getElementById("commandHint")
+
+    if (!hint) {
+        return
+    }
+
+    const trimmed = value.trim()
+    const matches = getCommandSuggestions(trimmed)
+
+    if (matches.length === 0 || (matches.length === 1 && matches[0] === trimmed)) {
+        hint.props.text = ""
+    } else if (matches.length === 1) {
+        hint.props.text = `→ ${matches[0]}  (Enter to complete)`
+    } else {
+        hint.props.text = matches.join("   ")
+    }
+}
+
+// handles the internal, LLM-less commands listed in the welcome banner.
+// returns true when `question` was one of them (or was completed into one),
+// so the caller knows not to forward it to Mimir
+export async function handleCommand (question: string, ctx: MelkerEngine): Promise<boolean> {
+    const messageInput = ctx.document.getElementById("messageInput")
+    const trimmed = question.trim()
+
+    if (!COMMANDS.includes(trimmed)) {
+        // not a full command yet: if it is an unambiguous prefix of exactly
+        // one command, Enter completes the input instead of submitting it
+        const matches = getCommandSuggestions(trimmed)
+
+        if (matches.length === 1 && matches[0] !== trimmed) {
+            messageInput!.props.value = matches[0]
+            updateCommandHint(ctx, matches[0])
+            return true
+        }
+
+        return false
+    }
+
+    messageInput!.props.value = ""
+    updateCommandHint(ctx, "")
+
+    if (trimmed === "/exit") {
+        await ctx.stop()
+        process.exit(0)
+    }
+
+    if (trimmed === "/help") {
+        pushInfo(ctx, "Available commands:")
+        pushInfo(ctx, "  /enableAutoExecuteCommand  Enable auto-execution of commands")
+        pushInfo(ctx, "  /help                      Show this help")
+        pushInfo(ctx, "  /history                   Show previous ask/answer turns")
+        pushInfo(ctx, "  /clear                     Clear in-memory history, clean the context")
+        pushInfo(ctx, "  /exit                      Quit Mimir")
+    } else if (trimmed === "/clear") {
+        mimir.clearHistory()
+        const logsContainer = ctx.document.getElementById("logsContainer")
+        logsContainer!.children = []
+        pushInfo(ctx, "History cleared.")
+    } else if (trimmed === "/history") {
+        const history = mimir.getHistory()
+
+        if (history.length === 0) {
+            pushInfo(ctx, "No history yet.")
+        } else {
+            for (let i = 0; i < history.length; i++) {
+                const turn = history[i]
+                pushInfo(ctx, `${i + 1}. [${turn.timestamp}]`, "#fa625a")
+                pushInfo(ctx, `User: ${turn.question}`, "#755afa")
+                pushInfo(ctx, `Mimir: ${turn.answer.explanation}`, "#fab75a")
+            }
+        }
+    } else if (trimmed === "/enableAutoExecuteCommand") {
+        AUTO_EXECUTE_COMMAND = true
+        pushInfo(ctx, "Auto-execution of commands is now enabled.")
+    }
+
+    return true
+}
+
+// execute the commands, streaming each output chunk to onOutput as it arrives
+function executeCommand (command: string, onOutput: (chunk: string) => void, logFilePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const child = spawn(
+            "/bin/bash",
+            ["-c", `set -o pipefail; { ${command}; } 2>&1 | tee ${logFilePath}`],
+            {
+                env: {
+                    ...process.env,
+                    COLUMNS: `${MAIN_CONTAINER_WIDTH}`,
+                    LINES: "1000"
+                }
+            }
+        )
+
+        let _output = ""
+
+        child.stdout.on("data", (data) => {
+            const _chunk = data.toString()
+            _output += _chunk
+            onOutput(_chunk)
+        })
+
+        child.on("error", reject)
+
+        child.on("close", (code) => {
+            if (code === 0) {
+                resolve(_output)
+            } else {
+                reject(new Error(_output || `command exited with code ${code}`))
+            }
+        })
+    })
+}
+
+export async function loop (question: string, ctx: MelkerEngine) {
+    const messageInput = ctx.document.getElementById("messageInput")
+    const logsContainer = ctx.document.getElementById("logsContainer")
+
+    updateCommandHint(ctx, "")
+
+    // update the MAIN_CONTAINER_WIDTH
+    MAIN_CONTAINER_WIDTH = logsContainer?.getBounds()?.width || 0
+
+    // the user input template
+    const _userI = melker`
+                <container style="flex-direction: row;">
+                    <text style="font-weight: bold; color: #755afa" text="User: " />
+                    <text text="${question}\n" />
+                </container>
+            `
+    logsContainer!.children?.push(_userI)
+    ctx.scrollToBottom("logsContainer")
+    messageInput!.props.value = ""
+
+    // now mimir will think
+    const _uidOut = _outIx++
+    const _mimirO1 = melker`
+                <container>
+                    <container id="mimirRespWrap-${_uidOut}">
+                        <container style="flex-direction: row;">
+                            <text style="font-weight: bold; color: #fab75a;" text="Mimir: " />
+                            <spinner id="mimirSpinner-${_uidOut}" style="color: #f58d16;" variant="dots" />
+                        </container>
+                        <container id="mimirRespContainer-${_uidOut}"></container>
+                    </container>
+
+                    <container id="mimirCmdWrap-${_uidOut}">
+                        <container id="mimirCmdContainer-${_uidOut}"></container>
+                        <container id="mimirCmdLogs-${_uidOut}"></container>
+                    </container>
+                </container>
+            `
+    logsContainer!.children?.push(_mimirO1)
+    ctx.scrollToBottom("logsContainer")
+
+    // set it to the template
+    const _mimirRespContainer = ctx.document.getElementById(`mimirRespContainer-${_uidOut}`)
+    const _mimirCmdContainer = ctx.document.getElementById(`mimirCmdContainer-${_uidOut}`)
+    const _mimirSpinner = ctx.document.getElementById(`mimirSpinner-${_uidOut}`)
+    const _mimirCmdLogs = ctx.document.getElementById(`mimirCmdLogs-${_uidOut}`)
+
+    if (
+        !_mimirCmdContainer ||
+        !_mimirSpinner ||
+        !_mimirCmdLogs ||
+        !_mimirRespContainer
+    ) {
+        throw new Error(`
+                    Mimir output elements not found:
+                    _mimirCmdContainer: ${_mimirCmdContainer}
+                    _mimirSpinner: ${_mimirSpinner}
+                    _mimirCmdLogs: ${_mimirCmdLogs}
+                    _mimirRespContainer: ${_mimirRespContainer}
+                `)
+    }
+
+    const mimirRawResp = createElement(
+        'raw-ansi', {
+        text: '',
+        style: {
+            width: 'fill'
+        }
+    })
+    _mimirRespContainer.children?.push(mimirRawResp)
+
+    const mimirRawCmd = createElement(
+        'raw-ansi', {
+        text: '',
+        style: {
+            width: 'fill'
+        }
+    })
+    _mimirCmdContainer.children?.push(mimirRawCmd)
+
+    const cmdOutputRaw = createElement(
+        'raw-ansi', {
+        text: '',
+        style: {
+            width: 'fill'
+        }
+    })
+    _mimirCmdLogs.children?.push(cmdOutputRaw)
+
+    //then call the llm
+    const _resp = await mimir.ask(question, (text) => {
+        // parcial thinking output
+        mimirRawResp.props.text = `${text}\n`
+        ctx.scrollToBottom("logsContainer")
+    })
+
+    // mimir stops to think
+    _mimirSpinner.props.variant = "none"
+
+    if (_resp.explanation) {
+        mimirRawResp.props.text = `${_resp.explanation}\n`
+
+        if (_resp.command != null) {
+            // bold + #fa625a label baked into the ANSI stream itself, so the
+            // label and command stay on one line — raw-ansi wraps badly when
+            // used as a flex-row sibling next to another element instead of
+            // being the sole child of its container.
+            mimirRawCmd.props.text = `\x1b[1;38;2;250;98;90mCommand: \x1b[0m${_resp.command}\n`
+        }
+
+        ctx.scrollToBottom("logsContainer")
+
+        if (_resp.command != null && !AUTO_EXECUTE_COMMAND) {
+            pushInfo(
+                ctx,
+                "(auto-execution disabled, run it manually or use /enableAutoExecuteCommand)",
+                "#fa625a"
+            )
+        }
+
+        if (_resp.command != null && AUTO_EXECUTE_COMMAND) {
+            const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
+            let _rawOutput = ""
+
+            try {
+                // add the
+                // execute the command, appending each output chunk into the UI
+                await executeCommand(_resp.command, (chunk) => {
+                    _rawOutput += chunk
+                    cmdOutputRaw.props.text = _rawOutput
+                    ctx.scrollToBottom("logsContainer")
+                }, _outputTmpFile)
+
+                GlobalErrorCount = 0
+            } catch (error) {
+                // let's continue the loop in the agent inputting the
+                // next question as the error
+                // we need to also have some way to stop if we have so
+                // many levels of errors
+                GlobalErrorCount++
+
+                if (GlobalErrorCount < MAX_ERROR_COUNT) {
+                    let _outputTmpFileContent = ""
+
+                    try {
+                        _outputTmpFileContent = Deno.readTextFileSync(_outputTmpFile)
+                    } catch {
+                        const e = error as Error
+                        _outputTmpFileContent = e.message
+                    }
+
+                    // wow, AI knows how to do recursion?
+                    await loop(
+                        `The command "${_resp.command}" failed to execute, logs: ${_outputTmpFileContent}\n`,
+                        ctx
+                    )
+                }
+            }
+        }
+    }
+}

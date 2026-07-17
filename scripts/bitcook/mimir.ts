@@ -1,388 +1,70 @@
 #!/usr/bin/env -S deno run --allow-all
 
 import process from "node:process"
-import { execSync } from "node:child_process"
 import {
-    createInterface,
-    Interface
-} from "node:readline"
-import { ClaudeAPIClient } from "./utils/claudeAPI.ts"
+    createApp,
+    melker
+} from "@melker/melker/lib"
+import { installOsc52Clipboard } from "./utils/melkerUtils.ts"
+import { handleCommand, loop, updateCommandHint } from "./utils/mimirUtils.ts"
 
-const _pwd = process.cwd()
-const _dirs = Deno.readDirSync(_pwd)
-
-// we need this global
-// deno-lint-ignore no-var
-var GlobalContext =
-    `Project workdir, or PWD, is the following,` +
-    `USE THIS PATH AS BASE FOR THE COMMANDS SUGGESTIONS EVERYTHING WITH A PATH, AVOID cd WHENEVER POSSIBLE:\n` +
-    `${_pwd}\n\n` +
-    `The project workdir has the following folders that are possible repos:\n` +
-    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n`
-
-// deno-lint-ignore no-var
-var GlobalErrorCount = 0
-const MAX_ERROR_COUNT = 4
-
-type AskResponse = {
-    answer: string
-    command?: string
-}
-
-type ChatTurn = {
-    question: string
-    answer: AskResponse
-    timestamp: string
-}
-
+process.env.COLORTERM = "truecolor"
 const VERSION = "0.1.0"
 
-const COLOR_RESET = "\x1b[0m"
-const COLOR_BLUE = "\x1b[34m"
-const COLOR_ORANGE = "\x1b[38;5;208m"
-const COLOR_GREEN = "\x1b[32m"
-const COLOR_RED = "\x1b[31m"
+// load from .melker template
+const tuiDef = Deno.readTextFileSync(
+    `${import.meta.dirname}/utils/mimir.melker`
+)
 
-let AUTO_EXECUTE_COMMAND = false
-
-const history: ChatTurn[] = []
-
-const COMMANDS = [
-    "/enableAutoExecuteCommand",
-    "/help",
-    "/history",
-    "/clear",
-    "/exit"
-]
-
-function printBanner (): void {
-    console.log("Mimir knows everything about Gaia, Bitcook, DeimOS and PhobOS.")
-    console.log(`Version ${VERSION}`)
-    console.log("")
-}
-
-function printHelp (): void {
-    console.log("Available commands:")
-    console.log("  /enableAutoExecuteCommand  Enable auto-execution of commands")
-    console.log("  /help                      Show this help")
-    console.log("  /history                   Show previous ask/answer turns")
-    console.log("  /clear                     Clear in-memory history, clean the context")
-    console.log("")
-}
-
-function printHistory (): void {
-    if (history.length === 0) {
-        console.log("No history yet.")
-        console.log("")
-        return
+const tui = melker(Object.assign(
+    [tuiDef],
+    {
+        raw: [tuiDef]
     }
+))
 
-    console.log("History:")
-    for (let i = 0; i < history.length; i++) {
-        const turn = history[i]
-        console.log(`  ${i + 1}. ${COLOR_RED}[${turn.timestamp}]${COLOR_RESET}`)
-        console.log(`     ${COLOR_BLUE}User:${COLOR_RESET} ${turn.question}`)
-        console.log(`     ${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer.answer}`)
-    }
-    console.log("")
+const app = await createApp(tui, {
+    colorSupport: "256",
+    hideCursor: true,
+    enableMouse: true,
+    autoRender: true
+})
+
+// try to use native terminal clipboard
+installOsc52Clipboard(app)
+
+// backend assignments
+const messageInput = app.document.getElementById("messageInput")
+const welcome = app.document.getElementById("welcome")
+const welcomeContainer = app.document.getElementById("welcomeContainer")
+
+welcome!.props.text = `
+    Mimir knows everything about Gaia, Bitcook, DeimOS and PhobOS.
+    Version: ${VERSION}
+`
+
+messageInput!.props.placeholder = "Type your message here..."
+
+// deno-lint-ignore no-explicit-any
+messageInput!.props.onChange = (ev: any) => {
+    updateCommandHint(app, ev.value)
 }
 
-function printSeparator (): void {
-    console.log(COLOR_RESET + " ".repeat(terminalWidth()))
-}
+// deno-lint-ignore no-explicit-any
+messageInput!.props.onKeyPress = async (ev: any) => {
+    if (ev.key === "Enter" && messageInput!.props.value !== "") {
+        welcomeContainer!.props.visible = false
+        const _input = messageInput!.props.value
 
-function terminalWidth (): number {
-    const columns = process.stdout.columns
-    return columns && columns > 10 ? columns : 80
-}
-
-function truncateToWidth (text: string, width: number): string {
-    if (text.length <= width) {
-        return text
-    }
-
-    return `${text.slice(0, Math.max(0, width - 1))}…`
-}
-
-function startThinkingAnimation (): { stop: () => void; setStatus: (text: string) => void } {
-    const frames = [".", "..", "..."]
-    let i = 0
-    let status = "Mimir is thinking"
-
-    function render (): void {
-        const suffix = ` ${frames[i % frames.length]}`
-        const line = truncateToWidth(status, terminalWidth() - suffix.length) + suffix
-        process.stdout.write(`\r\x1b[2K${COLOR_GREEN}${line}${COLOR_RESET}`)
-    }
-
-    process.stdout.write("\x1b[?25l")
-    render()
-    const timer = setInterval(() => {
-        i++
-        render()
-    }, 400)
-
-    return {
-        stop: () => {
-            clearInterval(timer)
-            process.stdout.write("\r\x1b[2K")
-            process.stdout.write("\x1b[?25h")
-        },
-        setStatus: (text: string) => {
-            if (text.length === 0 || text === status) {
-                return
-            }
-
-            status = text
-            render()
-        }
-    }
-}
-
-function _buildQuestionWithContext (input: string): string {
-    // let's include on the context paths for then the AI will make
-    // the right assuptions for the commands
-    let context = ``
-
-    // if there is history, let's include the last 4 turns in the
-    // question to provide context to Mimir
-    if (history.length > 0) {
-        const lastTurns = history.slice(-4)
-        context = lastTurns.map((turn) => {
-            return `User: ${turn.question}\nMimir: ${turn.answer}`
-        }).join("\n\n")
-
-        input = `${GlobalContext}\n${context}\n` +
-            `The lines above are only for context, if the next user question does not require context, you can ignore it.\n` +
-            `\nUser: ${input}`
-
-    } else {
-        input = `${GlobalContext}\n\nUser: ${input}`
-    }
-
-    return input
-}
-
-async function buildAnswer (question: string): Promise<AskResponse> {
-    let input = question.trim()
-
-    if (input.length === 0) {
-        return {
-            answer: "Please ask a question so I can answer it."
-        }
-    }
-
-    const claude = new ClaudeAPIClient()
-    const animation = startThinkingAnimation()
-
-    try {
-        input = _buildQuestionWithContext(input)
-
-        const { explanation, command } = await claude.ask(input, (text) => {
-            animation.setStatus(text)
-        })
-
-        return command ? {
-            answer: `${explanation}\n\n${COLOR_RED}Command:${COLOR_RESET} ${command}`,
-            command: command
-        } : {
-            answer: explanation
-        }
-    } catch (error) {
-        return {
-            answer: `Failed to reach Mimir API: ${(error as Error).message}`
-        }
-    } finally {
-        animation.stop()
-    }
-}
-
-function createChatInterface (): Interface {
-    return createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        completer: (line: string): [string[], string] => {
-            const trimmed = line.trimStart()
-
-            if (!trimmed.startsWith("/")) {
-                return [[], line]
-            }
-
-            const hits = COMMANDS.filter((cmd) => cmd.startsWith(trimmed))
-            const matches = hits.length > 0 ? hits : COMMANDS
-            return [matches, trimmed]
-        }
-    })
-}
-
-function askQuestion (rl: Interface, promptText: string): Promise<string | null> {
-    return new Promise((resolve) => {
-        let settled = false
-
-        const onLine = (line: string): void => {
-            if (settled) {
-                return
-            }
-
-            settled = true
-            rl.removeListener("SIGINT", onSigint)
-            resolve(line)
+        if (await handleCommand(_input, app)) {
+            return
         }
 
-        const onSigint = (): void => {
-            if (settled) {
-                return
-            }
-
-            settled = true
-            rl.removeListener("line", onLine)
-                ; (rl as unknown as { line: string; cursor: number }).line = ""
-                ; (rl as unknown as { line: string; cursor: number }).cursor = 0
-            console.log()
-            resolve(null)
-        }
-
-        rl.once("line", onLine)
-        rl.once("SIGINT", onSigint)
-        rl.setPrompt(promptText)
-        rl.prompt()
-    })
-}
-
-async function _doQuestion (question: string): Promise<ChatTurn> {
-    const answer = await buildAnswer(question)
-    const turn: ChatTurn = {
-        question,
-        answer: answer,
-        timestamp: new Date().toISOString()
-    }
-
-    return turn
-}
-
-async function _loop (question: string) {
-    if (question === "/exit") {
-        console.log("Goodbye.")
-        process.exit(0)
-    }
-
-    if (question === "/help") {
-        printHelp()
-        return
-    }
-
-    if (question === "/clear") {
-        history.length = 0
-        console.log("History cleared.")
-        console.log("")
-        return
-    }
-
-    if (question === "/history") {
-        printHistory()
-        return
-    }
-
-    if (question === "/enableAutoExecuteCommand") {
-        AUTO_EXECUTE_COMMAND = true
-        console.log("Auto-execution of commands is now enabled.")
-        console.log()
-        return
-    }
-
-    // not documented /context
-    if (question === "/context") {
-        console.log(_buildQuestionWithContext(""))
-        console.log()
-        return
-    }
-
-    const turn = await _doQuestion(question)
-    history.push(turn)
-
-    printSeparator()
-    console.log(`${COLOR_ORANGE}Mimir:${COLOR_RESET} ${turn.answer.answer}`)
-    console.log("")
-
-    if (AUTO_EXECUTE_COMMAND && turn.answer.command) {
-        const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
-        console.log(`${COLOR_GREEN}Executing command:${COLOR_RESET} ${turn.answer.command}`)
-
-        try {
-            // remove the previous output file if it exists
-            try {
-                Deno.removeSync(_outputTmpFile)
-            } catch {
-                // ignore if the file does not exist
-            }
-
-            execSync(
-                `set -o pipefail; { ${turn.answer.command}; } 2>&1 | tee ${_outputTmpFile}`,
-                {
-                    shell: "/bin/bash",
-                    stdio: "inherit",
-                    encoding: "utf-8",
-                    env: process.env
-                }
-            )
-
-            GlobalErrorCount = 0
-        } catch (error) {
-            // let's continue the loop in the agent inputting the
-            // next question as the error
-            // we need to also have some way to stop if we have so
-            // many levels of errors
-            GlobalErrorCount++
-
-            if (GlobalErrorCount < MAX_ERROR_COUNT) {
-                // Prefer captured command output, but fallback to the thrown error message.
-                let _outputTmpFileContent = ""
-
-                try {
-                    _outputTmpFileContent = Deno.readTextFileSync(_outputTmpFile)
-                } catch {
-                    const e = error as Error
-                    _outputTmpFileContent = e.message
-                }
-
-                // wow, AI knows how to do recursion?
-                await _loop(
-                    `The command "${turn.answer.command}" failed to execute, logs: ${_outputTmpFileContent}\n`
-                )
-            }
-        }
+        await loop(_input, app)
     }
 }
 
-async function run (): Promise<void> {
-    const rl = createChatInterface()
+app.focusElement("messageInput")
 
-    printBanner()
-
-    try {
-        while (true) {
-            const raw = await askQuestion(rl, `${COLOR_BLUE}User>${COLOR_RESET} `)
-
-            if (raw === null) {
-                return
-            }
-
-            const question = raw.trim()
-
-            if (question.length === 0) {
-                continue
-            }
-
-            await _loop(question)
-        }
-    } finally {
-        rl.close()
-    }
-}
-
-if (import.meta.main) {
-    run().catch((error) => {
-        console.error("Fatal error while running Mimir:", error)
-        process.exit(1)
-    })
-}
+// run Forest run
+app.render()
