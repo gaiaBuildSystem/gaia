@@ -6,7 +6,7 @@ import {
     melker
 } from "@melker/melker/lib"
 import { installOsc52Clipboard } from "./utils/melkerUtils.ts"
-import { handleCommand, loop, updateCommandHint } from "./utils/mimirUtils.ts"
+import { handleCommand, isProcessing, loop, updateCommandHint } from "./utils/mimirUtils.ts"
 
 process.env.COLORTERM = "truecolor"
 const VERSION = "0.1.0"
@@ -53,8 +53,19 @@ messageInput!.props.onChange = (ev: any) => {
 // deno-lint-ignore no-explicit-any
 messageInput!.props.onKeyPress = async (ev: any) => {
     if (ev.key === "Enter" && messageInput!.props.value !== "") {
-        welcomeContainer!.props.visible = false
         const _input = messageInput!.props.value
+
+        // while Mimir is thinking or a command is executing, only /stop is
+        // accepted: new questions must wait for the current turn to finish
+        if (isProcessing()) {
+            if (_input.trim() === "/stop") {
+                await handleCommand(_input, app)
+            }
+
+            return
+        }
+
+        welcomeContainer!.props.visible = false
 
         if (await handleCommand(_input, app)) {
             return

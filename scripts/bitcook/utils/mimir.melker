@@ -22,6 +22,7 @@
             <text>/enableAutoExecuteCommand</text>
             <text>/history</text>
             <text>/clear</text>
+            <text>/stop</text>
             <text>/exit</text>
         </container>
     </container>

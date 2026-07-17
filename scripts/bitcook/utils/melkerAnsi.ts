@@ -102,7 +102,11 @@ export interface RawAnsiProps {
     // deno-lint-ignore no-explicit-any
     style?: Record<string, any>
     id?: string
+    /** Max source lines kept, oldest dropped first — like a terminal's scrollback limit. Default 5000. */
+    maxLines?: number
 }
+
+const DEFAULT_MAX_LINES = 1000
 
 type AnsiCell = { char: string; pen: PenState }
 
@@ -141,7 +145,10 @@ export class RawAnsiElement extends Element {
         const text = this.props.text ?? ''
         if (text === this._lastText) return
         this._lastText = text
-        this._lines = text.split('\n').map(tokenizeLine)
+        const lines = text.split('\n')
+        const maxLines = this.props.maxLines ?? DEFAULT_MAX_LINES
+        const capped = lines.length > maxLines ? lines.slice(lines.length - maxLines) : lines
+        this._lines = capped.map(tokenizeLine)
         this._wrapWidth = -1 // force rewrap on next render
     }
 

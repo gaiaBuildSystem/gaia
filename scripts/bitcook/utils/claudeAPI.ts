@@ -73,14 +73,15 @@ export class ClaudeAPIClient {
         this._history.length = 0
     }
 
-    async ask (question: string, onProgress?: (text: string) => void): Promise<AskResponse> {
+    async ask (question: string, onProgress?: (text: string) => void, signal?: AbortSignal): Promise<AskResponse> {
         const _question = this._buildQuestionWithContext(question)
         const response = await fetch(`${this.baseUrl}/ask`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ question: _question })
+            body: JSON.stringify({ question: _question }),
+            signal
         })
 
         if (!response.ok) {

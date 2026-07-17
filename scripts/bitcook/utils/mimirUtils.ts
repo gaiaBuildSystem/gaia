@@ -22,6 +22,15 @@ var AUTO_EXECUTE_COMMAND = false
 // deno-lint-ignore no-var
 var MAIN_CONTAINER_WIDTH = 0
 
+// deno-lint-ignore no-var
+var IS_PROCESSING = false
+// deno-lint-ignore no-var
+var STOPPED_BY_USER = false
+// deno-lint-ignore no-var
+var CURRENT_ABORT: AbortController | null = null
+// deno-lint-ignore no-var
+var CURRENT_CHILD: ReturnType<typeof spawn> | null = null
+
 const COMMANDS = [
     "/enableAutoExecuteCommand",
     "/help",
@@ -29,6 +38,34 @@ const COMMANDS = [
     "/clear",
     "/exit"
 ]
+
+// while Mimir is thinking or a command is executing, /stop is the only
+// command the user is allowed to issue: everything else (including new
+// questions) must be blocked until the current turn finishes or is stopped
+function activeCommands (): string[] {
+    return IS_PROCESSING ? ["/stop"] : COMMANDS
+}
+
+export function isProcessing (): boolean {
+    return IS_PROCESSING
+}
+
+function isAbortError (error: unknown): boolean {
+    return error instanceof Error && error.name === "AbortError"
+}
+
+// aborts the in-flight LLM request and/or kills the running shell command
+export function stopProcessing (ctx: MelkerEngine): void {
+    if (!IS_PROCESSING) {
+        return
+    }
+
+    STOPPED_BY_USER = true
+    CURRENT_ABORT?.abort()
+    CURRENT_CHILD?.kill("SIGTERM")
+
+    pushInfo(ctx, "Stopped by user.", "#fa625a")
+}
 
 // llm client
 const mimir = new ClaudeAPIClient()
@@ -64,7 +101,7 @@ export function getCommandSuggestions (value: string): string[] {
         return []
     }
 
-    return COMMANDS.filter((cmd) => cmd.startsWith(trimmed))
+    return activeCommands().filter((cmd) => cmd.startsWith(trimmed))
 }
 
 // updates the hint line under the input as the user types, showing either
@@ -94,8 +131,9 @@ export function updateCommandHint (ctx: MelkerEngine, value: string): void {
 export async function handleCommand (question: string, ctx: MelkerEngine): Promise<boolean> {
     const messageInput = ctx.document.getElementById("messageInput")
     const trimmed = question.trim()
+    const _active = activeCommands()
 
-    if (!COMMANDS.includes(trimmed)) {
+    if (!_active.includes(trimmed)) {
         // not a full command yet: if it is an unambiguous prefix of exactly
         // one command, Enter completes the input instead of submitting it
         const matches = getCommandSuggestions(trimmed)
@@ -106,11 +144,22 @@ export async function handleCommand (question: string, ctx: MelkerEngine): Promi
             return true
         }
 
+        // while processing, /stop is the only command accepted: swallow
+        // anything else instead of forwarding it as a new question to Mimir
+        if (IS_PROCESSING) {
+            return true
+        }
+
         return false
     }
 
     messageInput!.props.value = ""
     updateCommandHint(ctx, "")
+
+    if (trimmed === "/stop") {
+        stopProcessing(ctx)
+        return true
+    }
 
     if (trimmed === "/exit") {
         await ctx.stop()
@@ -123,6 +172,7 @@ export async function handleCommand (question: string, ctx: MelkerEngine): Promi
         pushInfo(ctx, "  /help                      Show this help")
         pushInfo(ctx, "  /history                   Show previous ask/answer turns")
         pushInfo(ctx, "  /clear                     Clear in-memory history, clean the context")
+        pushInfo(ctx, "  /stop                      Stop Mimir's current thinking/command execution")
         pushInfo(ctx, "  /exit                      Quit Mimir")
     } else if (trimmed === "/clear") {
         mimir.clearHistory()
@@ -165,6 +215,7 @@ function executeCommand (command: string, onOutput: (chunk: string) => void, log
             }
         )
 
+        CURRENT_CHILD = child
         let _output = ""
 
         child.stdout.on("data", (data) => {
@@ -175,9 +226,15 @@ function executeCommand (command: string, onOutput: (chunk: string) => void, log
 
         child.on("error", reject)
 
-        child.on("close", (code) => {
+        child.on("close", (code, signal) => {
+            CURRENT_CHILD = null
+
             if (code === 0) {
                 resolve(_output)
+            } else if (signal) {
+                const _stoppedError = new Error(_output || `command stopped by signal ${signal}`)
+                _stoppedError.name = "AbortError"
+                reject(_stoppedError)
             } else {
                 reject(new Error(_output || `command exited with code ${code}`))
             }
@@ -193,6 +250,11 @@ export async function loop (question: string, ctx: MelkerEngine) {
 
     // update the MAIN_CONTAINER_WIDTH
     MAIN_CONTAINER_WIDTH = logsContainer?.getBounds()?.width || 0
+
+    // block new questions/commands (other than /stop) until this turn ends
+    IS_PROCESSING = true
+    STOPPED_BY_USER = false
+    CURRENT_ABORT = new AbortController()
 
     // the user input template
     const _userI = melker`
@@ -274,75 +336,93 @@ export async function loop (question: string, ctx: MelkerEngine) {
     })
     _mimirCmdLogs.children?.push(cmdOutputRaw)
 
-    //then call the llm
-    const _resp = await mimir.ask(question, (text) => {
-        // parcial thinking output
-        mimirRawResp.props.text = `${text}\n`
-        ctx.scrollToBottom("logsContainer")
-    })
+    try {
+        //then call the llm
+        const _resp = await mimir.ask(question, (text) => {
+            // parcial thinking output
+            mimirRawResp.props.text = `${text}\n`
+            ctx.scrollToBottom("logsContainer")
+        }, CURRENT_ABORT.signal)
 
-    // mimir stops to think
-    _mimirSpinner.props.variant = "none"
+        // mimir stops to think
+        _mimirSpinner.props.variant = "none"
 
-    if (_resp.explanation) {
-        mimirRawResp.props.text = `${_resp.explanation}\n`
+        if (_resp.explanation) {
+            mimirRawResp.props.text = `${_resp.explanation}\n`
 
-        if (_resp.command != null) {
-            // bold + #fa625a label baked into the ANSI stream itself, so the
-            // label and command stay on one line — raw-ansi wraps badly when
-            // used as a flex-row sibling next to another element instead of
-            // being the sole child of its container.
-            mimirRawCmd.props.text = `\x1b[1;38;2;250;98;90mCommand: \x1b[0m${_resp.command}\n`
-        }
+            if (_resp.command != null) {
+                // bold + #fa625a label baked into the ANSI stream itself, so the
+                // label and command stay on one line — raw-ansi wraps badly when
+                // used as a flex-row sibling next to another element instead of
+                // being the sole child of its container.
+                mimirRawCmd.props.text = `\x1b[1;38;2;250;98;90mCommand: \x1b[0m${_resp.command}\n`
+            }
 
-        ctx.scrollToBottom("logsContainer")
+            ctx.scrollToBottom("logsContainer")
 
-        if (_resp.command != null && !AUTO_EXECUTE_COMMAND) {
-            pushInfo(
-                ctx,
-                "(auto-execution disabled, run it manually or use /enableAutoExecuteCommand)",
-                "#fa625a"
-            )
-        }
+            if (_resp.command != null && !AUTO_EXECUTE_COMMAND) {
+                pushInfo(
+                    ctx,
+                    "(auto-execution disabled, run it manually or use /enableAutoExecuteCommand)",
+                    "#fa625a"
+                )
+            }
 
-        if (_resp.command != null && AUTO_EXECUTE_COMMAND) {
-            const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
-            let _rawOutput = ""
+            if (_resp.command != null && AUTO_EXECUTE_COMMAND) {
+                const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
+                let _rawOutput = ""
 
-            try {
-                // add the
-                // execute the command, appending each output chunk into the UI
-                await executeCommand(_resp.command, (chunk) => {
-                    _rawOutput += chunk
-                    cmdOutputRaw.props.text = _rawOutput
-                    ctx.scrollToBottom("logsContainer")
-                }, _outputTmpFile)
+                try {
+                    // add the
+                    // execute the command, appending each output chunk into the UI
+                    await executeCommand(_resp.command, (chunk) => {
+                        _rawOutput += chunk
+                        cmdOutputRaw.props.text = _rawOutput
+                        ctx.scrollToBottom("logsContainer")
+                    }, _outputTmpFile)
 
-                GlobalErrorCount = 0
-            } catch (error) {
-                // let's continue the loop in the agent inputting the
-                // next question as the error
-                // we need to also have some way to stop if we have so
-                // many levels of errors
-                GlobalErrorCount++
-
-                if (GlobalErrorCount < MAX_ERROR_COUNT) {
-                    let _outputTmpFileContent = ""
-
-                    try {
-                        _outputTmpFileContent = Deno.readTextFileSync(_outputTmpFile)
-                    } catch {
-                        const e = error as Error
-                        _outputTmpFileContent = e.message
+                    GlobalErrorCount = 0
+                } catch (error) {
+                    if (STOPPED_BY_USER || isAbortError(error)) {
+                        // user asked for it, not an actual failure: don't
+                        // feed it back into the auto-retry-on-error loop
+                        return
                     }
 
-                    // wow, AI knows how to do recursion?
-                    await loop(
-                        `The command "${_resp.command}" failed to execute, logs: ${_outputTmpFileContent}\n`,
-                        ctx
-                    )
+                    // let's continue the loop in the agent inputting the
+                    // next question as the error
+                    // we need to also have some way to stop if we have so
+                    // many levels of errors
+                    GlobalErrorCount++
+
+                    if (GlobalErrorCount < MAX_ERROR_COUNT) {
+                        let _outputTmpFileContent = ""
+
+                        try {
+                            _outputTmpFileContent = Deno.readTextFileSync(_outputTmpFile)
+                        } catch {
+                            const e = error as Error
+                            _outputTmpFileContent = e.message
+                        }
+
+                        // wow, AI knows how to do recursion?
+                        await loop(
+                            `The command "${_resp.command}" failed to execute, logs: ${_outputTmpFileContent}\n`,
+                            ctx
+                        )
+                    }
                 }
             }
         }
+    } catch (error) {
+        _mimirSpinner.props.variant = "none"
+
+        if (!isAbortError(error)) {
+            throw error
+        }
+    } finally {
+        IS_PROCESSING = false
+        CURRENT_ABORT = null
+        CURRENT_CHILD = null
     }
 }
