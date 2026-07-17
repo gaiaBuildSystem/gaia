@@ -198,7 +198,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
     const _userI = melker`
                 <container style="flex-direction: row;">
                     <text style="font-weight: bold; color: #755afa" text="User: " />
-                    <text text="${question}\n" />
+                    <text style="text-wrap: wrap;" text="${question}\n" />
                 </container>
             `
     logsContainer!.children?.push(_userI)
