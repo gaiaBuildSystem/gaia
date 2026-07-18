@@ -6,10 +6,12 @@ import {
     MelkerEngine
 } from "@melker/melker/lib"
 import { installRawAnsiComponent } from "./melkerAnsi.ts"
+import { installTerminalComponent, type TerminalElement } from "./melkerTerminal.ts"
 import { ClaudeAPIClient } from "./claudeAPI.ts"
 
 
 installRawAnsiComponent()
+installTerminalComponent()
 
 // deno-lint-ignore no-var
 var _outIx = 0
@@ -62,7 +64,17 @@ export function stopProcessing (ctx: MelkerEngine): void {
 
     STOPPED_BY_USER = true
     CURRENT_ABORT?.abort()
-    CURRENT_CHILD?.kill("SIGTERM")
+
+    if (CURRENT_CHILD?.pid) {
+        try {
+            // Negative PID signals the whole process group (see the
+            // `detached: true` comment in executeCommand) so the actual
+            // pipeline command, not just the bash wrapper, gets killed.
+            process.kill(-CURRENT_CHILD.pid, "SIGTERM")
+        } catch {
+            // already exited between the IS_PROCESSING check and here
+        }
+    }
 
     pushInfo(ctx, "Stopped by user.", "#fa625a")
 }
@@ -80,6 +92,20 @@ mimir.setAdditionalContext(
 )
 
 
+// Command output streams chunks fast enough (many renders per second for a
+// verbose/long-running command) that unconditionally auto-scrolling on every
+// chunk fights an in-progress mouse drag-selection: the container keeps
+// jumping back to the bottom mid-drag, so the selection's end coordinate
+// never gets a chance to track anywhere but the row the drag started on.
+// Skipping the scroll while a selection is active/present fixes that,
+// matching how real terminals pause scroll-follow during a selection.
+function scrollLogsToBottom (ctx: MelkerEngine): void {
+    if (ctx.getTextSelection().isActive) {
+        return
+    }
+    ctx.scrollToBottom("logsContainer")
+}
+
 // prints a single informational line into the logs container, used by the
 // internal commands below to give feedback without involving the LLM
 function pushInfo (ctx: MelkerEngine, text: string, color = "#26dc20") {
@@ -90,7 +116,7 @@ function pushInfo (ctx: MelkerEngine, text: string, color = "#26dc20") {
                 </container>
             `
     logsContainer!.children?.push(_info)
-    ctx.scrollToBottom("logsContainer")
+    scrollLogsToBottom(ctx)
 }
 
 // commands starting with `value` (only meaningful once `value` starts with "/")
@@ -211,7 +237,15 @@ function executeCommand (command: string, onOutput: (chunk: string) => void, log
                     ...process.env,
                     COLUMNS: `${MAIN_CONTAINER_WIDTH}`,
                     LINES: "1000"
-                }
+                },
+                // `command` runs as a shell pipeline (`{ cmd; } | tee`), so the
+                // actual work happens in bash's *children*, not in bash itself.
+                // Without its own process group, signaling just this PID (see
+                // stopProcessing) only ever reaches bash — the real command and
+                // `tee` are left running orphaned. `detached: true` makes this
+                // child the leader of a new group so the whole pipeline can be
+                // signaled at once via the negative PID.
+                detached: true
             }
         )
 
@@ -264,7 +298,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
                 </container>
             `
     logsContainer!.children?.push(_userI)
-    ctx.scrollToBottom("logsContainer")
+    scrollLogsToBottom(ctx)
     messageInput!.props.value = ""
 
     // now mimir will think
@@ -286,7 +320,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
                 </container>
             `
     logsContainer!.children?.push(_mimirO1)
-    ctx.scrollToBottom("logsContainer")
+    scrollLogsToBottom(ctx)
 
     // set it to the template
     const _mimirRespContainer = ctx.document.getElementById(`mimirRespContainer-${_uidOut}`)
@@ -327,13 +361,23 @@ export async function loop (question: string, ctx: MelkerEngine) {
     })
     _mimirCmdContainer.children?.push(mimirRawCmd)
 
+    // Half of logsContainer's current height, snapshotted once at creation
+    // (like MAIN_CONTAINER_WIDTH above) — NOT derived from the terminal's own
+    // IntrinsicSizeContext.availableSpace at render time, which is what broke
+    // logsContainer's auto-scroll-to-bottom before (see melkerTerminal.ts).
+    const _logsContainerHeight = logsContainer?.getBounds()?.height || 0
+    const _cmdOutputMaxVisibleRows = _logsContainerHeight > 0
+        ? Math.max(1, Math.floor(_logsContainerHeight / 2))
+        : undefined
+
     const cmdOutputRaw = createElement(
-        'raw-ansi', {
+        'terminal', {
         text: '',
+        maxVisibleRows: _cmdOutputMaxVisibleRows,
         style: {
             width: 'fill'
         }
-    })
+    }) as TerminalElement
     _mimirCmdLogs.children?.push(cmdOutputRaw)
 
     try {
@@ -341,7 +385,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
         const _resp = await mimir.ask(question, (text) => {
             // parcial thinking output
             mimirRawResp.props.text = `${text}\n`
-            ctx.scrollToBottom("logsContainer")
+            scrollLogsToBottom(ctx)
         }, CURRENT_ABORT.signal)
 
         // mimir stops to think
@@ -358,7 +402,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
                 mimirRawCmd.props.text = `\x1b[1;38;2;250;98;90mCommand: \x1b[0m${_resp.command}\n`
             }
 
-            ctx.scrollToBottom("logsContainer")
+            scrollLogsToBottom(ctx)
 
             if (_resp.command != null && !AUTO_EXECUTE_COMMAND) {
                 pushInfo(
@@ -378,7 +422,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
                     await executeCommand(_resp.command, (chunk) => {
                         _rawOutput += chunk
                         cmdOutputRaw.props.text = _rawOutput
-                        ctx.scrollToBottom("logsContainer")
+                        scrollLogsToBottom(ctx)
                     }, _outputTmpFile)
 
                     GlobalErrorCount = 0
@@ -411,6 +455,19 @@ export async function loop (question: string, ctx: MelkerEngine) {
                             ctx
                         )
                     }
+                } finally {
+                    // Terminal.write() flushes asynchronously, so the last output
+                    // chunk may not have parsed into cmdOutputRaw's buffer yet by
+                    // the time the command closes and no further chunk arrives to
+                    // trigger another render — flush and repaint once more here.
+                    // This is best-effort only: IS_PROCESSING isn't reset until
+                    // this whole function returns, so a flush that never settles
+                    // must never be allowed to hang the conversation loop.
+                    await Promise.race([
+                        cmdOutputRaw.whenIdle().catch(() => { }),
+                        new Promise((resolve) => setTimeout(resolve, 250)),
+                    ])
+                    scrollLogsToBottom(ctx)
                 }
             }
         }

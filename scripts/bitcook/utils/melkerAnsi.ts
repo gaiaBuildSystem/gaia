@@ -8,16 +8,16 @@ import {
     type IntrinsicSizeContext,
 } from '@melker/melker/lib'
 
-const ANSI_16: [number, number, number][] = [
+export const ANSI_16: [number, number, number][] = [
     [0, 0, 0], [205, 0, 0], [0, 205, 0], [205, 205, 0], [0, 0, 238], [205, 0, 205], [0, 205, 205], [229, 229, 229],
     [127, 127, 127], [255, 0, 0], [0, 255, 0], [255, 255, 0], [92, 92, 255], [255, 0, 255], [0, 255, 255], [255, 255, 255],
 ]
 
-function packRGBA (r: number, g: number, b: number, a = 255): number {
+export function packRGBA (r: number, g: number, b: number, a = 255): number {
     return ((r & 0xFF) << 24) | ((g & 0xFF) << 16) | ((b & 0xFF) << 8) | (a & 0xFF)
 }
 
-function ansi256ToRgb (n: number): [number, number, number] {
+export function ansi256ToRgb (n: number): [number, number, number] {
     if (n < 16) return ANSI_16[n]
     if (n < 232) {
         const i = n - 16

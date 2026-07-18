@@ -5,6 +5,7 @@
     "npm:@cyclonedx/cyclonedx-library@^9.4.1": "9.5.0_ajv@8.20.0",
     "npm:@jsquash/webp@1.5.0": "1.5.0",
     "npm:@types/node@^20.10.6": "20.19.41",
+    "npm:@xterm/headless@6": "6.0.0",
     "npm:ajv@^8.17.0": "8.20.0",
     "npm:fast-png@8.0.0": "8.0.0",
     "npm:html5parser@2.0.2": "2.0.2",
@@ -74,6 +75,9 @@
     },
     "@types/unist@3.0.3": {
       "integrity": "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="
+    },
+    "@xterm/headless@6.0.0": {
+      "integrity": "sha512-5Yj1QINYCyzrZtf8OFIHi47iQtI+0qYFPHmouEfG8dHNxbZ9Tb9YGSuLcsEwj9Z+OL75GJqPyJbyoFer80a2Hw=="
     },
     "ajv@8.20.0": {
       "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==",
@@ -671,6 +675,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@melker/melker@^2026.3.1",
+      "npm:@xterm/headless@6",
       "npm:ajv@^8.17.0",
       "npm:node-color-log@11"
     ],
