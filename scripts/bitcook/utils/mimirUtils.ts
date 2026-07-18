@@ -454,7 +454,12 @@ export async function loop (question: string, ctx: MelkerEngine) {
                         let _outputTmpFileContent = ""
 
                         try {
-                            _outputTmpFileContent = Deno.readTextFileSync(_outputTmpFile)
+                            const _fullOutput = Deno.readTextFileSync(_outputTmpFile)
+                            const _lines = _fullOutput.split("\n")
+
+                            _outputTmpFileContent = _lines.length > 500
+                                ? _lines.slice(-500).join("\n")
+                                : _fullOutput
                         } catch {
                             const e = error as Error
                             _outputTmpFileContent = e.message
