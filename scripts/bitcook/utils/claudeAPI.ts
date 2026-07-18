@@ -57,6 +57,10 @@ export class ClaudeAPIClient {
         return input
     }
 
+    public getContext (): string {
+        return this._buildQuestionWithContext("")
+    }
+
     public setMaxHistoryContext (max: number) {
         this._maxHistoryContext = max
     }

@@ -159,6 +159,17 @@ export async function handleCommand (question: string, ctx: MelkerEngine): Promi
     const trimmed = question.trim()
     const _active = activeCommands()
 
+    // /context is an undocumented debug command: intentionally left out of
+    // COMMANDS/autocomplete/`/help`, and handled here so it works even while
+    // IS_PROCESSING restricts everything else to /stop
+    if (trimmed === "/context") {
+        messageInput!.props.value = ""
+        updateCommandHint(ctx, "")
+        pushInfo(ctx, "Context:")
+        pushInfo(ctx, mimir.getContext())
+        return true
+    }
+
     if (!_active.includes(trimmed)) {
         // not a full command yet: if it is an unambiguous prefix of exactly
         // one command, Enter completes the input instead of submitting it
