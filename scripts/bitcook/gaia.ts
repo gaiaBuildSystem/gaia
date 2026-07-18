@@ -3,6 +3,7 @@
 import { createRequire } from "node:module"
 const require = createRequire(import.meta.url)
 
+import process from "node:process"
 import logger from "node-color-log"
 import { ParseRecipes } from "./parse.ts"
 import { ExecFetch } from "./execFetch.ts"
@@ -29,8 +30,9 @@ import { ExecPureDeploy } from "./execPureDeploy.ts"
 import { ExecAfterBundle } from "./execAfterBundle.ts"
 import { ExecSBOM } from "./execSBOM.ts"
 import { ExecAfterBundleInitramfs } from "./execAfterBundleInitramfs.ts"
-import process from "node:process";
 
+
+// deno-lint-ignore no-explicit-any
 const _validateSchema = (schema: any, data: any, refs: any[] = []) => {
     const ajv = new Ajv2019({
         strict: false
@@ -91,7 +93,7 @@ let BUILD_PATH = _args.buildPath as string
 const DISTRO = _args.distro as string
 const DEV = _args.dev as boolean
 const RECIPE = _args.recipe as string
-const STEP = _args.step as string
+// const STEP = _args.step as string
 const CLEAN = _args.clean as boolean
 const VERBOSE = _args.verbose as boolean
 const INSTALL_HOST_DEPS = _args.installHostDeps as boolean
@@ -132,7 +134,7 @@ try {
             env: process.env
         }
     )
-} catch (e) {
+} catch (_e) {
     logger.warn("podman clearing /var/run/libpod and pods ...")
     PODMAN_CLEAN = true
 }
