@@ -394,8 +394,8 @@ export async function loop (question: string, ctx: MelkerEngine) {
     try {
         //then call the llm
         const _resp = await mimir.ask(question, (text) => {
-            // parcial thinking output
-            mimirRawResp.props.text = `${text}\n`
+            // parcial thinking output, shown in green while still streaming
+            mimirRawResp.props.text = `\x1b[32m${text}\x1b[0m\n`
             scrollLogsToBottom(ctx)
         }, CURRENT_ABORT.signal)
 
