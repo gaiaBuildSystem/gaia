@@ -433,7 +433,7 @@ export async function loop (question: string, ctx: MelkerEngine) {
                     await executeCommand(_resp.command, (chunk) => {
                         _rawOutput += chunk
                         cmdOutputRaw.props.text = _rawOutput
-                        scrollLogsToBottom(ctx)
+                        // scrollLogsToBottom(ctx)
                     }, _outputTmpFile)
 
                     GlobalErrorCount = 0
