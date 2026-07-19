@@ -6,4 +6,4 @@ set -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # call Mimir
-$SCRIPT_DIR/scripts/bitcook/mimir-cli.ts
+$SCRIPT_DIR/scripts/bitcook/mimir-cli.ts $@
