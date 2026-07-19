@@ -85,10 +85,11 @@ const _pwd = process.cwd()
 const _dirs = Deno.readDirSync(_pwd)
 mimir.setAdditionalContext(
     `Project workdir, or PWD, is the following,` +
-    `USE THIS PATH AS BASE FOR THE COMMANDS SUGGESTIONS EVERYTHING WITH A PATH, AVOID cd WHENEVER POSSIBLE:\n` +
     `${_pwd}\n\n` +
+    `USE THIS PATH AS BASE FOR THE COMMANDS SUGGESTIONS EVERYTHING WITH A PATH, AVOID cd WHENEVER POSSIBLE!\n\n` +
     `The project workdir has the following folders that are possible repos:\n` +
-    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n`
+    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n` +
+    `Gaia build system generates folders for the distro build like ./build-<distro name>, these folders are not repos, but build output folders, avoid them when possible.\n\n`
 )
 
 
