@@ -37,7 +37,12 @@ if (Deno.args[0] === "--version") {
 }
 
 const loop = async (question: string) => {
-    const turn = await mimir.ask(question)
+    const turn = await mimir.ask(question, (partial) => {
+        console.log(`Thinking: ${partial}\n`)
+    })
+
+    console.log(`Mimir: ${turn.explanation}\n`)
+    console.log(`Command: ${turn.command}\n`)
 
     if (turn.explanation.trim() === 'Okay, there\'re a few gaps in my knowledge, I do not have the answer to your question') {
         console.log(`Mimir: ${turn.explanation}`)
