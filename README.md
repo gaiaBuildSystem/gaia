@@ -5,81 +5,52 @@
     />
 </p>
 
-# Gaia Core
+# Setup
 
-Gaia Core is the origin, the beginning, the first. It is the core of the Gaia Build System.
+The prerequisites for setup the Gaia Build System are:
 
-## Building DeimOS
+- Linux or WSL 2 environment;
+- Git;
+- Docker;
+- Docker Compose plugin;
 
-Deimos is the Gaia Build System's reference distribution. It is a minimal distribution that is used to test the Gaia Build System.
-
-Run the following command to create an image:
+With these installed you can clone the Gaia core repo:
 
 ```bash
-./scripts/bitcook/gaia.ts --buildPath /<absolute path to a build folder> --distro distro-ref-amd64.json --noCache
+mkdir workdir
+cd workdir
+git clone https://github.com/gaiaBuildSystem/gaia.git
 ```
 
-> [!WARNING]
-The `--buildPath` argument is mandatory and must be an absolute path.
-
-> [!WARNING]
-The `--distro` argument is mandatory and must be a relative path to a distro json file.
-
-> [!WARNING]
-The `--noCache` argument is optional but should be use on the first build to create a new cache.
-
-The DeimOS images that this repo builds are only for:
-
-- qemu-x86-64
-- qemu-arm64
-
-Check the other repositories for DeimOS support on other machines.
-
-## Setup Multi-Cookbook Build
-
-> [!WARNING]
-This depends on having Docker and Docker compose plugin installed.
-
-For some targets you may need to build with the help of other meta cookbooks. To do this we recommend you to use the Gaia `repo`util with a `manifest.json` file. These are the interfaces that follow the `manifest.json` schema:
-
-```typescript
-interface Manifest {
-    name: string,
-    description: string,
-    maintainer: string,
-    repositories: Repository[]
-}
-
-interface Repository {
-    name: string
-    path: string
-    url: string
-    revision: string
-}
-```
-
-A hypothetic example of a `manifest.json` file:
-
-```json
-{
-    "name": "Rasp DeimOS",
-    "description": "Raspberry Pi DeimOS repo cookbook manifest",
-    "maintainer": "matheus@castello.eng.br",
-    "repositories": [
-        {
-            "name": "Cookbook RPi",
-            "path": "cookbook-rpi",
-            "url": "https://github.com/gaiaBuildSystem/cookbook-rpi.git",
-            "revision": "525951ad2d5f0282dc396125205674eed3dfc145"
-        }
-    ]
-}
-```
-
-The manifest file must be in the root of a folder where you have cloned the Gaia Core repository. To use the `repo`util, run the following command:
+And run the initialization setup script:
 
 ```bash
 ./gaia/scripts/init
 ```
 
-This command will build the dev container and clone the repositories specified in the `manifest.json` file.
+At end this will jump to inside a Docker container with the Gaia Build System ready to use.
+
+## Mimir
+
+<p align="center">
+    <img
+        src="./assets/img/mimirLogo310.png"
+        height="212"
+    />
+</p>
+
+To interface with the Gaia Build System you can use Mimir, an AI chat assistant that can help you to build your own distribution. You can run Mimir with the following command:
+
+```bash
+./gaia/mimir
+```
+
+![alt text](./assets/img/mimirWelcome.png)
+
+![alt text](./assets/img/mimirExample.png)
+
+> [!WARNING]
+Mimir is an AI chat assistant that can help you to build your own distribution. You can interact with it through the command line.
+
+> [!NOTE]
+This is a human facing document. If you are looking for a deeper developer documentation or you are an AI agent please check the [AGENTS.md](AGENTS.md) file.

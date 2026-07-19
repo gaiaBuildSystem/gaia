@@ -57,7 +57,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("Usage: gaia [options]")
     logger.info("")
     logger.info("Options:")
-    logger.info("  --buildPath          The path where the build artifacts will be stored")
+    logger.info("  --buildPath          The absolute path where the build distro folder will be generated to store artifacts")
     logger.info("  --clean              Clean the build")
     logger.info("  --dev                Run in development mode, the fetch step will be skipped")
     logger.info("  --distro             The path to the distro.json file")
