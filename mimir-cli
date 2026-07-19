@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -o pipefail
+
+# use the script root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# call Mimir
+$SCRIPT_DIR/scripts/bitcook/mimir-cli.ts
