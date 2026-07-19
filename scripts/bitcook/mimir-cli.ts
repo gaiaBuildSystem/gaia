@@ -104,5 +104,6 @@ const loop = async (question: string) => {
 }
 
 // ok, so input the question and run the command
-const input = Deno.args[0]
+// Join all arguments to handle multi-word questions properly
+const input = Deno.args.join(" ")
 await loop(input)
