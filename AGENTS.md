@@ -59,6 +59,15 @@ The `bitcook` script (which wraps `gaia.ts`) accepts the following arguments:
 | `--verbose` | Print all the parsed recipe objects in JSON format |
 | `-v`, `--version` | Shows the Gaia version |
 
+## Build Command Examples
+
+```
+./gaia/bitcook --buildPath /your/workdir --distro ./gaia/distro-ref-qemux86-64.json --noCache --installHostDeps
+```
+
+The `bitcook` command is the wrapper that should be called, not the `./gaia/scripts/bitcook/gaia.ts`.
+
+The recommended PWD to run the command is the root of the workdir, not the root of the Gaia repository.
 
 ## Setup Multi-Cookbook Build
 
