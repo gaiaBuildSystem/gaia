@@ -1,5 +1,6 @@
 import process from "node:process"
 import { spawn } from "node:child_process"
+import * as fs from "node:fs"
 import {
     melker,
     createElement,
@@ -81,17 +82,6 @@ export function stopProcessing (ctx: MelkerEngine): void {
 
 // llm client
 const mimir = new ClaudeAPIClient()
-const _pwd = process.cwd()
-const _dirs = Deno.readDirSync(_pwd)
-mimir.setAdditionalContext(
-    `Project workdir, or PWD, is the following,` +
-    `${_pwd}\n\n` +
-    `USE THIS PATH AS BASE FOR THE COMMANDS SUGGESTIONS EVERYTHING WITH A PATH, AVOID cd WHENEVER POSSIBLE!\n\n` +
-    `The project workdir has the following folders that are possible repos:\n` +
-    `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n` +
-    `Gaia build system generates folders for the distro build like ./build-<distro name>, these folders are not repos, but build output folders, avoid them.\n\n` +
-    `If the repo has an AGENTS.md file give it precedence over README.md for developer documentation.\n\n`
-)
 
 
 // Command output streams chunks fast enough (many renders per second for a
@@ -394,6 +384,26 @@ export async function loop (question: string, ctx: MelkerEngine) {
     _mimirCmdLogs.children?.push(cmdOutputRaw)
 
     try {
+        // update the context
+        const _pwd = process.cwd()
+        const _dirs = Deno.readDirSync(_pwd)
+        const _agentsMdPath = `${_pwd}/gaia/AGENTS.md`
+        let _agentsMdContent = ""
+
+        if (fs.existsSync(_agentsMdPath)) {
+            _agentsMdContent = fs.readFileSync(_agentsMdPath, 'utf-8')
+        }
+
+        mimir.setAdditionalContext(
+            `Project workdir, or PWD, is the following, ` +
+            `${_pwd}\n\n` +
+            `The project workdir has the following folders that are possible repos:\n` +
+            `${_dirs.toArray().map(dir => `${_pwd}/${dir.name}`).join("\n")}\n\n` +
+            `Gaia build system generates folders for the distro build like ./build-<distro name>, these folders are not repos, but build output folders, avoid them.\n\n` +
+            `If the repo has an AGENTS.md file give it precedence over README.md for developer documentation.\n\n` +
+            `${_agentsMdContent}\n\n`
+        )
+
         //then call the llm
         const _resp = await mimir.ask(question, (text) => {
             // parcial thinking output, shown in green while still streaming
