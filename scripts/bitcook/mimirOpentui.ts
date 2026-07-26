@@ -83,10 +83,15 @@ var GlobalErrorCount = 0
 // deno-lint-ignore no-var
 var AUTO_EXECUTE_COMMAND = false
 const MAX_ERROR_COUNT = 4
-// keeps the live command-output buffer bounded — without a cap, a verbose,
-// long-running command (a full build, an install log, ...) grows this
-// string and the ANSI reparse it triggers on every chunk without limit
-const MAX_OUTPUT_LINES = 5000
+// keeps a single command's live streaming output bounded — without a cap, a
+// verbose, long-running command (a full build, an install log, ...) grows
+// this string and the ANSI reparse it triggers on every chunk without limit
+const MAX_LIVE_OUTPUT_LINES = 500
+// ring-buffer cap on the ENTIRE scrollback (every "you:"/"mimir:"/"system:"
+// message and command-output block accumulated over the whole session, not
+// just one command's own output) — a long session otherwise keeps every
+// historyBox child (and its rendered rows) around forever
+const MAX_HISTORY_LINES = 5000
 
 // ---------------------------------------------------------------------------
 // state
@@ -504,24 +509,86 @@ const dropStaleSelection = () => {
     }
 }
 
+// ring buffer over the whole scrollback: every historyBox child is tracked
+// here by id + its current line count, so the oldest ones can be evicted
+// once the running total crosses MAX_HISTORY_LINES — bounds memory/render
+// cost for a long session, independent of any single command's own output
+interface HistoryEntry {
+    id: string
+    lines: number
+}
+
+const historyLog: HistoryEntry[] = []
+let historyLineTotal = 0
+
+const countLines = (content: string): number => content.split("\n").length
+
+const trimHistoryToLimit = () => {
+    while (historyLineTotal > MAX_HISTORY_LINES && historyLog.length > 0) {
+        const oldest = historyLog.shift()
+        if (!oldest) {
+            break
+        }
+        historyBox.content.remove(oldest.id)
+        historyLineTotal -= oldest.lines
+    }
+}
+
+// registers (or, for an id already tracked, updates) one historyBox child's
+// line count against the running total, then evicts from the front as
+// needed — call this after every add, and again after every in-place
+// content update (e.g. appendStreamingMessage's updater)
+const trackHistoryLines = (id: string, content: string) => {
+    const lines = countLines(content)
+    const existing = historyLog.find((entry) => entry.id === id)
+
+    if (existing) {
+        historyLineTotal += lines - existing.lines
+        existing.lines = lines
+    } else {
+        historyLog.push({ id, lines })
+        historyLineTotal += lines
+    }
+
+    trimHistoryToLimit()
+}
+
+const untrackHistoryLines = (id: string) => {
+    const index = historyLog.findIndex((entry) => entry.id === id)
+    if (index === -1) {
+        return
+    }
+    historyLineTotal -= historyLog[index].lines
+    historyLog.splice(index, 1)
+}
+
+const resetHistoryLines = () => {
+    historyLog.length = 0
+    historyLineTotal = 0
+}
+
 // trailing blank line after every message so consecutive messages don't
 // visually run into each other in the history scrollback
 const appendSpacer = () => {
-    historyBox.content.add(instantiate(renderer, Text({ content: "\n" })))
+    const spacer = instantiate(renderer, Text({ content: "\n" }))
+    historyBox.content.add(spacer)
+    trackHistoryLines(spacer.id, "\n")
 }
 
 const appendMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
+    const messageContent = `${author}: ${content}\n`
     const line = instantiate(
         renderer,
         Text({
-            content: `${author}: ${content}\n`,
+            content: messageContent,
             fg: color ? parseColor(color) : undefined,
         }),
     )
 
     historyBox.content.add(line)
+    trackHistoryLines(line.id, messageContent)
     appendSpacer()
 }
 
@@ -531,21 +598,28 @@ const appendMessage = (author: string, content: string, color?: string) => {
 const appendMarkdownMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
+    const headerContent = `${author}:\n`
     const header = instantiate(
         renderer,
         Text({
-            content: `${author}:\n`,
+            content: headerContent,
             fg: color ? parseColor(color) : undefined,
         }),
     )
 
+    const markdownContent = ClaudeAPIClient.AnsiToMarkdown(content)
     const body = new MarkdownRenderable(renderer, {
-        content: ClaudeAPIClient.AnsiToMarkdown(content),
+        content: markdownContent,
         syntaxStyle: markdownSyntaxStyle,
     })
 
     historyBox.content.add(header)
     historyBox.content.add(body)
+    trackHistoryLines(header.id, headerContent)
+    // the markdown source is only an approximation of the rendered line
+    // count (headings/lists/wrapping can change it), close enough for a
+    // buffer meant to bound memory/render cost, not to be pixel-exact
+    trackHistoryLines(body.id, markdownContent)
     appendSpacer()
 }
 
@@ -572,6 +646,7 @@ const appendStreamingMessage = (author: string, color?: string) => {
     ) as TextRenderable
 
     historyBox.content.add(line)
+    trackHistoryLines(line.id, "\n")
 
     return (content: string) => {
         dropStaleSelection()
@@ -580,6 +655,7 @@ const appendStreamingMessage = (author: string, color?: string) => {
             ...ansiToStyledText(content),
             { __isChunk: true, text: "\n" },
         ])
+        trackHistoryLines(line.id, content)
     }
 }
 
@@ -619,20 +695,27 @@ const createLoadingMessage = (author: string, color?: string) => {
 
     historyBox.content.add(header)
     historyBox.content.add(body)
+    trackHistoryLines(header.id, `${author}: \n`)
+    trackHistoryLines(body.id, "")
 
     return {
         setSpinner: (frame: string) => {
             dropStaleSelection()
-            header.content = frame ? `${author}: ${frame}\n` : `${author}: \n`
+            const content = frame ? `${author}: ${frame}\n` : `${author}: \n`
+            header.content = content
+            trackHistoryLines(header.id, content)
         },
         setBody: (text: string) => {
             dropStaleSelection()
             body.content = text
+            trackHistoryLines(body.id, text)
         },
         remove: () => {
             dropStaleSelection()
             historyBox.content.remove(header.id)
             historyBox.content.remove(body.id)
+            untrackHistoryLines(header.id)
+            untrackHistoryLines(body.id)
         },
     }
 }
@@ -715,6 +798,7 @@ const handleCommand = (input: string): boolean => {
         for (const child of [...historyBox.content.getChildren()]) {
             historyBox.content.remove(child.id)
         }
+        resetHistoryLines()
         return true
     }
 
@@ -1066,8 +1150,8 @@ const loop = async (question: string) => {
                             rawOutput += chunk
 
                             const lines = rawOutput.split("\n")
-                            if (lines.length > MAX_OUTPUT_LINES) {
-                                rawOutput = lines.slice(-MAX_OUTPUT_LINES).join("\n")
+                            if (lines.length > MAX_LIVE_OUTPUT_LINES) {
+                                rawOutput = lines.slice(-MAX_LIVE_OUTPUT_LINES).join("\n")
                             }
 
                             updateCmdOutput(rawOutput)
