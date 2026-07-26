@@ -146,6 +146,14 @@ const instantiateAs = <T> (vnode: unknown): T => instantiate(renderer, vnode as 
 // raw command output) stays plain Text
 const markdownSyntaxStyle = SyntaxStyle.create()
 
+// markdownSyntaxStyle above has no styles registered, so its "default" group
+// resolves to the terminal's default color — MarkdownRenderable's own `fg`
+// option only feeds fenced code blocks and blockquote/hr borders, not plain
+// paragraph text. To color the loading message's streamed body (the partial
+// "thinking" text) the same green as its header, "default" needs its own
+// registered style rather than relying on `fg`.
+const thinkingSyntaxStyle = SyntaxStyle.fromStyles({ default: { fg: "#9ece6a" } })
+
 // ---------------------------------------------------------------------------
 // command palette — a small dropdown of matching "/" commands shown above
 // (or below) an input as the user types; never takes focus itself, since
@@ -596,7 +604,7 @@ const resetHistoryLines = () => {
 // trailing blank line after every message so consecutive messages don't
 // visually run into each other in the history scrollback
 const appendSpacer = () => {
-    let content = "\n"
+    let content = ""
     const spacer = instantiate(renderer, Text({ content })) as TextRenderable
     historyBox.content.add(spacer)
     registerHistoryEntry(spacer.id, content, (count) => {
@@ -608,7 +616,7 @@ const appendSpacer = () => {
 const appendMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
-    let messageContent = `${author}: ${content}\n`
+    let messageContent = `${author}: ${content}`
     const line = instantiate(
         renderer,
         Text({
@@ -631,7 +639,7 @@ const appendMessage = (author: string, content: string, color?: string) => {
 const appendMarkdownMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
-    let headerContent = `${author}:\n`
+    let headerContent = `${author}:`
     const header = instantiate(
         renderer,
         Text({
@@ -721,13 +729,13 @@ var loadingMessageCounter = 0
 // answer is ready, this whole message is torn down via remove() and the
 // answer is appended as a brand new message (see appendMessage in loop()),
 // rather than the loading message morphing in place into the answer.
-// Only the header (label + spinner) is colored — the body is left unstyled.
+// Both the header (label + spinner) and the streamed body share the same color.
 const createLoadingMessage = (author: string, color?: string) => {
     dropStaleSelection()
 
     const id = `mimirLoading${loadingMessageCounter++}`
 
-    let headerContent = `${author}: \n`
+    let headerContent = `${author}: `
     const header = instantiate(
         renderer,
         Text({
@@ -744,8 +752,9 @@ const createLoadingMessage = (author: string, color?: string) => {
     const body = new MarkdownRenderable(renderer, {
         id: `${id}Body`,
         content: bodyContent,
-        syntaxStyle: markdownSyntaxStyle,
+        syntaxStyle: thinkingSyntaxStyle,
         streaming: true,
+        fg: color ? parseColor(color) : undefined,
     })
 
     historyBox.content.add(header)
@@ -762,7 +771,7 @@ const createLoadingMessage = (author: string, color?: string) => {
     return {
         setSpinner: (frame: string) => {
             dropStaleSelection()
-            headerContent = frame ? `${author}: ${frame}\n` : `${author}: \n`
+            headerContent = frame ? `${author}: ${frame}` : `${author}: `
             header.content = headerContent
             updateHistoryEntryLines(header.id, headerContent)
         },
