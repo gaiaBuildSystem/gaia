@@ -83,15 +83,16 @@ var GlobalErrorCount = 0
 // deno-lint-ignore no-var
 var AUTO_EXECUTE_COMMAND = false
 const MAX_ERROR_COUNT = 4
-// keeps a single command's live streaming output bounded — without a cap, a
-// verbose, long-running command (a full build, an install log, ...) grows
-// this string and the ANSI reparse it triggers on every chunk without limit
-const MAX_LIVE_OUTPUT_LINES = 500
-// ring-buffer cap on the ENTIRE scrollback (every "you:"/"mimir:"/"system:"
-// message and command-output block accumulated over the whole session, not
-// just one command's own output) — a long session otherwise keeps every
-// historyBox child (and its rendered rows) around forever
-const MAX_HISTORY_LINES = 5000
+// the one line-count budget for the whole scrollback: every "you:"/"mimir:"/
+// "system:" message and every command-output block counts the same way,
+// whether it's one finished entry among many or a single still-growing one.
+// A single verbose, long-running command trims its own live buffer to this
+// same cap (see the executeCommand callback below) so it can use the whole
+// budget on its own without ever exceeding it, instead of a separate,
+// smaller cap that made command output behave differently from everything
+// else. The ring buffer below (trimHistoryToLimit) then evicts whole older
+// entries once the combined total across all of them exceeds this cap.
+const MAX_HISTORY_LINES = 1000
 
 // ---------------------------------------------------------------------------
 // state
@@ -509,13 +510,29 @@ const dropStaleSelection = () => {
     }
 }
 
-// ring buffer over the whole scrollback: every historyBox child is tracked
-// here by id + its current line count, so the oldest ones can be evicted
-// once the running total crosses MAX_HISTORY_LINES — bounds memory/render
-// cost for a long session, independent of any single command's own output
+// historyBox's own "stickyScroll" follow can fall behind when content grows
+// (or shrinks, via the ring buffer trimming below) faster than it re-checks
+// whether the viewport is still sitting exactly at the bottom edge — most
+// visible during a command's rapid-fire output, where the view drifts up
+// instead of tracking the newest line. Forcing scrollTop to scrollHeight
+// after every content change is a hard, explicit pin that doesn't depend on
+// that internal edge-detection ever noticing in time.
+const scrollHistoryToBottom = () => {
+    historyBox.scrollTop = historyBox.scrollHeight
+}
+
+// ring buffer over the WHOLE scrollback — every "you:"/"mimir:"/"system:"
+// message and every command-output block, no exceptions — tracked here by
+// id + current line count. Once the total crosses MAX_HISTORY_LINES, the
+// *oldest lines* are dropped, not just oldest whole entries: if only part of
+// the oldest entry needs to go, `trimFront` cuts that many lines off its own
+// front and reassigns its content, exactly like a real ring buffer, instead
+// of only ever being able to delete whole entries (which left a single
+// still-growing entry free to grow forever once it was the only one left)
 interface HistoryEntry {
     id: string
     lines: number
+    trimFront: (count: number) => void
 }
 
 const historyLog: HistoryEntry[] = []
@@ -525,32 +542,41 @@ const countLines = (content: string): number => content.split("\n").length
 
 const trimHistoryToLimit = () => {
     while (historyLineTotal > MAX_HISTORY_LINES && historyLog.length > 0) {
-        const oldest = historyLog.shift()
-        if (!oldest) {
-            break
+        const overshoot = historyLineTotal - MAX_HISTORY_LINES
+        const oldest = historyLog[0]
+
+        if (oldest.lines <= overshoot) {
+            historyLog.shift()
+            historyBox.content.remove(oldest.id)
+            historyLineTotal -= oldest.lines
+        } else {
+            oldest.trimFront(overshoot)
+            oldest.lines -= overshoot
+            historyLineTotal -= overshoot
         }
-        historyBox.content.remove(oldest.id)
-        historyLineTotal -= oldest.lines
     }
 }
 
-// registers (or, for an id already tracked, updates) one historyBox child's
-// line count against the running total, then evicts from the front as
-// needed — call this after every add, and again after every in-place
-// content update (e.g. appendStreamingMessage's updater)
-const trackHistoryLines = (id: string, content: string) => {
-    const lines = countLines(content)
-    const existing = historyLog.find((entry) => entry.id === id)
-
-    if (existing) {
-        historyLineTotal += lines - existing.lines
-        existing.lines = lines
-    } else {
-        historyLog.push({ id, lines })
-        historyLineTotal += lines
-    }
-
+// registers a brand new historyBox entry against the ring buffer
+const registerHistoryEntry = (id: string, content: string, trimFront: (count: number) => void) => {
+    historyLog.push({ id, lines: countLines(content), trimFront })
+    historyLineTotal += countLines(content)
     trimHistoryToLimit()
+    scrollHistoryToBottom()
+}
+
+// re-measures an already-registered entry after its own content changed in
+// place (e.g. appendStreamingMessage's updater, or the loading spinner)
+const updateHistoryEntryLines = (id: string, content: string) => {
+    const existing = historyLog.find((entry) => entry.id === id)
+    if (!existing) {
+        return
+    }
+    const lines = countLines(content)
+    historyLineTotal += lines - existing.lines
+    existing.lines = lines
+    trimHistoryToLimit()
+    scrollHistoryToBottom()
 }
 
 const untrackHistoryLines = (id: string) => {
@@ -570,25 +596,32 @@ const resetHistoryLines = () => {
 // trailing blank line after every message so consecutive messages don't
 // visually run into each other in the history scrollback
 const appendSpacer = () => {
-    const spacer = instantiate(renderer, Text({ content: "\n" }))
+    let content = "\n"
+    const spacer = instantiate(renderer, Text({ content })) as TextRenderable
     historyBox.content.add(spacer)
-    trackHistoryLines(spacer.id, "\n")
+    registerHistoryEntry(spacer.id, content, (count) => {
+        content = content.split("\n").slice(count).join("\n")
+        spacer.content = content
+    })
 }
 
 const appendMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
-    const messageContent = `${author}: ${content}\n`
+    let messageContent = `${author}: ${content}\n`
     const line = instantiate(
         renderer,
         Text({
             content: messageContent,
             fg: color ? parseColor(color) : undefined,
         }),
-    )
+    ) as TextRenderable
 
     historyBox.content.add(line)
-    trackHistoryLines(line.id, messageContent)
+    registerHistoryEntry(line.id, messageContent, (count) => {
+        messageContent = messageContent.split("\n").slice(count).join("\n")
+        line.content = messageContent
+    })
     appendSpacer()
 }
 
@@ -598,16 +631,16 @@ const appendMessage = (author: string, content: string, color?: string) => {
 const appendMarkdownMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
-    const headerContent = `${author}:\n`
+    let headerContent = `${author}:\n`
     const header = instantiate(
         renderer,
         Text({
             content: headerContent,
             fg: color ? parseColor(color) : undefined,
         }),
-    )
+    ) as TextRenderable
 
-    const markdownContent = ClaudeAPIClient.AnsiToMarkdown(content)
+    let markdownContent = ClaudeAPIClient.AnsiToMarkdown(content)
     const body = new MarkdownRenderable(renderer, {
         content: markdownContent,
         syntaxStyle: markdownSyntaxStyle,
@@ -615,11 +648,17 @@ const appendMarkdownMessage = (author: string, content: string, color?: string) 
 
     historyBox.content.add(header)
     historyBox.content.add(body)
-    trackHistoryLines(header.id, headerContent)
+    registerHistoryEntry(header.id, headerContent, (count) => {
+        headerContent = headerContent.split("\n").slice(count).join("\n")
+        header.content = headerContent
+    })
     // the markdown source is only an approximation of the rendered line
     // count (headings/lists/wrapping can change it), close enough for a
     // buffer meant to bound memory/render cost, not to be pixel-exact
-    trackHistoryLines(body.id, markdownContent)
+    registerHistoryEntry(body.id, markdownContent, (count) => {
+        markdownContent = markdownContent.split("\n").slice(count).join("\n")
+        body.content = markdownContent
+    })
     appendSpacer()
 }
 
@@ -628,7 +667,10 @@ const appendMarkdownMessage = (author: string, content: string, color?: string) 
 // new line per chunk. The body is raw command output that may carry its own
 // ANSI styling — the "author: " label keeps opentui's plain color, but the
 // body is parsed via ansiToStyledText so only the styling the command itself
-// produced shows up, instead of opentui flattening it all under one color
+// produced shows up, instead of opentui flattening it all under one color.
+// Accumulation happens here, in one place, so the ring buffer's own partial
+// trimming is the only thing that ever shrinks this entry — the caller just
+// hands over each new chunk as it arrives.
 const appendStreamingMessage = (author: string, color?: string) => {
     dropStaleSelection()
 
@@ -638,6 +680,8 @@ const appendStreamingMessage = (author: string, color?: string) => {
         fg: color ? parseColor(color) : undefined,
     }
 
+    let currentContent = ""
+
     const line = instantiate(
         renderer,
         Text({
@@ -646,16 +690,25 @@ const appendStreamingMessage = (author: string, color?: string) => {
     ) as TextRenderable
 
     historyBox.content.add(line)
-    trackHistoryLines(line.id, "\n")
 
-    return (content: string) => {
-        dropStaleSelection()
+    const render = () => {
         line.content = new StyledText([
             authorChunk,
-            ...ansiToStyledText(content),
+            ...ansiToStyledText(currentContent),
             { __isChunk: true, text: "\n" },
         ])
-        trackHistoryLines(line.id, content)
+    }
+
+    registerHistoryEntry(line.id, currentContent, (count) => {
+        currentContent = currentContent.split("\n").slice(count).join("\n")
+        render()
+    })
+
+    return (chunk: string) => {
+        dropStaleSelection()
+        currentContent += chunk
+        render()
+        updateHistoryEntryLines(line.id, currentContent)
     }
 }
 
@@ -674,11 +727,12 @@ const createLoadingMessage = (author: string, color?: string) => {
 
     const id = `mimirLoading${loadingMessageCounter++}`
 
+    let headerContent = `${author}: \n`
     const header = instantiate(
         renderer,
         Text({
             id: `${id}Header`,
-            content: `${author}: \n`,
+            content: headerContent,
             fg: color ? parseColor(color) : undefined,
         }),
     ) as TextRenderable
@@ -686,29 +740,37 @@ const createLoadingMessage = (author: string, color?: string) => {
     // markdown, streaming: true — the trailing block stays unstable while
     // chunks keep arriving; this message is torn down via remove() once the
     // final answer is ready, so there's no need to ever flip streaming off
+    let bodyContent = ""
     const body = new MarkdownRenderable(renderer, {
         id: `${id}Body`,
-        content: "",
+        content: bodyContent,
         syntaxStyle: markdownSyntaxStyle,
         streaming: true,
     })
 
     historyBox.content.add(header)
     historyBox.content.add(body)
-    trackHistoryLines(header.id, `${author}: \n`)
-    trackHistoryLines(body.id, "")
+    registerHistoryEntry(header.id, headerContent, (count) => {
+        headerContent = headerContent.split("\n").slice(count).join("\n")
+        header.content = headerContent
+    })
+    registerHistoryEntry(body.id, bodyContent, (count) => {
+        bodyContent = bodyContent.split("\n").slice(count).join("\n")
+        body.content = bodyContent
+    })
 
     return {
         setSpinner: (frame: string) => {
             dropStaleSelection()
-            const content = frame ? `${author}: ${frame}\n` : `${author}: \n`
-            header.content = content
-            trackHistoryLines(header.id, content)
+            headerContent = frame ? `${author}: ${frame}\n` : `${author}: \n`
+            header.content = headerContent
+            updateHistoryEntryLines(header.id, headerContent)
         },
         setBody: (text: string) => {
             dropStaleSelection()
-            body.content = text
-            trackHistoryLines(body.id, text)
+            bodyContent = text
+            body.content = bodyContent
+            updateHistoryEntryLines(body.id, bodyContent)
         },
         remove: () => {
             dropStaleSelection()
@@ -1142,19 +1204,15 @@ const loop = async (question: string) => {
                     )
                 } else {
                     const outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
+                    // appendStreamingMessage accumulates chunks itself and is
+                    // tracked against the shared history ring buffer, so this
+                    // entry's size is bounded the same way as everything else
+                    // in the scrollback, not by a separate cap here
                     const updateCmdOutput = appendStreamingMessage("output", "#565f89")
-                    let rawOutput = ""
 
                     try {
                         await executeCommand(resp.command, (chunk) => {
-                            rawOutput += chunk
-
-                            const lines = rawOutput.split("\n")
-                            if (lines.length > MAX_LIVE_OUTPUT_LINES) {
-                                rawOutput = lines.slice(-MAX_LIVE_OUTPUT_LINES).join("\n")
-                            }
-
-                            updateCmdOutput(rawOutput)
+                            updateCmdOutput(chunk)
                         }, outputTmpFile)
 
                         GlobalErrorCount = 0
