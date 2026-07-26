@@ -5,6 +5,7 @@
     },
     "dependencies": {
         "@cyclonedx/cyclonedx-library": "^9.4.1",
+        "@jitl/opentui-core": "^0.4.0",
         "ajv": "^8.17.0",
         "minimist": "^1.2.8",
         "node-color-log": "^11.0.0",

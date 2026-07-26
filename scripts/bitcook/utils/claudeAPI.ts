@@ -21,6 +21,19 @@ export type ChatTurn = {
     timestamp: string
 }
 
+const ANSI = {
+    reset: '\x1b[0m',
+    dim: '\x1b[2m',
+    bold: '\x1b[1m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m',
+    gray: '\x1b[90m'
+}
+
 export class ClaudeAPIClient {
     private baseUrl: string
     private _additionalContext = ""
@@ -31,6 +44,29 @@ export class ClaudeAPIClient {
         baseUrl: string = process.env.MIMIR_API_URL || "https://phobos.dev.br:8000"
     ) {
         this.baseUrl = baseUrl
+    }
+
+    public static MarkdownToAnsi (text: string): string {
+        return text
+            .replace(/^(#{1,6})\s+(.*)$/gm, (_match, _hashes, heading) => `${ANSI.bold}${ANSI.blue}${heading}${ANSI.reset}`)
+            .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (_match, a, b) => `${ANSI.bold}${a ?? b}${ANSI.reset}`)
+            .replace(/`([^`]+?)`/g, (_match, code) => `${ANSI.cyan}${code}${ANSI.reset}`)
+            .replace(/(?<!\*)\*(?!\*)([^*]+?)\*(?!\*)|(?<!_)_(?!_)([^_]+?)_(?!_)/g, (_match, a, b) => `${ANSI.dim}${a ?? b}${ANSI.reset}`)
+            .replace(/^[ \t]*[-*+][ \t]+/gm, `${ANSI.gray}•${ANSI.reset} `)
+    }
+
+    public static AnsiToMarkdown (text: string): string {
+        return text
+            // deno-lint-ignore no-control-regex
+            .replace(/^\x1b\[1m\x1b\[34m(.*)\x1b\[0m$/gm, (_match, heading) => `# ${heading}`)
+            // deno-lint-ignore no-control-regex
+            .replace(/\x1b\[2m(.*?)\x1b\[0m/g, (_match, italic) => `*${italic}*`)
+            // deno-lint-ignore no-control-regex
+            .replace(/\x1b\[36m(.*?)\x1b\[0m/g, (_match, code) => `\`${code}\``)
+            // deno-lint-ignore no-control-regex
+            .replace(/\x1b\[1m(.*?)\x1b\[0m/g, (_match, bold) => `**${bold}**`)
+            // deno-lint-ignore no-control-regex
+            .replace(/^[ \t]*\x1b\[90m•\x1b\[0m[ \t]+/gm, "- ")
     }
 
     private _buildQuestionWithContext (input: string): string {

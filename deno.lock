@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@melker/melker@^2026.3.1": "2026.7.1",
     "npm:@cyclonedx/cyclonedx-library@^9.4.1": "9.5.0_ajv@8.20.0",
+    "npm:@jitl/opentui-core@0.4": "0.4.0_web-tree-sitter@0.25.10_typescript@5.9.3",
     "npm:@jsquash/webp@1.5.0": "1.5.0",
     "npm:@types/node@^20.10.6": "20.19.41",
     "npm:@xterm/headless@6": "6.0.0",
@@ -44,6 +45,70 @@
       ],
       "optionalPeers": [
         "ajv"
+      ]
+    },
+    "@jitl/opentui-core-darwin-arm64@0.4.0": {
+      "integrity": "sha512-9KbsSXlZ0kq0TQWl5fUUJWUQZhyMRehKdITRKte5eBKKp/zS+3exTTNG6WXrgxI5JZFyvvmTIB/FMw2332Nv+w==",
+      "os": ["darwin"],
+      "cpu": ["arm64"]
+    },
+    "@jitl/opentui-core-darwin-x64@0.4.0": {
+      "integrity": "sha512-VM46DH4eql59NNXc7NjeSwJ9lqF24zyJcLySDZZyD2WgWWBBV1l0/tzE/fVtEiOrclhAbL87o2GOjbrDZ8cQQA==",
+      "os": ["darwin"],
+      "cpu": ["x64"]
+    },
+    "@jitl/opentui-core-linux-arm64-musl@0.4.0": {
+      "integrity": "sha512-uTsEiC1b9hULvduzdJFW0+XxlV3wzQs0vQxEcu/dXJA2pogHzf9diUIXQqOYCabkUv5UjDn+f8KEYsq3AoWnRg==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@jitl/opentui-core-linux-arm64@0.4.0": {
+      "integrity": "sha512-eLz2mnwnmUW/2XoT4w7GS4lAdRBbLhCw1cEDUl/CtGMHD0lRCDzryHyUDwO2VRVY37LykdtWgoJac2Z4kg4b4Q==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@jitl/opentui-core-linux-x64-musl@0.4.0": {
+      "integrity": "sha512-wjmtmgdw+jnBE/T7Ul8s9x7TUO0j8A8Fic3s3GlrQUYUqfIprUS2CjcerZdyALIwkJgxuJqcG0fV0gTBEQ4SgA==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@jitl/opentui-core-linux-x64@0.4.0": {
+      "integrity": "sha512-o4Z/Fs9NXfI5zPF5rgw17nqLl6vZheYMvLWm37Gz5d4L9RpFupEPttcWVYzozD1ffjXVovUtZ1JTijjwV60nIQ==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@jitl/opentui-core-win32-arm64@0.4.0": {
+      "integrity": "sha512-QfTN0hWCp6coITLRfOvAZkSCowZXOJ/JRQtWen47eql+cVOJezARBqqzjpi8TZ0RcjEFFy6nCywYNeKjgiphvA==",
+      "os": ["win32"],
+      "cpu": ["arm64"]
+    },
+    "@jitl/opentui-core-win32-x64@0.4.0": {
+      "integrity": "sha512-6ZdxPPZILUfYp5DqgpVFC+lSJqZkw+qwID7Ly66c3khKhQqZBBWTfPRqGynDBnN4SUGsxVYKZQn6+nNltgYDQg==",
+      "os": ["win32"],
+      "cpu": ["x64"]
+    },
+    "@jitl/opentui-core@0.4.0_web-tree-sitter@0.25.10_typescript@5.9.3": {
+      "integrity": "sha512-vPXBPsfo/mG/WajLHZcgc93Lac8MYOTJt70C75+uHTVuYm2Koe8497B5mBZq8hRvHjrNPgLHlyk8ur+t6jhs6g==",
+      "dependencies": [
+        "bun-ffi-structs",
+        "diff",
+        "marked",
+        "string-width",
+        "strip-ansi",
+        "web-tree-sitter",
+        "yoga-layout"
+      ],
+      "optionalDependencies": [
+        "@jitl/opentui-core-darwin-arm64",
+        "@jitl/opentui-core-darwin-x64",
+        "@jitl/opentui-core-linux-arm64",
+        "@jitl/opentui-core-linux-arm64-musl",
+        "@jitl/opentui-core-linux-x64",
+        "@jitl/opentui-core-linux-x64-musl",
+        "@jitl/opentui-core-win32-arm64",
+        "@jitl/opentui-core-win32-x64",
+        "koffi",
+        "unsafe-pointer"
       ]
     },
     "@jsquash/webp@1.5.0": {
@@ -88,6 +153,15 @@
         "require-from-string"
       ]
     },
+    "ansi-regex@6.2.2": {
+      "integrity": "sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg=="
+    },
+    "bun-ffi-structs@0.2.3_typescript@5.9.3": {
+      "integrity": "sha512-pgJiXP+hEgFo9qG51J6ItfY4ocs3vniwNzJ9WhoakB3QB2GdzQxX2EXssentPYlB2hOfJrTjO6iIQkWYzUodpg==",
+      "dependencies": [
+        "typescript"
+      ]
+    },
     "ccount@2.0.1": {
       "integrity": "sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg=="
     },
@@ -117,6 +191,12 @@
       "dependencies": [
         "dequal"
       ]
+    },
+    "diff@9.0.0": {
+      "integrity": "sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw=="
+    },
+    "emoji-regex@10.6.0": {
+      "integrity": "sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A=="
     },
     "escape-string-regexp@5.0.0": {
       "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw=="
@@ -150,6 +230,9 @@
         "fetch-blob"
       ]
     },
+    "get-east-asian-width@1.6.0": {
+      "integrity": "sha512-QRbvDIbx6YklUe6RxeTeleMR0yv3cYH6PsPZHcnVn7xv7zO1BHN8r0XETu8n6Ye3Q+ahtSarc3WgtNWmehIBfA=="
+    },
     "html5parser@2.0.2": {
       "integrity": "sha512-L0y+IdTVxHsovmye8MBtFgBvWZnq1C9WnI/SmJszxoQjmUH1psX2uzDk21O5k5et6udxdGjwxkbmT9eVRoG05w==",
       "dependencies": [
@@ -165,11 +248,19 @@
     "json-schema-traverse@1.0.0": {
       "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
     },
+    "koffi@2.15.6": {
+      "integrity": "sha512-WQBpM5uo74UQ17UpsFN+PUOrQQg4/nYdey4SGVluQun2drYYfePziLLWdSmFb4wSdWlJC1aimXQnjhPCheRKuw==",
+      "scripts": true
+    },
     "longest-streak@3.1.0": {
       "integrity": "sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g=="
     },
     "markdown-table@3.0.4": {
       "integrity": "sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw=="
+    },
+    "marked@17.0.1": {
+      "integrity": "sha512-boeBdiS0ghpWcSwoNm/jJBwdpFaMnZWRzjA6SkUMYb40SVaN1x7mmfGKp0jvexGcx+7y2La5zRZsYFZI6Qpypg==",
+      "bin": true
     },
     "mdast-util-find-and-replace@3.0.2": {
       "integrity": "sha512-Tmd1Vg/m3Xz43afeNxDIhWRtFZgM2VLyaf4vSTYwudTyeuTneoL3qtWMA5jeLyz/O1vDJmmV4QuScFCA2tBPwg==",
@@ -545,6 +636,10 @@
         "formdata-polyfill"
       ]
     },
+    "node-gyp-build@4.8.4": {
+      "integrity": "sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==",
+      "bin": true
+    },
     "omggif@1.0.10": {
       "integrity": "sha512-LMJTtvgc/nugXj0Vcrrs68Mn2D1r0zf630VNtqtpI1FEO7e+O9FP4gqs9AcnBaSEeoHIPm28u6qgPR0oyEpGSw=="
     },
@@ -567,8 +662,26 @@
     "spdx-license-ids@3.0.23": {
       "integrity": "sha512-CWLcCCH7VLu13TgOH+r8p1O/Znwhqv/dbb6lqWy67G+pT1kHmeD/+V36AVb/vq8QMIQwVShJ6Ssl5FPh0fuSdw=="
     },
+    "string-width@7.2.0": {
+      "integrity": "sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==",
+      "dependencies": [
+        "emoji-regex",
+        "get-east-asian-width",
+        "strip-ansi"
+      ]
+    },
+    "strip-ansi@7.1.2": {
+      "integrity": "sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA==",
+      "dependencies": [
+        "ansi-regex"
+      ]
+    },
     "tslib@2.8.1": {
       "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    "typescript@5.9.3": {
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+      "bin": true
     },
     "undici-types@6.21.0": {
       "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
@@ -600,11 +713,24 @@
         "unist-util-visit-parents"
       ]
     },
+    "unsafe-pointer@0.2.0": {
+      "integrity": "sha512-5AzhXe8ZGzV/wVVfomw7KszPt4RPOpVcsWi66DrMrzy6fi86+rTiTx3Gu88UshFhfQLAXbFvgRyHVpQ+nZ7bvg==",
+      "dependencies": [
+        "node-gyp-build"
+      ],
+      "scripts": true
+    },
     "wasm-feature-detect@1.8.0": {
       "integrity": "sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ=="
     },
     "web-streams-polyfill@3.3.3": {
       "integrity": "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw=="
+    },
+    "web-tree-sitter@0.25.10": {
+      "integrity": "sha512-Y09sF44/13XvgVKgO2cNDw5rGk6s26MgoZPXLESvMXeefBf7i6/73eFurre0IsTW6E14Y0ArIzhUMmjoc7xyzA=="
+    },
+    "yoga-layout@3.2.1": {
+      "integrity": "sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ=="
     },
     "zwitch@2.0.4": {
       "integrity": "sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A=="
@@ -682,6 +808,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@cyclonedx/cyclonedx-library@^9.4.1",
+        "npm:@jitl/opentui-core@0.4",
         "npm:@types/node@^20.10.6",
         "npm:ajv@^8.17.0",
         "npm:minimist@^1.2.8",
