@@ -1,4 +1,4 @@
-import process from "node:process";
+import process from "node:process"
 import FS from "node:fs"
 import PATH from "node:path"
 import { execSync } from "node:child_process"
@@ -114,7 +114,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 // install at least some utils
                 execSync(
                     `sudo -k ` +
-                    `podman exec -it ${HOST_CONTAINER_NAME} ` +
+                    `podman exec ${HOST_CONTAINER_NAME} ` +
                     `/bin/bash -c "` +
                     `apt-get update && apt-get install sudo` +
                     `"`,
@@ -134,7 +134,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                         try {
                             execSync(
                                 `sudo -k ` +
-                                `podman exec -it ${HOST_CONTAINER_NAME} ` +
+                                `podman exec ${HOST_CONTAINER_NAME} ` +
                                 `/bin/bash -c "` +
                                 `cd ${_cookbookdir} && ./init` +
                                 `"`,
@@ -206,7 +206,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                 try {
                     execSync(
                         `sudo -k ` +
-                        `podman exec -it ${HOST_CONTAINER_NAME} ` +
+                        `podman exec ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
                         `apt-get update && ` +
                         `apt-get install -y ${recipe.hostDeps.join(" ")}` +
