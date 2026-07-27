@@ -32,6 +32,7 @@ globalThis.Worker = ModuleWorker as unknown as typeof Worker
 
 const {
     Box,
+    CliRenderEvents,
     Input,
     InputRenderableEvents,
     MarkdownRenderable,
@@ -525,51 +526,109 @@ const dropStaleSelection = () => {
 // whether the viewport is still sitting exactly at the bottom edge — most
 // visible during a command's rapid-fire output, where the view drifts up
 // instead of tracking the newest line. Forcing scrollTop to scrollHeight
-// after every content change is a hard, explicit pin that doesn't depend on
-// that internal edge-detection ever noticing in time.
+// is a hard, explicit pin that doesn't depend on that internal edge-detection
+// ever noticing in time.
+//
+// The pin itself has to happen on the renderer's "frame" event, not inline
+// right after the content mutation: a long unwrapped line (e.g. a compiler
+// invocation) only gets laid out into its actual wrapped row count during
+// the renderer's own layout pass inside root.render(), which runs later in
+// the same tick as this file's code, not synchronously when `.content = ...`
+// is assigned. Reading historyBox.scrollHeight immediately after mutating
+// content — as a plain inline call here used to do — reads a stale,
+// pre-wrap height, so the pin lands short of the true bottom. Under a bursty
+// producer (many stdout chunks per frame from a parallel build) each of
+// those short pins never gets corrected before the next one, and the gap
+// between the pinned position and the true bottom keeps growing. Marking a
+// flag and consuming it on "frame" (which fires right after root.render()
+// has already recalculated layout for this tick) guarantees scrollHeight is
+// always read post-wrap, so the pin set here is what next frame's render
+// actually reflects.
+let historyScrollPinPending = false
+
 const scrollHistoryToBottom = () => {
-    historyBox.scrollTop = historyBox.scrollHeight
+    historyScrollPinPending = true
 }
 
+renderer.on(CliRenderEvents.FRAME, () => {
+    if (!historyScrollPinPending) {
+        return
+    }
+    historyScrollPinPending = false
+    historyBox.scrollTop = historyBox.scrollHeight
+})
+
 // ring buffer over the WHOLE scrollback — every "you:"/"mimir:"/"system:"
-// message and every command-output block, no exceptions — tracked here by
-// id + current line count. Once the total crosses MAX_HISTORY_LINES, the
-// *oldest lines* are dropped, not just oldest whole entries: if only part of
-// the oldest entry needs to go, `trimFront` cuts that many lines off its own
-// front and reassigns its content, exactly like a real ring buffer, instead
-// of only ever being able to delete whole entries (which left a single
-// still-growing entry free to grow forever once it was the only one left)
+// message and every command-output line, no exceptions — tracked here by
+// id + current line count. It's a plain capped stack: once the total crosses
+// MAX_HISTORY_LINES, whole oldest entries are popped and their renderables
+// removed, one at a time, until back under budget. No entry is ever
+// shrunk/rewritten in place — each renderable is written once and only ever
+// fully removed, never partially trimmed. That used to not be true for
+// command output (a single ever-growing entry had its front cut off
+// repeatedly to stay in budget); mutating one renderable's content over and
+// over at a rapid, sub-frame cadence is what left opentui's own layout
+// height for that node stuck too tall (see appendStreamingMessage below).
 interface HistoryEntry {
     id: string
     lines: number
-    trimFront: (count: number) => void
 }
 
 const historyLog: HistoryEntry[] = []
 let historyLineTotal = 0
 
-const countLines = (content: string): number => content.split("\n").length
+// deno-lint-ignore no-control-regex
+const ANSI_CSI_PATTERN = /\x1b\[([0-9;]*)([A-Za-z])/g
+
+// strips ANSI escape sequences entirely — used for the plain-text path
+// (feeding a failed command's output back to the LLM as the next question),
+// where color codes are just noise, not something to render, and for
+// countLines below, where they'd otherwise inflate the estimated wrapped
+// width of a line without occupying any actual screen columns
+const stripAnsi = (text: string): string => text.replace(ANSI_CSI_PATTERN, "")
+
+// estimates *rendered* rows, not just "\n"-delimited segments — command
+// output routinely contains long unwrapped lines (a single compiler
+// invocation, say) that render as many wrapped terminal rows. Counting only
+// "\n"s credited such a line as "1" against MAX_HISTORY_LINES, so the ring
+// buffer's budget silently fell behind the real on-screen row count during
+// verbose /auto output: eviction didn't trigger until the undercounted total
+// finally crossed the cap, then dropped a much bigger chunk of real rows
+// than the cap implied in one step — visible as a gap opening up between
+// the pinned scroll position and the actual last rendered line.
+const countLines = (content: string): number => {
+    const width = Math.max(1, process.stdout.columns || 80)
+    return stripAnsi(content)
+        .split("\n")
+        .reduce((total, line) => total + Math.max(1, Math.ceil(line.length / width)), 0)
+}
 
 const trimHistoryToLimit = () => {
-    while (historyLineTotal > MAX_HISTORY_LINES && historyLog.length > 0) {
-        const overshoot = historyLineTotal - MAX_HISTORY_LINES
-        const oldest = historyLog[0]
+    let evicted = false
 
-        if (oldest.lines <= overshoot) {
-            historyLog.shift()
-            historyBox.content.remove(oldest.id)
-            historyLineTotal -= oldest.lines
-        } else {
-            oldest.trimFront(overshoot)
-            oldest.lines -= overshoot
-            historyLineTotal -= overshoot
-        }
+    while (historyLineTotal > MAX_HISTORY_LINES && historyLog.length > 0) {
+        const oldest = historyLog.shift()!
+        historyBox.content.remove(oldest.id)
+        historyLineTotal -= oldest.lines
+        evicted = true
+    }
+
+    // opentui's incremental repaint only redraws what it thinks changed;
+    // if it ever mis-tracks the region a removed entry used to occupy (a
+    // stale "dirty rect"), old pixels can linger on screen even though the
+    // logical scroll position is already correct. A full repaint after any
+    // eviction sidesteps that class of bug by never relying on incremental
+    // diffing across a structural change.
+    if (evicted) {
+        renderer.requestFullRepaintRender()
     }
 }
 
-// registers a brand new historyBox entry against the ring buffer
-const registerHistoryEntry = (id: string, content: string, trimFront: (count: number) => void) => {
-    historyLog.push({ id, lines: countLines(content), trimFront })
+// registers a brand new, permanent historyBox entry against the ring buffer
+// — nothing about this entry is ever rewritten again; it's either on screen
+// as-is or fully evicted by trimHistoryToLimit above
+const registerHistoryEntry = (id: string, content: string) => {
+    historyLog.push({ id, lines: countLines(content) })
     historyLineTotal += countLines(content)
     trimHistoryToLimit()
     scrollHistoryToBottom()
@@ -606,19 +665,15 @@ const resetHistoryLines = () => {
 // trailing blank line after every message so consecutive messages don't
 // visually run into each other in the history scrollback
 const appendSpacer = () => {
-    let content = ""
-    const spacer = instantiate(renderer, Text({ content })) as TextRenderable
+    const spacer = instantiate(renderer, Text({ content: "" })) as TextRenderable
     historyBox.content.add(spacer)
-    registerHistoryEntry(spacer.id, content, (count) => {
-        content = content.split("\n").slice(count).join("\n")
-        spacer.content = content
-    })
+    registerHistoryEntry(spacer.id, "")
 }
 
 const appendMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
-    let messageContent = `${author}: ${content}`
+    const messageContent = `${author}: ${content}`
     const line = instantiate(
         renderer,
         Text({
@@ -628,10 +683,7 @@ const appendMessage = (author: string, content: string, color?: string) => {
     ) as TextRenderable
 
     historyBox.content.add(line)
-    registerHistoryEntry(line.id, messageContent, (count) => {
-        messageContent = messageContent.split("\n").slice(count).join("\n")
-        line.content = messageContent
-    })
+    registerHistoryEntry(line.id, messageContent)
     appendSpacer()
 }
 
@@ -641,7 +693,7 @@ const appendMessage = (author: string, content: string, color?: string) => {
 const appendMarkdownMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
-    let headerContent = `${author}:`
+    const headerContent = `${author}:`
     const header = instantiate(
         renderer,
         Text({
@@ -650,7 +702,7 @@ const appendMarkdownMessage = (author: string, content: string, color?: string) 
         }),
     ) as TextRenderable
 
-    let markdownContent = ClaudeAPIClient.AnsiToMarkdown(content)
+    const markdownContent = ClaudeAPIClient.AnsiToMarkdown(content)
     const body = new MarkdownRenderable(renderer, {
         content: markdownContent,
         syntaxStyle: markdownSyntaxStyle,
@@ -658,67 +710,109 @@ const appendMarkdownMessage = (author: string, content: string, color?: string) 
 
     historyBox.content.add(header)
     historyBox.content.add(body)
-    registerHistoryEntry(header.id, headerContent, (count) => {
-        headerContent = headerContent.split("\n").slice(count).join("\n")
-        header.content = headerContent
-    })
+    registerHistoryEntry(header.id, headerContent)
     // the markdown source is only an approximation of the rendered line
     // count (headings/lists/wrapping can change it), close enough for a
     // buffer meant to bound memory/render cost, not to be pixel-exact
-    registerHistoryEntry(body.id, markdownContent, (count) => {
-        markdownContent = markdownContent.split("\n").slice(count).join("\n")
-        body.content = markdownContent
-    })
+    registerHistoryEntry(body.id, markdownContent)
     appendSpacer()
 }
 
-// like appendMessage, but returns an updater so the same line's content can
-// be replaced repeatedly as streamed chunks arrive, instead of appending a
-// new line per chunk. The body is raw command output that may carry its own
-// ANSI styling — the "author: " label keeps opentui's plain color, but the
-// body is parsed via ansiToStyledText so only the styling the command itself
-// produced shows up, instead of opentui flattening it all under one color.
-// Accumulation happens here, in one place, so the ring buffer's own partial
-// trimming is the only thing that ever shrinks this entry — the caller just
-// hands over each new chunk as it arrives.
+// command output, streamed in as chunks arrive. Every completed line becomes
+// its own brand new, permanent renderable — written once, never rewritten —
+// exactly like every other entry in the ring buffer. The ONLY renderable
+// this function ever mutates in place is the single still-arriving line at
+// the tail, and only by growing it; the moment a "\n" completes it, it's
+// sealed into a fresh renderable and a new (empty) tail line takes over.
+// No renderable here is ever grown and later shrunk in place — that
+// grow-then-shrink-in-place pattern (the old design: one entry for the
+// whole command, its front repeatedly cut to stay in budget) is what left
+// opentui's own cached layout height for that node stuck too tall, since it
+// was also being mutated far faster than one frame per update.
 const appendStreamingMessage = (author: string, color?: string) => {
     dropStaleSelection()
 
-    const authorChunk: TextChunk = {
-        __isChunk: true,
-        text: `${author}: `,
-        fg: color ? parseColor(color) : undefined,
+    const authorFg = color ? parseColor(color) : undefined
+    let isFirstLine = true
+    let pendingChunks = ""
+
+    let tailLine: TextRenderable | null = null
+    let tailContent = ""
+
+    const styledLine = (text: string, withAuthor: boolean) => {
+        const chunks: TextChunk[] = withAuthor
+            ? [{ __isChunk: true, text: `${author}: `, fg: authorFg }]
+            : []
+        chunks.push(...ansiToStyledText(text))
+        return new StyledText(chunks)
     }
 
-    let currentContent = ""
-
-    const line = instantiate(
-        renderer,
-        Text({
-            content: new StyledText([authorChunk, { __isChunk: true, text: "\n" }]),
-        }),
-    ) as TextRenderable
-
-    historyBox.content.add(line)
-
-    const render = () => {
-        line.content = new StyledText([
-            authorChunk,
-            ...ansiToStyledText(currentContent),
-            { __isChunk: true, text: "\n" },
-        ])
+    const removeTailLine = () => {
+        if (!tailLine) {
+            return
+        }
+        historyBox.content.remove(tailLine.id)
+        untrackHistoryLines(tailLine.id)
+        tailLine = null
     }
 
-    registerHistoryEntry(line.id, currentContent, (count) => {
-        currentContent = currentContent.split("\n").slice(count).join("\n")
-        render()
-    })
+    // a completed line is ANSI-parsed on its own, starting from a fresh SGR
+    // state each time (ansiToStyledText resets state per call) — a color set
+    // on one line that's never explicitly reset before the next "\n" won't
+    // carry over. Real build/CLI output almost always reissues color codes
+    // per line, so this is an acceptable trade for never rewriting a sealed
+    // line's renderable again.
+    const sealLine = (text: string) => {
+        const withAuthor = isFirstLine
+        isFirstLine = false
+        removeTailLine()
+        const sealed = instantiate(renderer, Text({ content: styledLine(text, withAuthor) })) as TextRenderable
+        historyBox.content.add(sealed)
+        registerHistoryEntry(sealed.id, text)
+    }
 
-    return (chunk: string) => {
-        dropStaleSelection()
-        currentContent += chunk
-        render()
-        updateHistoryEntryLines(line.id, currentContent)
+    const flush = () => {
+        if (!pendingChunks) {
+            return
+        }
+        const chunk = pendingChunks
+        pendingChunks = ""
+
+        const segments = chunk.split("\n")
+        for (let i = 0; i < segments.length - 1; i++) {
+            tailContent += segments[i]
+            sealLine(tailContent)
+            tailContent = ""
+        }
+        tailContent += segments[segments.length - 1]
+
+        if (!tailContent) {
+            return
+        }
+        if (!tailLine) {
+            tailLine = instantiate(renderer, Text({ content: "" })) as TextRenderable
+            historyBox.content.add(tailLine)
+            registerHistoryEntry(tailLine.id, "")
+        }
+        tailLine.content = styledLine(tailContent, isFirstLine)
+        updateHistoryEntryLines(tailLine.id, tailContent)
+    }
+
+    renderer.on(CliRenderEvents.FRAME, flush)
+
+    return {
+        update: (chunk: string) => {
+            dropStaleSelection()
+            pendingChunks += chunk
+        },
+        // stops coalescing and applies whatever arrived since the last frame
+        // — call once the command that's feeding this entry is done, so the
+        // frame listener doesn't outlive it for the rest of the session
+        dispose: () => {
+            flush()
+            renderer.off(CliRenderEvents.FRAME, flush)
+            appendSpacer()
+        },
     }
 }
 
@@ -761,14 +855,8 @@ const createLoadingMessage = (author: string, color?: string) => {
 
     historyBox.content.add(header)
     historyBox.content.add(body)
-    registerHistoryEntry(header.id, headerContent, (count) => {
-        headerContent = headerContent.split("\n").slice(count).join("\n")
-        header.content = headerContent
-    })
-    registerHistoryEntry(body.id, bodyContent, (count) => {
-        bodyContent = bodyContent.split("\n").slice(count).join("\n")
-        body.content = bodyContent
-    })
+    registerHistoryEntry(header.id, headerContent)
+    registerHistoryEntry(body.id, bodyContent)
 
     return {
         setSpinner: (frame: string) => {
@@ -962,14 +1050,6 @@ const buildAdditionalContext = (): string => {
         `${agentsMdContent}\n\n`
     )
 }
-
-// deno-lint-ignore no-control-regex
-const ANSI_CSI_PATTERN = /\x1b\[([0-9;]*)([A-Za-z])/g
-
-// strips ANSI escape sequences entirely — used only for the plain-text path
-// (feeding a failed command's output back to the LLM as the next question),
-// where color codes are just noise, not something to render
-const stripAnsi = (text: string): string => text.replace(ANSI_CSI_PATTERN, "")
 
 const ANSI_16_NAMES = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]
 const ANSI_BRIGHT_16_NAMES = [
@@ -1241,11 +1321,11 @@ const loop = async (question: string) => {
                     // tracked against the shared history ring buffer, so this
                     // entry's size is bounded the same way as everything else
                     // in the scrollback, not by a separate cap here
-                    const updateCmdOutput = appendStreamingMessage("output", "#565f89")
+                    const cmdOutput = appendStreamingMessage("output", "#565f89")
 
                     try {
                         await executeCommand(resp.command, (chunk) => {
-                            updateCmdOutput(chunk)
+                            cmdOutput.update(chunk)
                         }, outputTmpFile)
 
                         GlobalErrorCount = 0
@@ -1278,6 +1358,8 @@ const loop = async (question: string) => {
                                 `The command "${resp.command}" failed to execute, logs: ${outputTmpFileContent}\n`
                             )
                         }
+                    } finally {
+                        cmdOutput.dispose()
                     }
                 }
             }
