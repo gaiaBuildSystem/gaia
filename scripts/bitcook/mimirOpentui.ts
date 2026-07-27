@@ -35,6 +35,7 @@ const {
     Input,
     InputRenderableEvents,
     MarkdownRenderable,
+    RGBA,
     ScrollBox,
     StyledText,
     SyntaxStyle,
@@ -384,7 +385,7 @@ const welcomeScene = Box(
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: parseColor("#0a0a0a"),
+        backgroundColor: RGBA.defaultBackground(),
     },
     Text({
         id: "welcomeLogo",
@@ -475,7 +476,7 @@ const chatScene = Box(
         height: "100%",
         flexDirection: "column",
         paddingX: 1,
-        backgroundColor: parseColor("#0a0a0a"),
+        backgroundColor: RGBA.defaultBackground(),
         visible: false,
     },
     statusLine,
@@ -492,7 +493,7 @@ const root = Box({
     id: "root",
     width: "100%",
     height: "100%",
-    backgroundColor: parseColor("#0a0a0a"),
+    backgroundColor: RGBA.defaultBackground(),
 }, welcomeScene, chatScene)
 
 const rootRenderable = instantiate(renderer, root)
