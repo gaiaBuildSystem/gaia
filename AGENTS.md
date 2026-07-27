@@ -31,12 +31,12 @@ The `--noCache` argument is mandatory for the first build. It will force the bui
 > [!WARNING]
 The `--installHostDeps` argument is pretty much recommended for the first build. As we support build inside a container it will install the host dependencies inside the container. This is a one time operation and will be cached for future builds, so leave it there does not hurt.
 
-The DeimOS images that this repo builds are only for:
+The DeimOS images that this repo builds are for:
 
 - qemu-x86-64
 - qemu-arm64
 
-Check the other repositories for DeimOS support on other machines.
+Check the other repositories for DeimOS support on other machines. The distro descriptions with `distro-ref-<machine>.json` files are implemented in their vendor repositories.
 
 ### bitcook Arguments
 
