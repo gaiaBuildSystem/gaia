@@ -34,7 +34,7 @@ At end this will jump to inside a Docker container with the Gaia Build System re
 
 <p align="center">
     <img
-        src="./assets/img/mimirLogo310.png"
+        src="./assets/img/mimirLightMiddle.png"
         height="212"
     />
 </p>
