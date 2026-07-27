@@ -112,6 +112,7 @@ const isAbortError = (error: unknown): boolean =>
 
 const COMMANDS = [
     { name: "/clear", description: "Clear the chat history" },
+    { name: "/history", description: "Show past questions and answers" },
     { name: "/auto", description: "Enable/disable agent auto-execute mode" },
     { name: "/stop", description: "Cancel the current request" },
     { name: "/help", description: "Show this help message" },
@@ -874,6 +875,27 @@ const handleCommand = (input: string): boolean => {
         return true
     }
 
+    if (trimmed === "/history") {
+        const turns = mimir.getHistory()
+
+        if (turns.length === 0) {
+            appendMessage("system", "No questions asked yet.", "#e0af68")
+            return true
+        }
+
+        for (const turn of turns) {
+            appendMessage("system", `[${turn.timestamp}]`, "#565f89")
+            appendMessage("you", turn.question, "#c0caf5")
+            appendMarkdownMessage("mimir", turn.answer.explanation, "#9ece6a")
+
+            if (turn.answer.command != null) {
+                appendMessage("system", `Command: ${turn.answer.command}`, "#fa625a")
+            }
+        }
+
+        return true
+    }
+
     if (trimmed === "/exit" || trimmed === "/quit") {
         renderer.destroy()
         process.exit(0)
@@ -898,11 +920,12 @@ Mimir version: ${VERSION}
             "system",
             `
 Available commands:
-    /clear - Clear the chat history
-    /stop  - Cancel the current request
-    /help  - Show this help message
-    /exit  - Exit mimir
-    /quit  - Exit mimir
+    /clear   - Clear the chat history
+    /history - Show past questions and answers
+    /stop    - Cancel the current request
+    /help    - Show this help message
+    /exit    - Exit mimir
+    /quit    - Exit mimir
             `,
             "#e0af68"
         )
