@@ -45,9 +45,9 @@ To interface with the Gaia Build System you can use Mimir, an AI chat assistant 
 ./gaia/mimir
 ```
 
-![alt text](./assets/img/mimirWelcome.png)
+![alt text](./assets/img/mimirv02.png)
 
-![alt text](./assets/img/mimirExample.png)
+![alt text](./assets/img/mimirv02screen2.png)
 
 > [!WARNING]
 Mimir is an AI chat assistant that can help you to build your own distribution. You can interact with it through the command line.
