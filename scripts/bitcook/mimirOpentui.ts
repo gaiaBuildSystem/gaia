@@ -106,6 +106,7 @@ let processing = false
 let stoppedByUser = false
 let currentAbort: AbortController | null = null
 let currentChild: ReturnType<typeof spawn> | null = null
+let currentCommandLabel: string | null = null
 
 // llm client
 const mimir = new ClaudeAPIClient()
@@ -440,18 +441,37 @@ const welcomeScene = Box(
 // bottom, roughly following the opencode TUI layout
 // ---------------------------------------------------------------------------
 
-const statusLine = Box(
-    {
-        id: "statusLine",
-        width: "100%",
-        height: 1,
-        flexShrink: 0,
-    },
+const statusText = instantiateAs<TextRenderable>(
     Text({
         id: "statusText",
         content: `mimir v${VERSION}  ·  ${process.cwd()}`,
         fg: parseColor("#565f89"),
     }),
+)
+
+// the last-run command, shown on its own row below the version/path row —
+// wordwrapped and only added to statusLine while a label is set, so a big
+// command grows this fixed header (and shrinks historyBox, which is the only
+// flexGrow: 1 sibling) instead of getting truncated to one line
+const statusCommandText = instantiateAs<TextRenderable>(
+    Text({
+        id: "statusCommandText",
+        content: "",
+        wrapMode: "word",
+        fg: parseColor("#565f89"),
+    }),
+)
+
+const statusLine = instantiateAs<BoxRenderable>(
+    Box(
+        {
+            id: "statusLine",
+            width: "100%",
+            flexDirection: "column",
+            flexShrink: 0,
+        },
+        statusText,
+    ),
 )
 
 const historyBox = instantiateAs<ScrollBoxRenderable>(
@@ -970,6 +990,24 @@ const setProcessing = (value: boolean) => {
         : "Type your message here..."
 }
 
+let statusCommandTextAdded = false
+
+const updateStatusLine = () => {
+    if (currentCommandLabel == null) {
+        if (statusCommandTextAdded) {
+            statusLine.remove(statusCommandText.id)
+            statusCommandTextAdded = false
+        }
+        return
+    }
+
+    statusCommandText.content = `command: ${currentCommandLabel.replace(/\s+/g, " ").trim()}`
+    if (!statusCommandTextAdded) {
+        statusLine.add(statusCommandText)
+        statusCommandTextAdded = true
+    }
+}
+
 const showChatScene = () => {
     welcomeSceneBox.visible = false
     chatSceneBox.visible = true
@@ -1380,6 +1418,9 @@ const loop = async (question: string) => {
                     // entry's size is bounded the same way as everything else
                     // in the scrollback, not by a separate cap here
                     const cmdOutput = appendStreamingMessage("output", "#565f89")
+
+                    currentCommandLabel = resp.command
+                    updateStatusLine()
 
                     try {
                         await executeCommand(resp.command, (chunk) => {
