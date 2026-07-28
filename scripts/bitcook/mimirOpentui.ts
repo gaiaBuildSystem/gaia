@@ -658,7 +658,17 @@ const countLines = (content: string): number => {
 const trimHistoryToLimit = () => {
     let evicted = false
 
-    while (historyLineTotal > MAX_HISTORY_LINES && historyLog.length > 0) {
+    // `> 1`, not `> 0`: eviction must never remove the entry that was just
+    // registered. A single burst of streamed output (e.g. a command dumping
+    // a large JSON blob in one go) can push historyLineTotal past the cap
+    // all by itself — evicting down to `length > 0` would then evict every
+    // older entry and finally the brand-new one too, since removing it is
+    // still the only way left to shrink historyLineTotal. That wiped the
+    // screen back to empty the instant new content arrived (looked like a
+    // blink with nothing left in the scrollback). Keeping the newest entry
+    // means the ring buffer can briefly sit over budget for one oversized
+    // entry, which is an acceptable trade for never losing the newest output.
+    while (historyLineTotal > MAX_HISTORY_LINES && historyLog.length > 1) {
         const oldest = historyLog.shift()!
         historyBox.content.remove(oldest.id)
         historyLineTotal -= oldest.lines
@@ -816,33 +826,51 @@ const appendStreamingMessage = (author: string, color?: string) => {
         tailLine = null
     }
 
-    // seals every line completed within a single flush() as ONE new
-    // renderable instead of one renderable per line. A bursty producer
-    // (many stdout lines arriving in a single chunk, e.g. a build) used to
-    // turn one flush() — itself running once per frame — into dozens of
-    // separate historyBox.content.add()/remove() calls against the
-    // scrollback's ScrollBox in a single tick. That's far more backing-
-    // buffer resize churn on the ScrollBox than the old design (one
-    // renderable, mutated in place) ever produced, and is what was landing
-    // opentui's native buffer allocator on bad/racing dimensions ("Failed to
-    // create optimized buffer: WxH") during verbose command output.
-    // Batching keeps the "written once, never mutated" invariant (so the
-    // old cached-height-stuck-too-tall bug doesn't come back) while
-    // collapsing N content.add() calls per frame down to at most one.
+    // a command that's already produced thousands of lines before this
+    // process ever gets to read its pipe (e.g. a fast startup phase that
+    // dumps a large JSON blob) can hand flush() a single chunk containing
+    // hundreds of completed lines at once. Sealing all of them into ONE
+    // renderable regardless of size is what MAX_SEALED_LINES_PER_ENTRY below
+    // guards against — a single Text node holding hundreds of wrapped rows
+    // is the same shape of "long content" that elsewhere in this file is
+    // documented as landing opentui's native buffer allocator on bad
+    // dimensions, except here it's one huge node instead of one mutated too
+    // fast. Capping how many lines go into any one sealed renderable keeps
+    // every node's size bounded no matter how bursty the producer is.
+    const MAX_SEALED_LINES_PER_ENTRY = 200
+
+    // seals every line completed within a single flush() into as few new
+    // renderables as MAX_SEALED_LINES_PER_ENTRY allows, instead of one
+    // renderable per line. A bursty producer (many stdout lines arriving in
+    // a single chunk, e.g. a build) used to turn one flush() — itself
+    // running once per frame — into dozens of separate
+    // historyBox.content.add()/remove() calls against the scrollback's
+    // ScrollBox in a single tick. That's far more backing-buffer resize
+    // churn on the ScrollBox than the old design (one renderable, mutated in
+    // place) ever produced, and is what was landing opentui's native buffer
+    // allocator on bad/racing dimensions ("Failed to create optimized
+    // buffer: WxH") during verbose command output. Batching keeps the
+    // "written once, never mutated" invariant (so the old
+    // cached-height-stuck-too-tall bug doesn't come back) while collapsing N
+    // content.add() calls per frame down to as few as the size cap allows.
     const sealLines = (lines: string[]) => {
         removeTailLine()
-        const chunks: TextChunk[] = []
-        lines.forEach((text, index) => {
-            if (index > 0) {
-                chunks.push({ __isChunk: true, text: "\n" })
-            }
-            const withAuthor = isFirstLine
-            isFirstLine = false
-            chunks.push(...styledLineChunks(text, withAuthor))
-        })
-        const sealed = instantiate(renderer, Text({ content: new StyledText(chunks) })) as TextRenderable
-        historyBox.content.add(sealed)
-        registerHistoryEntry(sealed.id, lines.join("\n"))
+
+        for (let start = 0; start < lines.length; start += MAX_SEALED_LINES_PER_ENTRY) {
+            const batch = lines.slice(start, start + MAX_SEALED_LINES_PER_ENTRY)
+            const chunks: TextChunk[] = []
+            batch.forEach((text, index) => {
+                if (index > 0) {
+                    chunks.push({ __isChunk: true, text: "\n" })
+                }
+                const withAuthor = isFirstLine
+                isFirstLine = false
+                chunks.push(...styledLineChunks(text, withAuthor))
+            })
+            const sealed = instantiate(renderer, Text({ content: new StyledText(chunks) })) as TextRenderable
+            historyBox.content.add(sealed)
+            registerHistoryEntry(sealed.id, batch.join("\n"))
+        }
     }
 
     const flush = () => {
