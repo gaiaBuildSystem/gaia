@@ -458,7 +458,7 @@ const statusCommandText = instantiateAs<TextRenderable>(
         id: "statusCommandText",
         content: "",
         wrapMode: "word",
-        fg: parseColor("#565f89"),
+        fg: parseColor("#a1794f"),
     }),
 )
 
