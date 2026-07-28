@@ -3,6 +3,8 @@
 import process from "node:process"
 import { spawn } from "node:child_process"
 import * as fs from "node:fs"
+import * as os from "node:os"
+import * as path from "node:path"
 import type {
     BoxRenderable,
     InputRenderable,
@@ -138,6 +140,36 @@ const renderer = await createCliRenderer({
     exitOnCtrlC: true,
     targetFps: 30,
 })
+
+// ---------------------------------------------------------------------------
+// crash handling — an uncaught exception (e.g. opentui-core's native buffer
+// allocation throwing "Failed to create optimized buffer: WxH" on a bad
+// resize) otherwise takes the process down mid-render, leaving the terminal
+// stuck in raw/alternate-screen mode with the real error scrolled off behind
+// the corrupted screen. Restoring the terminal first and writing the full
+// error to a fixed, known path is what makes a crash like that diagnosable
+// at all instead of just "the app disappeared."
+const crashLogPath = path.join(os.tmpdir(), "mimir-crash.log")
+
+const handleFatalError = (label: string, error: unknown) => {
+    const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
+    try {
+        renderer.destroy()
+    } catch {
+        // best effort — the renderer may already be in a broken state
+    }
+    try {
+        fs.writeFileSync(crashLogPath, `[${new Date().toISOString()}] ${label}\n${message}\n`)
+    } catch {
+        // best effort
+    }
+    console.error(`mimir crashed — full error written to ${crashLogPath}`)
+    console.error(message)
+    process.exit(1)
+}
+
+process.on("uncaughtException", (error) => handleFatalError("uncaughtException", error))
+process.on("unhandledRejection", (reason) => handleFatalError("unhandledRejection", reason))
 
 // instantiated directly (rather than left as VNodes) so we can hold onto
 // concrete references without relying on getRenderable() doing a recursive
@@ -739,13 +771,21 @@ const appendStreamingMessage = (author: string, color?: string) => {
     let tailLine: TextRenderable | null = null
     let tailContent = ""
 
-    const styledLine = (text: string, withAuthor: boolean) => {
+    // a completed line is ANSI-parsed on its own, starting from a fresh SGR
+    // state each time (ansiToStyledText resets state per call) — a color set
+    // on one line that's never explicitly reset before the next "\n" won't
+    // carry over. Real build/CLI output almost always reissues color codes
+    // per line, so this is an acceptable trade for never rewriting a sealed
+    // line's renderable again.
+    const styledLineChunks = (text: string, withAuthor: boolean): TextChunk[] => {
         const chunks: TextChunk[] = withAuthor
             ? [{ __isChunk: true, text: `${author}: `, fg: authorFg }]
             : []
         chunks.push(...ansiToStyledText(text))
-        return new StyledText(chunks)
+        return chunks
     }
+
+    const styledLine = (text: string, withAuthor: boolean) => new StyledText(styledLineChunks(text, withAuthor))
 
     const removeTailLine = () => {
         if (!tailLine) {
@@ -756,19 +796,33 @@ const appendStreamingMessage = (author: string, color?: string) => {
         tailLine = null
     }
 
-    // a completed line is ANSI-parsed on its own, starting from a fresh SGR
-    // state each time (ansiToStyledText resets state per call) — a color set
-    // on one line that's never explicitly reset before the next "\n" won't
-    // carry over. Real build/CLI output almost always reissues color codes
-    // per line, so this is an acceptable trade for never rewriting a sealed
-    // line's renderable again.
-    const sealLine = (text: string) => {
-        const withAuthor = isFirstLine
-        isFirstLine = false
+    // seals every line completed within a single flush() as ONE new
+    // renderable instead of one renderable per line. A bursty producer
+    // (many stdout lines arriving in a single chunk, e.g. a build) used to
+    // turn one flush() — itself running once per frame — into dozens of
+    // separate historyBox.content.add()/remove() calls against the
+    // scrollback's ScrollBox in a single tick. That's far more backing-
+    // buffer resize churn on the ScrollBox than the old design (one
+    // renderable, mutated in place) ever produced, and is what was landing
+    // opentui's native buffer allocator on bad/racing dimensions ("Failed to
+    // create optimized buffer: WxH") during verbose command output.
+    // Batching keeps the "written once, never mutated" invariant (so the
+    // old cached-height-stuck-too-tall bug doesn't come back) while
+    // collapsing N content.add() calls per frame down to at most one.
+    const sealLines = (lines: string[]) => {
         removeTailLine()
-        const sealed = instantiate(renderer, Text({ content: styledLine(text, withAuthor) })) as TextRenderable
+        const chunks: TextChunk[] = []
+        lines.forEach((text, index) => {
+            if (index > 0) {
+                chunks.push({ __isChunk: true, text: "\n" })
+            }
+            const withAuthor = isFirstLine
+            isFirstLine = false
+            chunks.push(...styledLineChunks(text, withAuthor))
+        })
+        const sealed = instantiate(renderer, Text({ content: new StyledText(chunks) })) as TextRenderable
         historyBox.content.add(sealed)
-        registerHistoryEntry(sealed.id, text)
+        registerHistoryEntry(sealed.id, lines.join("\n"))
     }
 
     const flush = () => {
@@ -779,10 +833,14 @@ const appendStreamingMessage = (author: string, color?: string) => {
         pendingChunks = ""
 
         const segments = chunk.split("\n")
+        const completedLines: string[] = []
         for (let i = 0; i < segments.length - 1; i++) {
             tailContent += segments[i]
-            sealLine(tailContent)
+            completedLines.push(tailContent)
             tailContent = ""
+        }
+        if (completedLines.length > 0) {
+            sealLines(completedLines)
         }
         tailContent += segments[segments.length - 1]
 
