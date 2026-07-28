@@ -16,11 +16,11 @@ Deimos is the Gaia Build System's reference distribution. It is a minimal distri
 Run the following command to create an image:
 
 ```bash
-./bitcook --buildPath /<absolute path to a build folder preference for the actual workdir> --distro distro-ref-amd64.json --noCache --installHostDeps
+./bitcook --buildPath /<absolute path for the actual workdir> --distro distro-ref-amd64.json --noCache --installHostDeps
 ```
 
 > [!WARNING]
-The `--buildPath` argument is mandatory and must be an absolute path.
+The `--buildPath` argument is mandatory and must be an absolute path. Does never pass the path to the actual build-<distro> folder, this final folder is created by the build system. The build system will create a folder called `build-<distro>` inside the path you pass to this argument.
 
 > [!WARNING]
 The `--distro` argument is mandatory and must be a relative path to a distro json file.
