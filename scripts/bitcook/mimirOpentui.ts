@@ -107,6 +107,7 @@ let stoppedByUser = false
 let currentAbort: AbortController | null = null
 let currentChild: ReturnType<typeof spawn> | null = null
 let currentCommandLabel: string | null = null
+let lastCommand: string | null = null
 
 // llm client
 const mimir = new ClaudeAPIClient()
@@ -117,6 +118,7 @@ const isAbortError = (error: unknown): boolean =>
 const COMMANDS = [
     { name: "/clear", description: "Clear the chat history" },
     { name: "/history", description: "Show past questions and answers" },
+    { name: "/again", description: "Run the last proposed command again" },
     { name: "/auto", description: "Enable/disable agent auto-execute mode" },
     { name: "/stop", description: "Cancel the current request" },
     { name: "/help", description: "Show this help message" },
@@ -1046,8 +1048,36 @@ const showChatScene = () => {
 // command handling
 // ---------------------------------------------------------------------------
 
-const handleCommand = (input: string): boolean => {
+const handleCommand = async (input: string): Promise<boolean> => {
     const trimmed = input.trim()
+
+    if (trimmed === "/again") {
+        if (!AUTO_EXECUTE_COMMAND) {
+            appendMessage("system", "Auto-execute mode is disabled, enable it with /auto first.", "#e0af68")
+            return true
+        }
+
+        if (lastCommand == null) {
+            appendMessage("system", "No previous command to run again.", "#e0af68")
+            return true
+        }
+
+        if (processing) {
+            appendMessage("system", "Already running something, /stop first.", "#e0af68")
+            return true
+        }
+
+        setProcessing(true)
+        stoppedByUser = false
+
+        try {
+            await runCommand(lastCommand)
+        } finally {
+            setProcessing(false)
+        }
+
+        return true
+    }
 
     if (trimmed === "/auto") {
         AUTO_EXECUTE_COMMAND = !AUTO_EXECUTE_COMMAND
@@ -1134,6 +1164,8 @@ Mimir version: ${VERSION}
 Available commands:
     /clear   - Clear the chat history
     /history - Show past questions and answers
+    /again   - Run the last proposed command again
+    /auto    - Enable/disable agent auto-execute mode
     /stop    - Cancel the current request
     /help    - Show this help message
     /exit    - Exit mimir
@@ -1401,6 +1433,54 @@ const executeCommand = (command: string, onOutput: (chunk: string) => void, logF
     })
 }
 
+// runs a shell command through executeCommand, streaming its output into the
+// scrollback the same way the auto-execute path does; shared by that path and
+// by /again so re-running a command doesn't need another round-trip to mimir
+const runCommand = async (command: string): Promise<void> => {
+    const outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
+    const cmdOutput = appendStreamingMessage("output", "#565f89")
+
+    currentCommandLabel = command
+    updateStatusLine()
+
+    try {
+        await executeCommand(command, (chunk) => {
+            cmdOutput.update(chunk)
+        }, outputTmpFile)
+
+        GlobalErrorCount = 0
+    } catch (error) {
+        if (stoppedByUser || isAbortError(error)) {
+            return
+        }
+
+        // let's continue the loop, feeding the failure back in
+        // as the next question, up to MAX_ERROR_COUNT times
+        GlobalErrorCount++
+
+        if (GlobalErrorCount < MAX_ERROR_COUNT) {
+            let outputTmpFileContent = ""
+
+            try {
+                const fullOutput = stripAnsi(Deno.readTextFileSync(outputTmpFile))
+                const lines = fullOutput.split("\n")
+
+                outputTmpFileContent = lines.length > 500
+                    ? lines.slice(-500).join("\n")
+                    : fullOutput
+            } catch {
+                outputTmpFileContent = (error as Error).message
+            }
+
+            await loop(
+                `The command "${command}" failed to execute, logs: ${outputTmpFileContent}\n`
+            )
+        }
+    } finally {
+        cmdOutput.dispose()
+    }
+}
+
 // ---------------------------------------------------------------------------
 // main ask/answer loop
 // ---------------------------------------------------------------------------
@@ -1432,6 +1512,7 @@ const loop = async (question: string) => {
 
             if (resp.command != null) {
                 appendMessage("system", `Command: ${resp.command}`, "#fa625a")
+                lastCommand = resp.command
 
                 if (!AUTO_EXECUTE_COMMAND) {
                     appendMessage(
@@ -1440,54 +1521,7 @@ const loop = async (question: string) => {
                         "#e0af68"
                     )
                 } else {
-                    const outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
-                    // appendStreamingMessage accumulates chunks itself and is
-                    // tracked against the shared history ring buffer, so this
-                    // entry's size is bounded the same way as everything else
-                    // in the scrollback, not by a separate cap here
-                    const cmdOutput = appendStreamingMessage("output", "#565f89")
-
-                    currentCommandLabel = resp.command
-                    updateStatusLine()
-
-                    try {
-                        await executeCommand(resp.command, (chunk) => {
-                            cmdOutput.update(chunk)
-                        }, outputTmpFile)
-
-                        GlobalErrorCount = 0
-                    } catch (error) {
-                        if (stoppedByUser || isAbortError(error)) {
-                            // user asked for it, not an actual failure: don't
-                            // feed it back into the auto-retry-on-error loop
-                            return
-                        }
-
-                        // let's continue the loop, feeding the failure back in
-                        // as the next question, up to MAX_ERROR_COUNT times
-                        GlobalErrorCount++
-
-                        if (GlobalErrorCount < MAX_ERROR_COUNT) {
-                            let outputTmpFileContent = ""
-
-                            try {
-                                const fullOutput = stripAnsi(Deno.readTextFileSync(outputTmpFile))
-                                const lines = fullOutput.split("\n")
-
-                                outputTmpFileContent = lines.length > 500
-                                    ? lines.slice(-500).join("\n")
-                                    : fullOutput
-                            } catch {
-                                outputTmpFileContent = (error as Error).message
-                            }
-
-                            await loop(
-                                `The command "${resp.command}" failed to execute, logs: ${outputTmpFileContent}\n`
-                            )
-                        }
-                    } finally {
-                        cmdOutput.dispose()
-                    }
+                    await runCommand(resp.command)
                 }
             }
         }
@@ -1581,7 +1615,7 @@ welcomeInput.on(InputRenderableEvents.ENTER, async (value: string) => {
 
     welcomeInput.value = ""
 
-    if (handleCommand(value)) {
+    if (await handleCommand(value)) {
         return
     }
 
@@ -1596,7 +1630,7 @@ chatInput.on(InputRenderableEvents.ENTER, async (value: string) => {
 
     chatInput.value = ""
 
-    if (handleCommand(value)) {
+    if (await handleCommand(value)) {
         return
     }
 
