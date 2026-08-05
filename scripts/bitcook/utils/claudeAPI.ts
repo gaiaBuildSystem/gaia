@@ -113,6 +113,13 @@ export class ClaudeAPIClient {
         this._history.length = 0
     }
 
+    public compactHistory (): void {
+        // remove all but the last 1 turns from history
+        if (this._history.length > 1) {
+            this._history = this._history.slice(-1)
+        }
+    }
+
     async ask (question: string, onProgress?: (text: string) => void, signal?: AbortSignal): Promise<AskResponse> {
         const _question = this._buildQuestionWithContext(question)
         const response = await fetch(`${this.baseUrl}/ask`, {

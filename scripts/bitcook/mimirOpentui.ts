@@ -58,7 +58,7 @@ const {
 } = await import("@jitl/opentui-core")
 
 process.env.COLORTERM = "truecolor"
-const VERSION = "0.2.0"
+const VERSION = "0.2.1"
 
 const logo = `
 ░▒▓▓▓▓▓▓▓▓▓▓▓▓▒░▒▓▒▒░░░░░░░░░░░░░░░
@@ -1460,20 +1460,39 @@ const runCommand = async (command: string): Promise<void> => {
 
         if (GlobalErrorCount < MAX_ERROR_COUNT) {
             let outputTmpFileContent = ""
+            let _nextQuestion = ""
+            let _nextContext = ""
 
             try {
                 const fullOutput = stripAnsi(Deno.readTextFileSync(outputTmpFile))
                 const lines = fullOutput.split("\n")
 
-                outputTmpFileContent = lines.length > 500
-                    ? lines.slice(-500).join("\n")
+                outputTmpFileContent = lines.length > 400
+                    ? lines.slice(-400).join("\n")
                     : fullOutput
+
+                // the question + logs + context could not exceed the 80k chars
+                _nextQuestion = `The command "${command}" failed to execute, logs: ${outputTmpFileContent}\n`
+                _nextContext = mimir.getContext()
+
+                if (_nextQuestion.length + _nextContext.length > 80000) {
+                    mimir.compactHistory()
+                    _nextQuestion = `The command "${command}" failed to execute, logs: ${outputTmpFileContent}\n`
+                    _nextContext = mimir.getContext()
+
+                    if (_nextQuestion.length + _nextContext.length > 80000) {
+                        // still too long so we will need to truncate logs
+                        const maxLogLength = 80000 - _nextContext.length - 1000
+                        const truncatedLogs = outputTmpFileContent.slice(-maxLogLength)
+                        _nextQuestion = `The command "${command}" failed to execute, logs: ${truncatedLogs}\n`
+                    }
+                }
             } catch {
                 outputTmpFileContent = (error as Error).message
             }
 
             await loop(
-                `The command "${command}" failed to execute, logs: ${outputTmpFileContent}\n`
+                _nextQuestion
             )
         }
     } finally {
