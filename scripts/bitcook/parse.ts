@@ -4,7 +4,7 @@ import UTIL from "node:util"
 import FS from "node:fs"
 import PATH from "node:path"
 import logger from "node-color-log"
-import process from "node:process";
+import process from "node:process"
 
 const require = createRequire(import.meta.url)
 const __dirname = PATH.dirname(new URL(import.meta.url).pathname)
@@ -109,6 +109,23 @@ function replaceConfigEnvVars (recipe: Recipe, str: string | undefined): string 
         })
     } else
         return ""
+}
+
+function sortRecipeScripts (scripts: string[]): string[] {
+    return scripts.sort((a, b) => {
+        const byBasename = PATH.basename(a).localeCompare(
+            PATH.basename(b),
+            "en",
+            { numeric: true, sensitivity: "base" }
+        )
+
+        if (byBasename !== 0) {
+            return byBasename
+        }
+
+        // deterministic fallback when basenames collide
+        return a.localeCompare(b, "en", { sensitivity: "base" })
+    })
 }
 
 export function ParseRecipes (_: string, distro: Distro): Recipe[] {
@@ -494,6 +511,18 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
     RECIPES = []
     for (const recipe in _metas) {
         RECIPES.push(_metas[recipe])
+    }
+
+    // normalize phase scripts ordering so numeric filename prefixes can
+    // control execution sequence (e.g. 00-foo.ts, 001-bar.ts)
+    for (const recipe of RECIPES) {
+        for (const prop of Object.keys(recipe) as (keyof Recipe)[]) {
+            const value = recipe[prop]
+
+            if (prop.includes("Recipes") && Array.isArray(value)) {
+                sortRecipeScripts(value as string[])
+            }
+        }
     }
 
     // show the recipe names
