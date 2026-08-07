@@ -6,7 +6,7 @@ Before=multi-user.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/pkill -9 drmi
+ExecStart=/usr/bin/bash -c "/usr/bin/pkill -9 drmi || true && cat /dev/zero > /dev/fb0 || true"
 
 [Install]
 WantedBy=multi-user.target
