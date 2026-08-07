@@ -10,7 +10,7 @@ import { ExecFetch } from "./execFetch.ts"
 import { CheckDependencies } from "./checkDeps.ts"
 import { ExecBuild } from "./execBuild.ts"
 import { ExecDeploy } from "./execDeploy.ts"
-import { ExecClean } from "./execClean.ts"
+import { ExecClean, CleanLosetupMounts } from "./execClean.ts"
 import { Ajv2019 } from "ajv/dist/2019.js"
 import FS from "node:fs"
 import PATH from "node:path"
@@ -368,6 +368,9 @@ if (SBOM) {
 }
 
 if (!CLEAN) {
+    // if we had stopped by not an signal, we need to execute the clean first
+    CleanLosetupMounts()
+
     try {
         if (!ONLY_SBOM) {
             // now we start
