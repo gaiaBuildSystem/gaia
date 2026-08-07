@@ -112,7 +112,22 @@ function replaceConfigEnvVars (recipe: Recipe, str: string | undefined): string 
 }
 
 function sortRecipeScripts (scripts: string[]): string[] {
-    return scripts.sort((a, b) => {
+    const hasNumericPrefix = (filePath: string): boolean => {
+        return /^\d+/.test(PATH.basename(filePath))
+    }
+
+    const numericScripts: string[] = []
+    const nonNumericScripts: string[] = []
+
+    for (const script of scripts) {
+        if (hasNumericPrefix(script)) {
+            numericScripts.push(script)
+        } else {
+            nonNumericScripts.push(script)
+        }
+    }
+
+    numericScripts.sort((a, b) => {
         const byBasename = PATH.basename(a).localeCompare(
             PATH.basename(b),
             "en",
@@ -126,6 +141,10 @@ function sortRecipeScripts (scripts: string[]): string[] {
         // deterministic fallback when basenames collide
         return a.localeCompare(b, "en", { sensitivity: "base" })
     })
+
+    scripts.splice(0, scripts.length, ...numericScripts, ...nonNumericScripts)
+
+    return scripts
 }
 
 export function ParseRecipes (_: string, distro: Distro): Recipe[] {
