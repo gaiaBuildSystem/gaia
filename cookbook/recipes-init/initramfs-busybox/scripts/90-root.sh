@@ -5,7 +5,7 @@ if [[ $root == LABEL:* ]]; then
     echo "[initramfs] searching for root partition with label $_label"
 
     # Wait for the device to be available
-    timeout=30 # Timeout in seconds
+    timeout=60 # Timeout in seconds
     interval=1 # Interval between checks in seconds
     elapsed=0
 
