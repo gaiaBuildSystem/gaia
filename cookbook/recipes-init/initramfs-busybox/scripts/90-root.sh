@@ -16,6 +16,11 @@ if [[ $root == LABEL:* ]]; then
 
         if [ $elapsed -ge $timeout ]; then
             echo "[initramfs] root device find timeout"
+
+            # this is a fatal error we should reboot
+            echo 1 > /proc/sys/kernel/sysrq
+            echo b > /proc/sysrq-trigger
+
             exit 69
         fi
     done
