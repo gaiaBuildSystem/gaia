@@ -79,7 +79,9 @@ export class ClaudeAPIClient {
         if (this._history.length > 0) {
             const lastTurns = this._history.slice(-this._maxHistoryContext)
             context = lastTurns.map((turn) => {
-                return `User: ${turn.question}\nMimir: ${turn.answer.explanation}`
+                let _tCtx = `User: ${turn.question}\nMimir: ${turn.answer.explanation}`
+                _tCtx += turn.answer.command ? `\nCommand Executed on this iteration: ${turn.answer.command}` : ""
+                return _tCtx
             }).join("\n\n")
 
             input = `${this._additionalContext}\n${context}\n` +
