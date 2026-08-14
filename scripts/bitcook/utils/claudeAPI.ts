@@ -112,7 +112,7 @@ export class ClaudeAPIClient {
     }
 
     public clearHistory (): void {
-        this._history.length = 0
+        this._history = []
     }
 
     public compactHistory (): void {

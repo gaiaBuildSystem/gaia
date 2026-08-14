@@ -1114,6 +1114,8 @@ const handleCommand = async (input: string): Promise<boolean> => {
             historyBox.content.remove(child.id)
         }
         resetHistoryLines()
+        mimir.clearHistory()
+
         return true
     }
 
