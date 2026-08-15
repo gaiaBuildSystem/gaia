@@ -17,9 +17,9 @@ const _file_path = `${BUILD_PATH}/tmp/${MACHINE}/edit`
 
 let _source = `none`
 if (ARCH === "linux/amd64") {
-    _source = `https://github.com/microsoft/edit/releases/download/v${meta.version}/edit-${meta.version}-x86_64-linux-gnu.tar.zst`
+    _source = `https://github.com/microsoft/edit/releases/download/v${meta.version}/edit-${meta.version}-x86_64-linux-gnu.tar.gz`
 } else {
-    _source = `https://github.com/microsoft/edit/releases/download/v${meta.version}/edit-${meta.version}-aarch64-linux-gnu.tar.zst`
+    _source = `https://github.com/microsoft/edit/releases/download/v${meta.version}/edit-${meta.version}-aarch64-linux-gnu.tar.gz`
 }
 
 // check if the file exists
@@ -31,7 +31,7 @@ if (!FS.existsSync(_file_path) || CLEAN === "true") {
 
     logger.info(`Fetching ${meta.source} ...`)
     execSync(
-        `wget ${_source} -O ${_file_path}/edit.tar.zst`,
+        `wget ${_source} -O ${_file_path}/edit.tar.gz`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
@@ -42,7 +42,7 @@ if (!FS.existsSync(_file_path) || CLEAN === "true") {
     logger.info(`Uncompressing ${meta.name} ...`)
 
     execSync(
-        `tar -I zstd -xf ${_file_path}/edit.tar.zst -C ${_file_path}`,
+        `tar -xf ${_file_path}/edit.tar.gz -C ${_file_path}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
