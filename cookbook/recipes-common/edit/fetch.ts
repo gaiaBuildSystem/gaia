@@ -9,6 +9,7 @@ import logger from "node-color-log"
 const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
 const BUILD_PATH = process.env.BUILD_PATH as string
+const CLEAN = process.env.CLEAN_IMAGE as string
 
 // read the meta data
 const meta = JSON.parse(process.env.META as string)
@@ -22,7 +23,7 @@ if (ARCH === "linux/amd64") {
 }
 
 // check if the file exists
-if (!FS.existsSync(_file_path)) {
+if (!FS.existsSync(_file_path) || CLEAN === "true") {
     // create the path only in case
     FS.mkdirSync(
         `${_file_path}`, { recursive: true }
