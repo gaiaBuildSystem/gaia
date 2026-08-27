@@ -1496,6 +1496,9 @@ const runCommand = async (command: string): Promise<void> => {
             await loop(
                 _nextQuestion
             )
+        } else {
+            // clean to we be able to iterate under errors again
+            GlobalErrorCount = 0
         }
     } finally {
         cmdOutput.dispose()
