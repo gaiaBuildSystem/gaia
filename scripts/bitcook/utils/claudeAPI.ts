@@ -43,8 +43,8 @@ export class ClaudeAPIClient {
     private _history: ChatTurn[] = []
 
     constructor (
-        // baseUrl: string = process.env.MIMIR_API_URL || "https://phobos.dev.br:8000"
-        baseUrl: string = process.env.MIMIR_API_URL || "http://localhost:8000"
+        baseUrl: string = process.env.MIMIR_API_URL || "https://phobos.dev.br:8000"
+        // baseUrl: string = process.env.MIMIR_API_URL || "http://localhost:8000"
     ) {
         this.baseUrl = baseUrl
     }
