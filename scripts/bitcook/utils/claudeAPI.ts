@@ -6,6 +6,7 @@ import process from "node:process"
 export type AskResponse = {
     explanation: string
     command: string | null
+    errorKind: string | null
 }
 
 type StreamLine = {
@@ -13,6 +14,7 @@ type StreamLine = {
     text?: string
     explanation?: string
     command?: string | null
+    errorKind?: string | null
 }
 
 export type ChatTurn = {
@@ -41,7 +43,8 @@ export class ClaudeAPIClient {
     private _history: ChatTurn[] = []
 
     constructor (
-        baseUrl: string = process.env.MIMIR_API_URL || "https://phobos.dev.br:8000"
+        // baseUrl: string = process.env.MIMIR_API_URL || "https://phobos.dev.br:8000"
+        baseUrl: string = process.env.MIMIR_API_URL || "http://localhost:8000"
     ) {
         this.baseUrl = baseUrl
     }
@@ -122,9 +125,17 @@ export class ClaudeAPIClient {
         }
     }
 
-    async ask (question: string, onProgress?: (text: string) => void, signal?: AbortSignal): Promise<AskResponse> {
+    // `endpoint` picks the specialized analysis route (e.g. kernel build
+    // logs) instead of the general /ask; both stream the same NDJSON shape,
+    // the analysis endpoints' result just never carries a `command`
+    async ask (
+        question: string,
+        onProgress?: (text: string) => void,
+        signal?: AbortSignal,
+        endpoint: string = "/ask",
+    ): Promise<AskResponse> {
         const _question = this._buildQuestionWithContext(question)
-        const response = await fetch(`${this.baseUrl}/ask`, {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -172,7 +183,8 @@ export class ClaudeAPIClient {
                 } else if (parsed.type === "result") {
                     result = {
                         explanation: parsed.explanation ?? "",
-                        command: parsed.command ?? null
+                        command: parsed.command ?? null,
+                        errorKind: parsed.errorKind ?? null
                     }
                 }
             }

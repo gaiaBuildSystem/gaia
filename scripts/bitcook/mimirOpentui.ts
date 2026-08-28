@@ -14,34 +14,14 @@ import type {
 } from "@jitl/opentui-core"
 import { ClaudeAPIClient } from "./utils/claudeAPI.ts"
 
-// @jitl/opentui-core's tree-sitter syntax highlighter (used by
-// MarkdownRenderable for fenced code blocks) spawns its worker via the
-// runtime's native Worker with no options, which Deno rejects with
-// "Classic workers are not supported." — Deno only allows `type: "module"`
-// workers. opentui-core captures its own reference to `Worker` the moment
-// it's imported, so this patch has to land — and the module has to load —
-// before that happens; hence the dynamic import below instead of a static
-// one.
-const NativeWorker = globalThis.Worker
-
-class ModuleWorker extends NativeWorker {
-    constructor (specifier: string | URL, options?: WorkerOptions) {
-        super(specifier, { ...options, type: "module" })
-    }
-}
-
-globalThis.Worker = ModuleWorker as unknown as typeof Worker
-
 const {
     Box,
     CliRenderEvents,
     Input,
     InputRenderableEvents,
-    MarkdownRenderable,
     RGBA,
     ScrollBox,
     StyledText,
-    SyntaxStyle,
     Text,
     bg,
     blink,
@@ -178,19 +158,6 @@ process.on("unhandledRejection", (reason) => handleFatalError("unhandledRejectio
 // concrete references without relying on getRenderable() doing a recursive
 // lookup — each Renderable's id map only tracks its own direct children.
 const instantiateAs = <T> (vnode: unknown): T => instantiate(renderer, vnode as never) as unknown as T
-
-// shared style table for markdown rendering (headings, code, tables, ...);
-// mimir's answers are markdown, everything else ("you:"/"system:" lines,
-// raw command output) stays plain Text
-const markdownSyntaxStyle = SyntaxStyle.create()
-
-// markdownSyntaxStyle above has no styles registered, so its "default" group
-// resolves to the terminal's default color — MarkdownRenderable's own `fg`
-// option only feeds fenced code blocks and blockquote/hr borders, not plain
-// paragraph text. To color the loading message's streamed body (the partial
-// "thinking" text) the same green as its header, "default" needs its own
-// registered style rather than relying on `fg`.
-const thinkingSyntaxStyle = SyntaxStyle.fromStyles({ default: { fg: "#9ece6a" } })
 
 // ---------------------------------------------------------------------------
 // command palette — a small dropdown of matching "/" commands shown above
@@ -751,10 +718,10 @@ const appendMessage = (author: string, content: string, color?: string) => {
     appendSpacer()
 }
 
-// like appendMessage, but renders content as markdown (headings, code blocks,
-// tables, ...) below a plain-text "author:" header line — used for mimir's
-// answers, which are markdown, unlike the plain "you:"/"system:" lines
-const appendMarkdownMessage = (author: string, content: string, color?: string) => {
+// like appendMessage, but renders content as ANSI-parsed styled text below a
+// plain-text "author:" header line — used for mimir's answers, which arrive
+// as ANSI from the API (unlike the plain "you:"/"system:" lines)
+const appendAnsiMessage = (author: string, content: string, color?: string) => {
     dropStaleSelection()
 
     const headerContent = `${author}:`
@@ -766,19 +733,17 @@ const appendMarkdownMessage = (author: string, content: string, color?: string) 
         }),
     ) as TextRenderable
 
-    const markdownContent = ClaudeAPIClient.AnsiToMarkdown(content)
-    const body = new MarkdownRenderable(renderer, {
-        content: markdownContent,
-        syntaxStyle: markdownSyntaxStyle,
-    })
+    const body = instantiate(
+        renderer,
+        Text({
+            content: new StyledText(ansiToStyledText(content)),
+        }),
+    ) as TextRenderable
 
     historyBox.content.add(header)
     historyBox.content.add(body)
     registerHistoryEntry(header.id, headerContent)
-    // the markdown source is only an approximation of the rendered line
-    // count (headings/lists/wrapping can change it), close enough for a
-    // buffer meant to bound memory/render cost, not to be pixel-exact
-    registerHistoryEntry(body.id, markdownContent)
+    registerHistoryEntry(body.id, content)
     appendSpacer()
 }
 
@@ -949,17 +914,15 @@ const createLoadingMessage = (author: string, color?: string) => {
         }),
     ) as TextRenderable
 
-    // markdown, streaming: true — the trailing block stays unstable while
-    // chunks keep arriving; this message is torn down via remove() once the
-    // final answer is ready, so there's no need to ever flip streaming off
     let bodyContent = ""
-    const body = new MarkdownRenderable(renderer, {
-        id: `${id}Body`,
-        content: bodyContent,
-        syntaxStyle: thinkingSyntaxStyle,
-        streaming: true,
-        fg: color ? parseColor(color) : undefined,
-    })
+    const body = instantiate(
+        renderer,
+        Text({
+            id: `${id}Body`,
+            content: "",
+            fg: color ? parseColor(color) : undefined,
+        }),
+    ) as TextRenderable
 
     historyBox.content.add(header)
     historyBox.content.add(body)
@@ -976,8 +939,8 @@ const createLoadingMessage = (author: string, color?: string) => {
         setBody: (text: string) => {
             dropStaleSelection()
             bodyContent = text
-            body.content = bodyContent
-            updateHistoryEntryLines(body.id, bodyContent)
+            body.content = new StyledText(ansiToStyledText(text))
+            updateHistoryEntryLines(body.id, text)
         },
         remove: () => {
             dropStaleSelection()
@@ -1130,7 +1093,7 @@ const handleCommand = async (input: string): Promise<boolean> => {
         for (const turn of turns) {
             appendMessage("system", `[${turn.timestamp}]`, "#565f89")
             appendMessage("you", turn.question, "#c0caf5")
-            appendMarkdownMessage("mimir", turn.answer.explanation, "#9ece6a")
+            appendAnsiMessage("mimir", turn.answer.explanation, "#9ece6a")
 
             if (turn.answer.command != null) {
                 appendMessage("system", `Command: ${turn.answer.command}`, "#fa625a")
@@ -1435,6 +1398,16 @@ const executeCommand = (command: string, onOutput: (chunk: string) => void, logF
     })
 }
 
+// set when the /ask response flagged a kernel build error (errorKind ===
+// "kernel"): the next loop() iteration must go to the specialized
+// /analyze/kernel/build/logs endpoint instead of /ask, and no follow-up
+// command may be proposed or executed for kernel build failures
+let pendingKernelBuildAnalysis = false
+
+// the last /ask response's errorKind, set by loop() so runCommand can
+// decide whether to flag the next iteration as a kernel build analysis
+let lastResponseErrorKind: string | null = null
+
 // runs a shell command through executeCommand, streaming its output into the
 // scrollback the same way the auto-execute path does; shared by that path and
 // by /again so re-running a command doesn't need another round-trip to mimir
@@ -1493,6 +1466,10 @@ const runCommand = async (command: string): Promise<void> => {
                 outputTmpFileContent = (error as Error).message
             }
 
+            if (lastResponseErrorKind === "kernel") {
+                pendingKernelBuildAnalysis = true
+            }
+
             await loop(
                 _nextQuestion
             )
@@ -1509,11 +1486,24 @@ const runCommand = async (command: string): Promise<void> => {
 // main ask/answer loop
 // ---------------------------------------------------------------------------
 
-const loop = async (question: string) => {
+const loop = async (question: string, echoUser: boolean = true) => {
+    // the /ask response for the previous turn flagged this as a kernel
+    // build error (errorKind === "kernel"): this turn goes to the
+    // specialized /analyze/kernel/build/logs endpoint instead of /ask, and
+    // its answer is analysis only — no command is proposed or executed
+    const isKernelAnalysis = pendingKernelBuildAnalysis
+    pendingKernelBuildAnalysis = false
+
     setProcessing(true)
     stoppedByUser = false
     currentAbort = new AbortController()
-    appendMessage("you", question, "#c0caf5")
+
+    // a continuation turn (kernel-build follow-up) already has the user's
+    // question + the previous answer in the scrollback above, so echo the
+    // "you:" line only for the first turn of the exchange
+    if (echoUser) {
+        appendMessage("you", question, "#c0caf5")
+    }
 
     const loadingMessage = createLoadingMessage("mimir", "#9ece6a")
     const stopSpinner = startSpinner((frame) => loadingMessage.setSpinner(frame))
@@ -1526,15 +1516,17 @@ const loop = async (question: string) => {
             // arrives; the spinner keeps animating on the header line for
             // the whole thinking phase, not just until the first chunk
             loadingMessage.setBody(text)
-        }, currentAbort.signal)
+        }, currentAbort.signal, isKernelAnalysis ? "/analyze/kernel/build/logs" : "/ask")
 
         stopSpinner()
         loadingMessage.remove()
 
-        if (resp.explanation) {
-            appendMarkdownMessage("mimir", resp.explanation, "#9ece6a")
+        lastResponseErrorKind = resp.errorKind
 
-            if (resp.command != null) {
+        if (resp.explanation) {
+            appendAnsiMessage("mimir", resp.explanation, "#9ece6a")
+
+            if (resp.command != null && !isKernelAnalysis) {
                 appendMessage("system", `Command: ${resp.command}`, "#fa625a")
                 lastCommand = resp.command
 
@@ -1546,7 +1538,18 @@ const loop = async (question: string) => {
                     )
                 } else {
                     await runCommand(resp.command)
+                    return
                 }
+            }
+
+            // /ask flagged this as a kernel build error but no command was
+            // executed (either no command was proposed, or auto-execute is
+            // disabled): follow up with the specialized analysis endpoint.
+            // echoUser=false — the user's question + previous answer are
+            // already in the scrollback above this continuation turn
+            if (lastResponseErrorKind === "kernel" && !isKernelAnalysis) {
+                pendingKernelBuildAnalysis = true
+                await loop(question, false)
             }
         }
     } catch (error) {

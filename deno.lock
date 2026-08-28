@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@deno/installer-shell-setup@*": "0.3.4",
     "jsr:@melker/melker@^2026.3.1": "2026.7.1",
     "npm:@cyclonedx/cyclonedx-library@^9.4.1": "9.5.0_ajv@8.20.0",
     "npm:@jitl/opentui-core@0.4": "0.4.0_web-tree-sitter@0.25.10_typescript@5.9.3",
@@ -21,6 +22,9 @@
     "npm:packageurl-js@^2.0.1": "2.0.1"
   },
   "jsr": {
+    "@deno/installer-shell-setup@0.3.4": {
+      "integrity": "48665d1a737d487cce6874bc97bba70a5aeffa7053aca3f60df93c6fab8963b4"
+    },
     "@melker/melker@2026.7.1": {
       "integrity": "a539863e033da465f0cc33077e8996b0f2c5fc814b2d4d2ffff564ce8b420824",
       "dependencies": [

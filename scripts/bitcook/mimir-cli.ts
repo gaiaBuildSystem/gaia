@@ -10,6 +10,26 @@ var GlobalErrorCount = 0
 const MAX_ERROR_COUNT = 4
 const VERSION = "0.1.0"
 
+// strip ANSI escape codes from a string — used when MIMIR_NO_COLOR (or
+// NO_COLOR) is set so the API's colored output passes through plain
+const stripAnsi = (text: string): string =>
+    // deno-lint-ignore no-control-regex
+    text.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "")
+
+// set MIMIR_NO_COLOR=1 (or NO_COLOR) to disable ANSI coloring in the
+// API response and thinking output
+const NO_COLOR = process.env.MIMIR_NO_COLOR === "1"
+    || process.env.NO_COLOR !== undefined
+    || process.env.NO_COLOR === "1"
+
+const clean = (text: string): string => NO_COLOR ? stripAnsi(text) : text
+
+// set MIMIR_AUTO_RETRY=1 to enable the automatic command-failure retry loop.
+// Off by default: a failed command is reported (logs included) but not fed
+// back to the model automatically. The kernel-build analysis follow-up
+// (errorKind === "kernel") is unaffected and always runs.
+const AUTO_RETRY = process.env.MIMIR_AUTO_RETRY === "1"
+
 
 // llm client
 const mimir = new ClaudeAPIClient()
@@ -36,20 +56,53 @@ if (Deno.args[0] === "--version") {
     Deno.exit(0)
 }
 
-const loop = async (question: string) => {
-    const turn = await mimir.ask(question, (partial) => {
-        console.log(`Thinking: ${partial}`)
-    })
+// set when the /ask response flagged a kernel build error (errorKind ===
+// "kernel"): the next loop() iteration must go to the specialized
+// /analyze/kernel/build/logs endpoint instead of /ask, and no follow-up
+// command may be proposed or executed for kernel build failures
+// deno-lint-ignore no-var
+var pendingKernelBuildAnalysis = false
 
-    console.log(`Mimir: ${turn.explanation}`)
-    console.log(`Command: ${turn.command}`)
+// the last /ask response's errorKind, set by loop() so runCommand can
+// decide whether to flag the next iteration as a kernel build analysis
+// deno-lint-ignore no-var
+var lastResponseErrorKind: string | null = null
+
+const loop = async (question: string) => {
+    // the /ask response for the previous turn flagged this as a kernel
+    // build error (errorKind === "kernel"): this turn goes to the
+    // specialized /analyze/kernel/build/logs endpoint instead of /ask, and
+    // its answer is analysis only — no command is proposed or executed
+    const isKernelAnalysis = pendingKernelBuildAnalysis
+    pendingKernelBuildAnalysis = false
+
+    // pipeline-friendly: print a single "Thinking..." marker before asking,
+    // not the streamed partials (no animation, no dependency on progress
+    // chunks arriving)
+    console.log("\nThinking...\n")
+
+    const turn = await mimir.ask(
+        question,
+        undefined,
+        undefined,
+        isKernelAnalysis ? "/analyze/kernel/build/logs" : "/ask"
+    )
+
+    lastResponseErrorKind = turn.errorKind
+
+    console.log("")
+    console.log(`Mimir: ${clean(turn.explanation)}\n`)
+    if (turn.command != null && !isKernelAnalysis) {
+        console.log("")
+        console.log(`\nCommand: ${turn.command}\n`)
+    }
 
     if (turn.explanation.trim().includes('I do not have the answer to your question')) {
-        console.log(`Mimir: ${turn.explanation}`)
+        console.log(`Mimir: ${clean(turn.explanation)} \n`)
         Deno.exit(69)
     }
 
-    if (GlobalErrorCount <= MAX_ERROR_COUNT && turn.command != null) {
+    if (GlobalErrorCount <= MAX_ERROR_COUNT && turn.command != null && !isKernelAnalysis) {
         const _outputTmpFile = `/tmp/mimir_output_${Date.now()}.log`
 
         try {
@@ -72,13 +125,11 @@ const loop = async (question: string) => {
 
             GlobalErrorCount = 0
         } catch (error) {
-            // let's continue the loop in the agent inputting the
-            // next question as the error
-            // we need to also have some way to stop if we have so
-            // many levels of errors
+            // report the failure; auto-retry (feed the failure back to the
+            // model) is opt-in via MIMIR_AUTO_RETRY=1
             GlobalErrorCount++
 
-            if (GlobalErrorCount < MAX_ERROR_COUNT) {
+            if (AUTO_RETRY && GlobalErrorCount < MAX_ERROR_COUNT) {
                 // Prefer captured command output, but fallback to the thrown error message.
                 let _outputTmpFileContent = ""
 
@@ -94,12 +145,27 @@ const loop = async (question: string) => {
                     _outputTmpFileContent = e.message
                 }
 
+                if (lastResponseErrorKind === "kernel") {
+                    pendingKernelBuildAnalysis = true
+                }
+
                 // wow, AI knows how to do recursion?
                 await loop(
                     `The command "${turn.command}" failed to execute, logs: ${_outputTmpFileContent}\n`
                 )
+            } else if (!AUTO_RETRY) {
+                console.log("")
+                console.log(`Command failed (exit reported above). Auto-retry is disabled; set MIMIR_AUTO_RETRY=1 to enable it.`)
             }
         }
+    }
+
+    // /ask flagged this as a kernel build error but no command was
+    // executed (either no command was proposed, or auto-execute is
+    // disabled): follow up with the specialized analysis endpoint
+    if (lastResponseErrorKind === "kernel" && !isKernelAnalysis) {
+        pendingKernelBuildAnalysis = true
+        await loop(question)
     }
 }
 
