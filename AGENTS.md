@@ -23,7 +23,7 @@ Run the following command to create an image:
 The `--buildPath` argument is mandatory and must be an absolute path. Does never pass the path to the actual build-<distro> folder, this final folder is created by the build system. The build system will create a folder called `build-<distro>` inside the path you pass to this argument.
 
 > [!WARNING]
-The `--distro` argument is mandatory and must be a relative path to a distro json file.
+The `--distro` argument is mandatory and must be a RELATIVE!!! path to a distro json file. An absolute path will not work!!
 
 > [!WARNING]
 The `--noCache` argument is mandatory for the first build. It will force the build to not use any cache and build everything from scratch.
