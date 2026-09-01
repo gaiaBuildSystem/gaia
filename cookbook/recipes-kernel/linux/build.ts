@@ -16,7 +16,7 @@ const DISTRO_NAME = process.env.DISTRO_NAME as string
 const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
 const DISTRO_MINOR = process.env.DISTRO_MINOR as string
 const DISTRO_PATCH = process.env.DISTRO_PATCH as string
-const USER_PASSWD = process.env.USER_PASSWD as string
+const KERNEL_EDGE = process.env.KERNEL_EDGE === "true"
 
 // get the recipe metadata
 const META = JSON.parse(process.env.META as string) as Recipe
@@ -27,7 +27,7 @@ const _paths = META.paths
 process.env.ORIGIN_PATH = _path
 process.env.PODMAN_USERNS = "keep-id"
 
-const _getAssetPath = (_filePath: string) => getAssetPath(_filePath, _paths)
+const _getAssetPath = (_filePath: string, optional: boolean = false) => getAssetPath(_filePath, _paths, optional)
 
 // set the working directory
 process.chdir(`${BUILD_PATH}/tmp/${MACHINE}/linux`)
@@ -61,7 +61,21 @@ process.env.COMPILER = COMPILER
 process.env.IMAGE_TYPE = IMAGE_TYPE
 
 // replace the defconfig
-const _templateDefConfigPath = _getAssetPath(`${MACHINE}/${MACHINE}_defconfig.template`)
+// when --kernelEdge is set, prefer a $MACHINE_defconfig_edge.template if the
+// recipe provides one, otherwise fall back to the regular defconfig template
+let _templateDefConfigPath = ""
+if (KERNEL_EDGE) {
+    _templateDefConfigPath = _getAssetPath(`${MACHINE}/${MACHINE}_defconfig_edge.template`, true)
+
+    if (_templateDefConfigPath === "") {
+        logger.warn(`--kernelEdge was set but no ${MACHINE}_defconfig_edge.template was found, falling back to ${MACHINE}_defconfig.template`)
+    }
+}
+
+if (_templateDefConfigPath === "") {
+    _templateDefConfigPath = _getAssetPath(`${MACHINE}/${MACHINE}_defconfig.template`)
+}
+
 logger.info(`Parsing defconfig ${_templateDefConfigPath} ...`)
 const _defconfig = FS.readFileSync(`${_templateDefConfigPath}`, "utf-8")
     .replace(/{{dName}}/g, DISTRO_NAME)

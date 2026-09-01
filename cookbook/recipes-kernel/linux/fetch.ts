@@ -10,9 +10,23 @@ const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
 const BUILD_PATH = process.env.BUILD_PATH as string
 const GAIA_WORKSPACE = process.env.GAIA_WORKSPACE as string
+const KERNEL_EDGE = process.env.KERNEL_EDGE === "true"
 
 // read the meta data
 const meta = JSON.parse(process.env.META as string)
+
+// resolve which ref to fetch: --kernelEdge picks customData.ref.edge,
+// otherwise customData.ref.stable is used. Recipes without a customData.ref
+// (backward compatibility) fall back to the top level ref.
+if (KERNEL_EDGE && meta.customData?.ref?.edge == null) {
+    logger.warn(`--kernelEdge was set but ${meta.name} has no customData.ref.edge, falling back to stable`)
+}
+
+const _refSet = (KERNEL_EDGE ? meta.customData?.ref?.edge : null) ??
+    meta.customData?.ref?.stable ??
+    meta.ref
+
+const _ref = _refSet[ARCH]
 
 // Derive a filesystem-safe directory name from the source URL so that
 // different kernel repos coexist under .common-fetch without collisions.
@@ -61,9 +75,9 @@ if (!FS.existsSync(MACHINE_LINUX_PATH)) {
     // Ensure the parent directory exists before adding the worktree
     FS.mkdirSync(`${BUILD_PATH}/tmp/${MACHINE}`, { recursive: true })
 
-    logger.info(`adding git worktree for ${MACHINE} at ${MACHINE_LINUX_PATH} ...`)
+    logger.info(`adding git worktree for ${MACHINE} at ${MACHINE_LINUX_PATH} (${KERNEL_EDGE ? "edge" : "stable"}: ${_ref}) ...`)
     execSync(
-        `git -C ${COMMON_REPO_PATH} worktree add -f --detach ${MACHINE_LINUX_PATH} ${meta.ref[ARCH]}`,
+        `git -C ${COMMON_REPO_PATH} worktree add -f --detach ${MACHINE_LINUX_PATH} ${_ref}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
@@ -71,9 +85,9 @@ if (!FS.existsSync(MACHINE_LINUX_PATH)) {
         }
     )
 } else {
-    logger.info(`checkout ${meta.ref[ARCH]} in worktree ${MACHINE_LINUX_PATH} ...`)
+    logger.info(`checkout ${_ref} (${KERNEL_EDGE ? "edge" : "stable"}) in worktree ${MACHINE_LINUX_PATH} ...`)
     execSync(
-        `git -C ${MACHINE_LINUX_PATH} checkout ${meta.ref[ARCH]}`,
+        `git -C ${MACHINE_LINUX_PATH} checkout ${_ref}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",

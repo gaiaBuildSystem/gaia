@@ -63,6 +63,7 @@ if (process.argv[2] === "-h" || process.argv[2] === "--help") {
     logger.info("  --distro             The path to the distro.json file")
     logger.info("  --help -h            Shows this help")
     logger.info("  --installHostDeps    Automatically install the host dependencies")
+    logger.info("  --kernelEdge         Builds the kernel with the edge version, if not set, the default version will be used")
     logger.info("  --noCache            Build from scratch without any cache")
     logger.info("  --onlySbom           Just generate the SBOM files, needs that a build with --sbom was done before")
     logger.info("  --overrideEnv        Use the env variables set on the shell instead of the ones from the cookbook")
@@ -101,6 +102,7 @@ const SBOM = _args.sbom as boolean
 const ONLY_SBOM = _args.onlySbom as boolean
 const OVERRIDE_ENV = _args.overrideEnv as boolean
 const NO_CACHE = _args.noCache as boolean
+const KERNEL_EDGE = _args.kernelEdge as boolean
 let PODMAN_CLEAN = false
 
 
@@ -110,6 +112,7 @@ if (RECIPE != null) {
 }
 process.env.INSTALL_HOST_DEPS = INSTALL_HOST_DEPS != null ? INSTALL_HOST_DEPS.toString() : false.toString()
 process.env.GAIA_OVERRIDE_ENV = OVERRIDE_ENV != null ? OVERRIDE_ENV.toString() : false.toString()
+process.env.KERNEL_EDGE = KERNEL_EDGE === true ? "true" : "false"
 
 
 if (NO_CACHE === true) {

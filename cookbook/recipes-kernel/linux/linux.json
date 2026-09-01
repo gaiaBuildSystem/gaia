@@ -11,6 +11,18 @@
         "linux/arm64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6",
         "linux/amd64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6"
     },
+    "customData": {
+        "ref": {
+            "stable": {
+                "linux/arm64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6",
+                "linux/amd64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6"
+            },
+            "edge": {
+                "linux/arm64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6",
+                "linux/amd64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6"
+            }
+        }
+    },
     "hostDeps": [
         "git",
         "make"

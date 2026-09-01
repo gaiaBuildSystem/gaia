@@ -50,6 +50,7 @@ The `bitcook` script (which wraps `gaia.ts`) accepts the following arguments:
 | `--distro <path>` | Path to the `distro.json` file (relative to the current working directory) |
 | `-h`, `--help` | Shows the help message |
 | `--installHostDeps` | Automatically install host dependencies inside the build container |
+| `--kernelEdge` | Build the kernel recipe using its `customData.ref.edge` reference (and a `$MACHINE_defconfig_edge.template` if the recipe provides one) instead of the default stable version |
 | `--noCache` | Build from scratch without using any cache |
 | `--onlySbom` | Just generate SBOM files (requires a prior build with `--sbom`) |
 | `--overrideEnv` | Use the environment variables set on the shell instead of the ones from the cookbook |

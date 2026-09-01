@@ -8,7 +8,8 @@ export function getAssetPath (
     paths: [{
         path: string,
         priority: number
-    }]
+    }],
+    optional: boolean = false
 ): string {
     let _higher = {
         path: "",
@@ -28,6 +29,12 @@ export function getAssetPath (
     }
 
     if (_higher.priority === -1) {
+        // an optional asset is allowed to be missing, the caller is
+        // expected to fall back to a default asset in that case
+        if (optional) {
+            return ""
+        }
+
         logger.error(`asset ${assetFilePath} not found in paths ${_paths}`)
         throw new Error(`asset ${assetFilePath} not found in paths ${_paths}`)
     } else {
