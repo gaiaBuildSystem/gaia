@@ -53,4 +53,4 @@ To interface with the Gaia Build System you can use Mimir, an AI chat assistant 
 Mimir is an AI chat assistant that can help you to build your own distribution. You can interact with it through the command line.
 
 > [!NOTE]
-This is a human facing document. If you are looking for a deeper developer documentation or you are an AI agent please check the [AGENTS.md](AGENTS.md) file.
+This is a human facing document. If you are looking for the full documentation (architecture, recipes, distro manifest, build steps, Mimir, development) check the [docs/](docs/README.md) folder. If you are an AI agent please check the [AGENTS.md](AGENTS.md) file.

@@ -7,29 +7,29 @@
 
 # Gaia Core
 
-Gaia Core is the origin, the beginning, the first. It is the core of the Gaia Build System.
+Gaia Core is the build engine for the Gaia Build System. Everything starts here.
 
 ## Building DeimOS
 
-Deimos is the Gaia Build System's reference distribution. It is a minimal distribution that is used to test the Gaia Build System.
+Deimos is the reference distribution. It is minimal, and exists to test the build system itself.
 
-Run the following command to create an image:
+To create an image:
 
 ```bash
 ./bitcook --buildPath /<absolute path for the actual workdir> --distro distro-ref-amd64.json --noCache --installHostDeps
 ```
 
 > [!WARNING]
-The `--buildPath` argument is mandatory and must be an absolute path. Does never pass the path to the actual build-<distro> folder, this final folder is created by the build system. The build system will create a folder called `build-<distro>` inside the path you pass to this argument.
+The `--buildPath` argument is mandatory and must be an absolute path. Never pass the path to a `build-<distro>` folder; the build system creates that folder inside the path you provide.
 
 > [!WARNING]
-The `--distro` argument is mandatory and must be a RELATIVE!!! path to a distro json file. An absolute path will not work!!
+The `--distro` argument is mandatory and must be a relative path to a distro JSON file. An absolute path will not work.
 
 > [!WARNING]
 The `--noCache` argument is mandatory for the first build. It will force the build to not use any cache and build everything from scratch.
 
 > [!WARNING]
-The `--installHostDeps` argument is pretty much recommended for the first build. As we support build inside a container it will install the host dependencies inside the container. This is a one time operation and will be cached for future builds, so leave it there does not hurt.
+The `--installHostDeps` argument is recommended for the first build. It installs host dependencies inside the build container. This is a one-time operation that gets cached for future builds, so leave it in.
 
 The DeimOS images that this repo builds are for:
 
@@ -40,7 +40,7 @@ Check the other repositories for DeimOS support on other machines. The distro de
 
 ### bitcook Arguments
 
-The `bitcook` script (which wraps `gaia.ts`) accepts the following arguments:
+The `bitcook` script (which wraps `gaia.ts`) accepts these arguments:
 
 | Argument | Description |
 |----------|-------------|
@@ -70,12 +70,16 @@ The `bitcook` command is the wrapper that should be called, not the `./gaia/scri
 
 The recommended PWD to run the command is the root of the workdir, not the root of the Gaia repository.
 
+## Adding a New Platform or Board
+
+To add a new vendor platform or a new board to an existing cookbook, follow the guide in [docs/platforms.md](docs/platforms.md). It covers creating the cookbook directory structure, schemas, distro-ref manifests, and all required recipes (bootloader, firmware, kernel, fstab) with working Xonsh script examples.
+
 ## Setup Multi-Cookbook Build
 
 > [!WARNING]
 This depends on having Docker and Docker compose plugin installed.
 
-For some targets you may need to build with the help of other meta cookbooks. To do this we recommend you to use the Gaia `repo`util with a `manifest.json` file. These are the interfaces that follow the `manifest.json` schema:
+Some targets need recipes from additional cookbooks. Use the Gaia `repo` util with a `manifest.json` file to pull them in. The schema:
 
 ```typescript
 interface Manifest {
@@ -93,7 +97,7 @@ interface Repository {
 }
 ```
 
-A hypothetic example of a `manifest.json` file:
+Example `manifest.json`:
 
 ```json
 {
@@ -111,7 +115,7 @@ A hypothetic example of a `manifest.json` file:
 }
 ```
 
-The manifest file must be in the root of a folder where you have cloned the Gaia Core repository. To use the `repo`util, run the following command:
+The manifest file must be in the root of a folder where you have cloned the Gaia Core repository. Run:
 
 ```bash
 ./gaia/scripts/init
@@ -123,15 +127,15 @@ This command will build the dev container and clone the repositories specified i
 
 ## Gaia Build System
 
-Gaia is a build system to create Debian based Linux distributions. It's use Debian packages and Docker Debian containers to build the system and create reproducible builds.
+Gaia is a build system that creates Debian based Linux distributions. It uses Debian packages and Docker/Podman Debian containers to build the system and produce reproducible builds.
 
-The project consists of some components:
+The project has these components:
 
 ### Gaia Core
 
 https://github.com/gaiaBuildSystem/gaia
 
-Gaia core is the main component of the project. It's the tool that parses the recipes meta-data, run the tasks and output the artifacts. It's written in TypeScript, run under Bun and uses container images to build the system.
+Gaia Core is the main component. It parses recipe metadata, runs build tasks, and outputs artifacts. Written in TypeScript, it runs under Deno and uses container images to build the system.
 
 ### DeimOS
 
@@ -155,7 +159,6 @@ talk on behalf of Toradex or on behalf of any Toradex product.
 
 https://github.com/gaiaBuildSystem/Pergamos
 
-PergamOS is the namespace for the Debian based container images library of the
-Gaia project. It's a collection of Debian based images that are used to build and as a base for applications.
+PergamOS is the namespace for the Debian based container images library of the Gaia project. A collection of Debian based images used to build and as a base for applications.
 
-The PergamOS name is a reference to the ancient city of Pergamon, which was known for its library, the second largest in the ancient world, after the Library of Alexandria. W
+The name references the ancient city of Pergamon, known for its library, the second largest in the ancient world after the Library of Alexandria.
