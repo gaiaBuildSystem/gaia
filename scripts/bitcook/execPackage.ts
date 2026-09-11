@@ -7,20 +7,15 @@ import { Recipe } from "./parse.ts"
 export function ExecPackage (recipes: Recipe[]): void {
     logger.info("Executing Packages ...")
 
-    const ARCH = process.env.ARCH as string
     const MACHINE = process.env.MACHINE as string
-    const MAX_IMG_SIZE = process.env.MAX_IMG_SIZE as string
     const BUILD_PATH = process.env.BUILD_PATH as string
-    const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
-    const DISTRO_MINOR = process.env.DISTRO_MINOR as string
-    const DISTRO_PATCH = process.env.DISTRO_PATCH as string
-    const USER_PASSWD = process.env.USER_PASSWD as string
 
     const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
     const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
     process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
     process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
+    // deno-lint-ignore no-var
     var _apt_updated: boolean = false
 
     // directly call the clean scrips from the recipes
@@ -50,7 +45,7 @@ export function ExecPackage (recipes: Recipe[]): void {
             // install the deps
             execSync(
                 `sudo -k ` +
-                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "apt-get install -y --no-upgrade ${deps}"`,
+                `chroot ${IMAGE_MNT_ROOT} /bin/bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get install -y --no-upgrade ${deps}"`,
                 {
                     shell: "/bin/bash",
                     stdio: "inherit",

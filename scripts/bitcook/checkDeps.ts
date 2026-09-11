@@ -20,13 +20,11 @@ function _getCookbookDir (recipeOrigin: string): string {
 export function CheckDependencies (recipes: Recipe[]): void {
     logger.info("Checking dependencies ...")
 
-    const USER_PASSWD = process.env.USER_PASSWD as string
     const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
     const FARCH = ARCH.replace("/", "-")
     const DISTRO_NAME = process.env.DISTRO_NAME as string
     const INSTALL_HOST_DEPS = process.env.INSTALL_HOST_DEPS as string
-    const NO_CACHE = process.env.CLEAN_IMAGE as string
     const MACHINE = process.env.MACHINE as string
     const IMAGE_MNT_BOOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/boot`
     const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
@@ -116,6 +114,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     `sudo -k ` +
                     `podman exec ${HOST_CONTAINER_NAME} ` +
                     `/bin/bash -c "` +
+                    `export DEBIAN_FRONTEND=noninteractive && ` +
                     `apt-get update && apt-get install sudo` +
                     `"`,
                     {
@@ -208,6 +207,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                         `sudo -k ` +
                         `podman exec ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
+                        `export DEBIAN_FRONTEND=noninteractive && ` +
                         `apt-get update && ` +
                         `apt-get install -y ${recipe.hostDeps.join(" ")}` +
                         `"`,
