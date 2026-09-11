@@ -208,7 +208,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                         `podman exec ${HOST_CONTAINER_NAME} ` +
                         `/bin/bash -c "` +
                         `export DEBIAN_FRONTEND=noninteractive && ` +
-                        `apt-get update && ` +
+                        `apt-get update -y && ` +
                         `apt-get install -y ${recipe.hostDeps.join(" ")}` +
                         `"`,
                         {
@@ -288,7 +288,8 @@ export function CheckDependencies (recipes: Recipe[]): void {
                             execSync(
                                 `sudo -k ` +
                                 `/bin/bash -c "` +
-                                `apt-get update && ` +
+                                `export DEBIAN_FRONTEND=noninteractive && ` +
+                                `apt-get update -y && ` +
                                 `apt-get install -y ${dep}` +
                                 `"`,
                                 {
