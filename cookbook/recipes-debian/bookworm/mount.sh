@@ -48,7 +48,7 @@ mount --make-shared $IMAGE_MNT_BOOT
 mount --make-shared $IMAGE_MNT_ROOT
 
 # also make sure that the fat partiton has their label as a file inside it
-echo "LABEL:$BOOT_LABEL" > $IMAGE_MNT_BOOT/${BOOT_LABEL}
+echo "LABEL:$BOOT_LABEL" > $IMAGE_MNT/boot/partition
 
 # before mount the bind mounts, we need to create the mount points
 mkdir -p $IMAGE_MNT_ROOT/dev
