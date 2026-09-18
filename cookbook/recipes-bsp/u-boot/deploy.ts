@@ -8,14 +8,8 @@ import { execSync } from "node:child_process"
 // run update in the chroot
 logger.info("install the u-boot assets ...")
 
-const ARCH = process.env.ARCH as string
 const MACHINE = process.env.MACHINE as string
-const MAX_IMG_SIZE = process.env.MAX_IMG_SIZE as string
 const BUILD_PATH = process.env.BUILD_PATH as string
-const DISTRO_MAJOR = process.env.DISTRO_MAJOR as string
-const DISTRO_MINOR = process.env.DISTRO_MINOR as string
-const DISTRO_PATCH = process.env.DISTRO_PATCH as string
-const USER_PASSWD = process.env.USER_PASSWD as string
 
 // get the actual script path, not the process.cwd
 const _path = PATH.dirname(process.argv[1])
@@ -26,25 +20,24 @@ const IMAGE_MNT_ROOT = `${BUILD_PATH}/tmp/${MACHINE}/mnt/root`
 process.env.IMAGE_MNT_BOOT = IMAGE_MNT_BOOT
 process.env.IMAGE_MNT_ROOT = IMAGE_MNT_ROOT
 
-// if the machine is the qemux86-64, we need to install the EFI payload
-// so, we skip this script
-if (MACHINE === "qemux86-64") {
-    logger.debug(`Skipping default u-boot deploy flow for ${MACHINE}`)
-    logger.debug(`${MACHINE} should use the efi-payload script instead`)
-    process.exit(0)
-}
+// for machines that use EFI this will not exists
+const UBOOT_BIN = `${BUILD_PATH}/tmp/${MACHINE}/u-boot/u-boot.bin`
 
-logger.info("installing u-boot image ...")
-execSync(
-    `sudo -k ` +
-    `cp ${BUILD_PATH}/tmp/${MACHINE}/u-boot/u-boot.bin ${IMAGE_MNT_BOOT}/`,
-    {
-        shell: "/bin/bash",
-        stdio: "inherit",
-        encoding: "utf-8",
-        env: process.env
-    })
-logger.success("u-boot image installed")
+if (FS.existsSync(UBOOT_BIN)) {
+    logger.info("installing u-boot image ...")
+    execSync(
+        `sudo -k ` +
+        `cp ${UBOOT_BIN} ${IMAGE_MNT_BOOT}/`,
+        {
+            shell: "/bin/bash",
+            stdio: "inherit",
+            encoding: "utf-8",
+            env: process.env
+        })
+    logger.success("u-boot image installed")
+} else {
+    logger.warn(`uboot.bin not found at ${UBOOT_BIN}, skipping u-boot installation`)
+}
 
 logger.info("installing boot script ...")
 execSync(
