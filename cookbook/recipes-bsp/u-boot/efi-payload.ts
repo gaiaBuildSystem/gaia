@@ -33,7 +33,7 @@ if (efiFiles.length > 0) {
     logger.info(`deploying u-boot EFI payload: ${efiFiles[0]} → ${EFI_DST}`)
 
     execSync(
-        `sudo -k mkdir -p ${EFI_DST} && sudo -k cp ${EFI_SRC} ${EFI_DST}`,
+        `sudo -k mkdir -p $(dirname ${EFI_DST}) && sudo -k cp ${EFI_SRC} ${EFI_DST}`,
         {
             shell: "/bin/bash",
             stdio: "inherit",
