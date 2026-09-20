@@ -522,6 +522,19 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
                         _metas[recipeName][prop] = meta2[prop]
                     }
                 }
+
+                // meta2 overrides the ref using the legacy top-level "ref" field
+                // without providing its own "customData.ref": drop any
+                // "customData.ref" inherited from a lower priority recipe,
+                // otherwise fetch.ts would keep resolving the inherited
+                // customData.ref instead of this recipe's "ref" override
+                if (
+                    meta2.ref != null &&
+                    meta2.customData?.ref == null &&
+                    _metas[recipeName].customData?.ref != null
+                ) {
+                    delete _metas[recipeName].customData.ref
+                }
             }
         }
     }
