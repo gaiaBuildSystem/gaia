@@ -75,39 +75,42 @@ if (
         })
 
     for (const feed of CUSTOM_FEED_DATA.feeds) {
-        // replace the custom-feeds.template file
-        const _feed_template_path = _getAssetPath(
-            "files/custom-feeds.template"
-        )
+        // the pin are a conditional part of the feed configuration
+        if (feed.pin != undefined && feed.pinPriority != undefined) {
+            // replace the custom-feeds.template file
+            const _feed_template_path = _getAssetPath(
+                "files/custom-feeds.template"
+            )
 
-        const _feed_output_path = PATH.join(
-            DEBIAN_FEEDS_PATH,
-            `${feed.name}`
-        )
-        let _feed_template = FS.readFileSync(
-            _feed_template_path, "utf-8"
-        )
+            const _feed_output_path = PATH.join(
+                DEBIAN_FEEDS_PATH,
+                `${feed.name}`
+            )
+            let _feed_template = FS.readFileSync(
+                _feed_template_path, "utf-8"
+            )
 
-        _feed_template = _feed_template
-            .replace(/{{pin}}/g, feed.pin)
-            .replace(/{{pinPriority}}/g, feed.pinPriority.toString())
-        FS.writeFileSync(
-            _feed_output_path,
-            _feed_template,
-            "utf-8"
-        )
+            _feed_template = _feed_template
+                .replace(/{{pin}}/g, feed.pin)
+                .replace(/{{pinPriority}}/g, feed.pinPriority.toString())
+            FS.writeFileSync(
+                _feed_output_path,
+                _feed_template,
+                "utf-8"
+            )
 
-        // copy it to the rootfs
-        execSync(
-            `sudo -k ` +
-            `cp ${_feed_output_path} ` +
-            `${IMAGE_MNT_ROOT}/etc/apt/preferences.d/${feed.name}`,
-            {
-                shell: "/bin/bash",
-                stdio: "inherit",
-                encoding: "utf-8",
-                env: process.env
-            })
+            // copy it to the rootfs
+            execSync(
+                `sudo -k ` +
+                `cp ${_feed_output_path} ` +
+                `${IMAGE_MNT_ROOT}/etc/apt/preferences.d/${feed.name}`,
+                {
+                    shell: "/bin/bash",
+                    stdio: "inherit",
+                    encoding: "utf-8",
+                    env: process.env
+                })
+        }
 
         // replace also the custom.sources.template
         const _sources_template_path = _getAssetPath(
