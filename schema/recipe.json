@@ -25,6 +25,13 @@
             "description": "The priority of the Recipe. This will use if there are multiple recipes discovery with the same name. So, the property from the recipe with the highest priority will be used.",
             "type": "number"
         },
+        "buildDependencies": {
+            "description": "The dependencies of the Recipe. This property is used to define other recipes that must be built before this one.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "source": {
             "description": "The source of the Recipe. Was designed to be a git repository or an URL to a tarball or file to be fetched.",
             "type": "string",

@@ -59,6 +59,7 @@ export interface Recipe {
     name: string
     type: string
     priority: number
+    buildDependencies: string[]
     fetchRecipes: string[]
     patchRecipes: string[]
     buildRecipes: string[]
@@ -277,6 +278,10 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
             path: meta.recipeOrigin,
             priority: meta.priority
         }]
+
+        if (meta.buildDependencies == null) {
+            meta.buildDependencies = []
+        }
 
         if (meta.fetchRecipes != null) {
             // for all fetchRecipes, transform in absolute path

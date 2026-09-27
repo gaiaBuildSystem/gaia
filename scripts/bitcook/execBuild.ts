@@ -7,16 +7,11 @@ import { canExecRecipe } from "./utils/recipeMatch.ts"
 export function ExecBuild (recipes: Recipe[]): void {
     logger.info("Executing build ...")
 
-    const USER_PASSWD = process.env.USER_PASSWD as string
-    const BUILD_PATH = process.env.BUILD_PATH as string
     const ARCH = process.env.ARCH as string
     const FARCH = ARCH.replace("/", "-")
     const DISTRO_NAME = process.env.DISTRO_NAME as string
 
-    // directly call the build scrips from the recipes
-    for (const recipe of recipes) {
-        if (!canExecRecipe(recipe.name)) continue
-
+    const buildRecipeScripts = (recipe: Recipe): void => {
         process.env.META = JSON.stringify(recipe)
 
         // check if the recipe has a build script
@@ -48,7 +43,7 @@ export function ExecBuild (recipes: Recipe[]): void {
                                 encoding: "utf-8"
                             }
                         )
-                    } catch (error) {
+                    } catch (_error) {
                         logger.error(`Build for ${recipe.name} :: error during containerized build`)
                         throw new Error(`Build for ${recipe.name} :: error during containerized build`)
                     }
@@ -71,4 +66,53 @@ export function ExecBuild (recipes: Recipe[]): void {
             }
         }
     }
+
+    // single recipe mode is meant to build one component in isolation, so
+    // its buildDependencies are assumed to already be built from a previous run
+    if (process.env.RECIPE != null) {
+        for (const recipe of recipes) {
+            if (!canExecRecipe(recipe.name)) continue
+            buildRecipeScripts(recipe)
+        }
+        return
+    }
+
+    // dependency-aware build: recipes with unmet buildDependencies are
+    // deferred to the next round until every recipe is built or no
+    // progress can be made anymore
+    const builtRecipes = new Set<string>()
+    let pendingRecipes = recipes.filter((recipe) => canExecRecipe(recipe.name))
+
+    while (pendingRecipes.length > 0) {
+        const deferredRecipes: Recipe[] = []
+        let progressed = false
+
+        for (const recipe of pendingRecipes) {
+            const unmetDependencies = (recipe.buildDependencies ?? [])
+                .filter((dependency) => !builtRecipes.has(dependency))
+
+            if (unmetDependencies.length > 0) {
+                logger.warn(`Deferring build of ${recipe.name}, waiting on: ${unmetDependencies.join(", ")}`)
+                deferredRecipes.push(recipe)
+                continue
+            }
+
+            buildRecipeScripts(recipe)
+            builtRecipes.add(recipe.name)
+            progressed = true
+        }
+
+        if (!progressed && deferredRecipes.length > 0) {
+            const unresolved = deferredRecipes.map((recipe) => {
+                const unmetDependencies = (recipe.buildDependencies ?? [])
+                    .filter((dependency) => !builtRecipes.has(dependency))
+                return `${recipe.name} (needs: ${unmetDependencies.join(", ")})`
+            })
+
+            throw new Error(`Unable to resolve build dependencies for: ${unresolved.join("; ")}`)
+        }
+
+        pendingRecipes = deferredRecipes
+    }
 }
+
