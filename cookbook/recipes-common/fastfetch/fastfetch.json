@@ -9,8 +9,8 @@
     "source": "https://github.com/gaiaBuildSystem/fastfetch.git",
     "version": "2.38.0",
     "ref": {
-        "linux/amd64": "9756dcebfe471de2876a5c32a7afdb40b1a2cbee",
-        "linux/arm64": "9756dcebfe471de2876a5c32a7afdb40b1a2cbee"
+        "linux/amd64": "a9c1d3ec2906bcd07b93c56908b1c9b5f48a39ed",
+        "linux/arm64": "a9c1d3ec2906bcd07b93c56908b1c9b5f48a39ed"
     },
     "env": {
         "ALIAS_NEOFETCH": "true"
