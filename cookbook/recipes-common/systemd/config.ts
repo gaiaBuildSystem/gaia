@@ -52,6 +52,7 @@ execSync(
     `apt-get install -y --reinstall systemd-timesyncd && ` +
     `systemctl unmask systemd-timesyncd && ` +
     `systemctl enable systemd-timesyncd && ` +
+    `systemctl enable systemd-time-wait-sync && ` +
     `systemctl enable NetworkManager` +
     `"`,
     {
