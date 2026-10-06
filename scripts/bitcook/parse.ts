@@ -210,7 +210,11 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
             if (includeRecipes && includeRecipes.length > 0) {
                 for (const includeRecipe of includeRecipes) {
                     for (let i = 0; i < _recipes.length; i++) {
-                        if (_recipes[i].includes(includeRecipe)) {
+                        // Exact match against the recipe directory name
+                        // (filename without .json) to avoid partial matches
+                        // like "linux" matching "linux-firmware"
+                        const recipeDir = PATH.basename(_recipes[i], '.json')
+                        if (recipeDir === includeRecipe) {
                             _recipesToInclude.push(_recipes[i])
                         }
                     }
