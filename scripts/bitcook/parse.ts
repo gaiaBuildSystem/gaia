@@ -202,8 +202,8 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
         let _recipes = getJsonFiles(_pathToSearch, true)
 
 
-        // check if there is the excludeRecipes key
-        if (distro.excludeRecipes == null) {
+        // check if there is the includeRecipes key
+        if (distro.includeRecipes != null && distro.includeRecipes.length > 0) {
             // should be the includeRecipes only then
             const includeRecipes = distro.includeRecipes
             const _recipesToInclude: string[] = []
@@ -217,9 +217,9 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
                 }
             }
 
-            // remove the recipes that was not included
+            // keep only the recipes that were included
             _recipes = _recipesToInclude
-        } else {
+        } else if (distro.excludeRecipes != null && distro.excludeRecipes.length > 0) {
             // exclude the excludeRecipes
             const excludeRecipes = distro.excludeRecipes
             const _recipesToExclude: string[] = []
