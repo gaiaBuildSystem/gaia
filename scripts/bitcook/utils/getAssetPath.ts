@@ -15,7 +15,7 @@ export function getAssetPath (
         path: "",
         priority: -1
     }
-    let _paths = paths.map((p) => p.path).join(", ")
+    const _paths = paths.map((p) => p.path).join(", ")
 
     for (const _obj_path of paths) {
         const _assetPath = `${_obj_path.path}/${assetFilePath}`
