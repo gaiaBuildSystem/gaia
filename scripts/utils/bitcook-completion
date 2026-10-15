@@ -6,7 +6,7 @@ _bitcook_completion() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    opts="--buildPath --clean --dev --distro --help --installHostDeps --noCache --onlySbom --recipe --sbom --step --verbose --version -h -v"
+    opts="--buildPath --clean --dev --distro --help --installHostDeps --noCache --onlySbom --kernelEdge --overrideEnv --recipe --sbom --step --verbose --version -h -v"
 
     steps="fetch patch build pure-deploy before-package package after-package before-deploy deploy after-deploy deploy-initramfs after-deploy-initramfs bundle-initramfs after-bundle-initramfs bundle after-bundle sbom clean"
 
@@ -16,7 +16,7 @@ _bitcook_completion() {
             return 0
             ;;
         --distro)
-            COMPREPLY=( $(compgen -f -X '!*.json' -- "${cur}") )
+            COMPREPLY=( $(compgen -f -- "${cur}") )
             return 0
             ;;
         --step)
