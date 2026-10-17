@@ -89,6 +89,10 @@ let currentChild: ReturnType<typeof spawn> | null = null
 let currentCommandLabel: string | null = null
 let lastCommand: string | null = null
 
+// the command mimir suggested on the previous turn when auto-execute is disabled,
+// so it can be re-run later with /runSuggested without copy-pasting from scrollback
+let lastSuggestedCommand: string | null = null
+
 // llm client
 const mimir = new ClaudeAPIClient()
 
@@ -100,6 +104,7 @@ const COMMANDS = [
     { name: "/history", description: "Show past questions and answers" },
     { name: "/again", description: "Run the last proposed command again" },
     { name: "/auto", description: "Enable/disable agent auto-execute mode" },
+    { name: "/runSuggested", description: "Run the last command mimir suggested (non-auto mode)" },
     { name: "/stop", description: "Cancel the current request" },
     { name: "/help", description: "Show this help message" },
     { name: "/exit", description: "Exit mimir" },
@@ -1052,6 +1057,39 @@ const handleCommand = async (input: string): Promise<boolean> => {
         return true
     }
 
+    if (trimmed === "/runSuggested") {
+        // /runSuggested is only needed when auto-execute mode is disabled;
+        // with auto enabled, commands run automatically.
+        if (AUTO_EXECUTE_COMMAND) {
+            appendMessage("system", "Auto-execute mode is on — commands run automatically. Use /auto to disable first.", "#e0af68")
+            return true
+        }
+
+        if (lastSuggestedCommand == null) {
+            appendMessage("system", "No suggested command available. Ask mimir a question first to get one.", "#e0af68")
+            return true
+        }
+
+        if (processing) {
+            appendMessage("system", "Already running something, /stop first.", "#e0af68")
+            return true
+        }
+
+        setProcessing(true)
+        stoppedByUser = false
+
+        try {
+            await runCommand(lastSuggestedCommand)
+        } finally {
+            setProcessing(false)
+        }
+
+        // consume the suggestion so a new question can replace it with its own
+        lastSuggestedCommand = null
+
+        return true
+    }
+
     if (trimmed === "/stop") {
         stoppedByUser = true
         currentAbort?.abort()
@@ -1531,6 +1569,8 @@ const loop = async (question: string, echoUser: boolean = true) => {
                 lastCommand = resp.command
 
                 if (!AUTO_EXECUTE_COMMAND) {
+                    // remember the suggestion so it can be re-run with /runSuggested
+                    lastSuggestedCommand = resp.command
                     appendMessage(
                         "system",
                         "(auto-execution disabled, run it manually or use /auto)",

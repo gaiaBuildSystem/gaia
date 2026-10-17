@@ -86,7 +86,8 @@ deno run scripts/bitcook/mimirCI.ts
 |---------|-------------|
 | `/clear` | Clear the chat history. |
 | `/history` | Show past questions and answers. |
-| `/again` | Run the last proposed command again. |
+| `/again` | Run the last proposed command again (auto mode only). |
+| `/runSuggested` | **Run the last suggested command** when auto-execute is disabled. Mimir stores its latest suggestion so you can execute it later without copy-pasting from scrollback. |
 | `/auto` | Toggle agent auto-execute mode. |
 | `/stop` | Cancel the current request (and any running command). |
 | `/help` | Show the help message. |
@@ -103,6 +104,23 @@ debug command.
 By default Mimir **only proposes** commands; you run them yourself. Auto-execution
 is **opt-in** (via `/auto` in the current TUI, `/enableAutoExecuteCommand` in the
 Melker TUI, or `MIMIR_AUTO_RETRY=1` in the CLI).
+
+### With auto-execute disabled
+
+When Mimir proposes a command and auto-execute is off, it prints:
+
+```
+system: Command: <command>
+(auto-execution disabled, run it manually or use /auto)
+```
+
+The suggested command is **stored internally** so you can re-run it later without
+copy-pasting from scrollback. Use the `/runSuggested` command to execute it at any
+time (it also works after a failed manual execution — just run `/runSuggested`
+again). The stored suggestion is consumed once executed, and each new question Mimir
+answers replaces it with its own latest proposal.
+
+### With auto-execute enabled
 
 When auto-execute is enabled and Mimir proposes a `command`:
 
