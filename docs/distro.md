@@ -104,8 +104,12 @@ recipes and follow the normal filter.
 
 The selected release is exposed to recipes as `DISTRO_DEBIAN`.
 
+Recipes can also declare `targetDeps` per release, as an object keyed by
+codename. See [Recipes](recipes.md).
+
 To support a new release, add its codename to the `debian` enum in
-`schema/distro.json` and to `DEBIAN_RELEASES` in `scripts/bitcook/parse.ts`.
+`schema/distro.json`, to the `targetDeps` object keys in `schema/recipe.json`,
+and to `DEBIAN_RELEASES` in `scripts/bitcook/parse.ts`.
 
 ## Multi-Cookbook Builds
 

@@ -34,10 +34,15 @@
         "libopencl-clang-15-dev",
         "directx-headers-dev"
     ],
-    "targetDeps": [
-        "libdrm2",
-        "libosmesa6"
-    ],
+    "targetDeps": {
+        "bookworm": [
+            "libdrm2",
+            "libosmesa6"
+        ],
+        "forky": [
+            "libdrm2"
+        ]
+    },
     "fetchRecipes": [
         "fetch.ts"
     ],

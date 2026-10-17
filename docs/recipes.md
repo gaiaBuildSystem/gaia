@@ -81,7 +81,7 @@ The only required fields are `name`, `type`, `priority`, and `support`.
 | `hostAsContainer` | `boolean` | Default `false`. When `true`, the recipe is built inside a container, and `containerImage` **must** be provided. |
 | `containerImage` | `object` | The build container. `image` (required), `tag` (required), and optional `extraConfig` (extra docker flags, e.g. `--entrypoint=""`). |
 | `hostDeps` | `string[]` | Host tools that must be present (checked before the build). Example: `["git", "make"]`. |
-| `targetDeps` | `string[]` | Debian packages installed **into the target rootfs** during the package stage (via `apt-get`). |
+| `targetDeps` | `string[]` \| `object` | Debian packages installed **into the target rootfs** during the package stage (via `apt-get`). Either an array used for any Debian release, or an object with an array per Debian release (`bookworm`, `trixie`, `forky`), where only the one matching the distro `debian` property is used. A release missing from the object installs nothing. |
 | `env` | `object` | Environment variables injected for this recipe's scripts. Values may reference `${recipeOrigin}`. |
 | `customData` | `object` | Arbitrary data shared to the build context (for example alternate kernel `ref` sets). |
 

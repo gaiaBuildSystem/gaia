@@ -41,7 +41,8 @@ export interface DistroVersion {
     codename?: string
 }
 
-// keep in sync with the "debian" enum on schema/distro.json
+// keep in sync with the "debian" enum on schema/distro.json and the
+// targetDeps object keys on schema/recipe.json
 export const DEBIAN_RELEASES = [
     "bookworm",
     "trixie",
@@ -299,6 +300,17 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
 
         // validate the recipe JSON with their schema
         _validateSchema(_schema, meta)
+
+        // targetDeps can be an object with the deps per Debian release,
+        // resolve it to the array of the distro Debian release
+        const _targetDeps = meta.targetDeps as string[] | Partial<Record<DebianRelease, string[]>> | undefined
+        if (_targetDeps != null && !Array.isArray(_targetDeps)) {
+            if (_targetDeps[_debian] == null) {
+                logger.debug(`Recipe ${meta.name} has no targetDeps for Debian ${_debian}`)
+            }
+
+            meta.targetDeps = _targetDeps[_debian] ?? []
+        }
 
         // also check if the recipe has support for the machine arch
         let _supported = false
