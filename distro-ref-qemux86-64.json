@@ -2,6 +2,7 @@
     "name": "DeimOS-Reference",
     "machine": "qemux86-64",
     "arch": "linux/amd64",
+    "debian": "forky",
     "version": {
         "major": 0,
         "minor": 1,

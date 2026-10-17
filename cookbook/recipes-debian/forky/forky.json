@@ -1,0 +1,60 @@
+{
+    "name": "debian-forky",
+    "type": "rootfs",
+    "priority": 0,
+    "support": [
+        "linux/amd64",
+        "linux/arm64"
+    ],
+    "checksum": {
+        "linux/amd64": "bdfaf17803b5c8007fc79111026bfe29c2e121ad22575c5a555fa8f8bb9c8802",
+        "linux/arm64": "3b57d7f5fe4ff1b754c8f982c7f0912353c8346b296eb6c1c8bc2220f72c4764"
+    },
+    "env": {
+        "BOOT_LABEL": "BOOT",
+        "ROOT_LABEL": "gaia"
+    },
+    "hostDeps": [
+        "mount",
+        "xz-utils",
+        "kpartx",
+        "e2fsprogs",
+        "pipx",
+        "lz4"
+    ],
+    "targetDeps": [
+        "kmod",
+        "locales",
+        "sudo",
+        "bash",
+        "bash-completion",
+        "util-linux",
+        "htop",
+        "e2fsprogs",
+        "parted",
+        "dbus",
+        "udev",
+        "network-manager",
+        "polkitd",
+        "net-tools",
+        "resolvconf",
+        "xterm"
+    ],
+    "fetchRecipes": [
+        "fetch.ts"
+    ],
+    "patchRecipes": [],
+    "buildRecipes": [
+        "disk.ts",
+        "buildRootfs.ts"
+    ],
+    "deployRecipes": [
+        "update.ts"
+    ],
+    "sbomRecipes": [
+        "sbom.ts"
+    ],
+    "cleanRecipes": [
+        "umount.ts"
+    ]
+}
