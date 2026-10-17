@@ -1165,14 +1165,15 @@ Mimir version: ${VERSION}
             "system",
             `
 Available commands:
-    /clear   - Clear the chat history
-    /history - Show past questions and answers
-    /again   - Run the last proposed command again
-    /auto    - Enable/disable agent auto-execute mode
-    /stop    - Cancel the current request
-    /help    - Show this help message
-    /exit    - Exit mimir
-    /quit    - Exit mimir
+    /clear         - Clear the chat history.
+    /history       - Show past questions and answers.
+    /again         - Run the last proposed command again (auto mode only).
+    /runSuggested  - Run the last suggested command when auto-execute is disabled.
+    /auto          - Enable/disable agent auto-execute mode.
+    /stop          - Cancel the current request (and any running command).
+    /help          - Show this help message.
+    /exit, /quit   - Exit mimir.
+    /version       - Show the Mimir version.
             `,
             "#e0af68"
         )
