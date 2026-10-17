@@ -878,6 +878,8 @@ const appendStreamingMessage = (author: string, color?: string) => {
 
     renderer.on(CliRenderEvents.FRAME, flush)
 
+    let disposed = false
+
     return {
         update: (chunk: string) => {
             dropStaleSelection()
@@ -887,6 +889,10 @@ const appendStreamingMessage = (author: string, color?: string) => {
         // — call once the command that's feeding this entry is done, so the
         // frame listener doesn't outlive it for the rest of the session
         dispose: () => {
+            if (disposed) {
+                return
+            }
+            disposed = true
             flush()
             renderer.off(CliRenderEvents.FRAME, flush)
             appendSpacer()
@@ -1464,6 +1470,10 @@ const runCommand = async (command: string): Promise<void> => {
 
         GlobalErrorCount = 0
     } catch (error) {
+        // close the output block (flush + trailing spacer) before any
+        // follow-up turn, so the next "mimir:" header doesn't glue onto it
+        cmdOutput.dispose()
+
         if (stoppedByUser || isAbortError(error)) {
             return
         }
