@@ -115,7 +115,7 @@ export function CheckDependencies (recipes: Recipe[]): void {
                     `podman exec ${HOST_CONTAINER_NAME} ` +
                     `/bin/bash -c "` +
                     `export DEBIAN_FRONTEND=noninteractive && ` +
-                    `apt-get update && apt-get install sudo` +
+                    `apt-get update && apt-get install -y sudo` +
                     `"`,
                     {
                         shell: "/bin/bash",
