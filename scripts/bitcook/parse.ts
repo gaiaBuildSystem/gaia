@@ -42,7 +42,7 @@ export interface DistroVersion {
 }
 
 // keep in sync with the "debian" enum on schema/distro.json and the
-// targetDeps object keys on schema/recipe.json
+// targetDeps, hostDeps and containerImage object keys on schema/recipe.json
 export const DEBIAN_RELEASES = [
     "bookworm",
     "trixie",
@@ -51,6 +51,28 @@ export const DEBIAN_RELEASES = [
 
 export type DebianRelease = typeof DEBIAN_RELEASES[number]
 export const DEFAULT_DEBIAN_RELEASE: DebianRelease = "bookworm"
+
+// some recipe properties accept either the plain value, used for any Debian
+// release, or an object keyed by Debian release codename
+const _resolvePerDebianRelease = <T>(
+    meta: Recipe,
+    prop: "targetDeps" | "hostDeps" | "containerImage",
+    debian: DebianRelease,
+    isPlain: (value: unknown) => boolean,
+    fallback: T
+): T => {
+    const _value = meta[prop] as unknown
+    if (_value == null || isPlain(_value)) {
+        return _value as T
+    }
+
+    const _perRelease = _value as Partial<Record<DebianRelease, T>>
+    if (_perRelease[debian] == null) {
+        logger.debug(`Recipe ${meta.name} has no ${prop} for Debian ${debian}`)
+    }
+
+    return _perRelease[debian] ?? fallback
+}
 
 
 export interface Distro {
@@ -301,15 +323,22 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
         // validate the recipe JSON with their schema
         _validateSchema(_schema, meta)
 
-        // targetDeps can be an object with the deps per Debian release,
-        // resolve it to the array of the distro Debian release
-        const _targetDeps = meta.targetDeps as string[] | Partial<Record<DebianRelease, string[]>> | undefined
-        if (_targetDeps != null && !Array.isArray(_targetDeps)) {
-            if (_targetDeps[_debian] == null) {
-                logger.debug(`Recipe ${meta.name} has no targetDeps for Debian ${_debian}`)
-            }
+        // targetDeps, hostDeps and containerImage can be an object with the
+        // value per Debian release, resolve them to the distro Debian release
+        meta.targetDeps = _resolvePerDebianRelease(
+            meta, "targetDeps", _debian, Array.isArray, []
+        )
+        meta.hostDeps = _resolvePerDebianRelease(
+            meta, "hostDeps", _debian, Array.isArray, []
+        )
+        meta.containerImage = _resolvePerDebianRelease<Recipe["containerImage"] | undefined>(
+            meta, "containerImage", _debian,
+            (value) => (value as Recipe["containerImage"]).image != null,
+            undefined
+        )!
 
-            meta.targetDeps = _targetDeps[_debian] ?? []
+        if (meta.hostAsContainer === true && meta.containerImage == null) {
+            throw new Error(`recipe ${meta.name} has hostAsContainer but no containerImage for Debian ${_debian}`)
         }
 
         // also check if the recipe has support for the machine arch
