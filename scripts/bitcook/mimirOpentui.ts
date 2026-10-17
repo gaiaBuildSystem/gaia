@@ -1090,8 +1090,10 @@ const handleCommand = async (input: string): Promise<boolean> => {
             setProcessing(false)
         }
 
-        // consume the suggestion so a new question can replace it with its own
-        lastSuggestedCommand = null
+        // keep the suggestion in place — a new question/answer cycle will
+        // naturally overwrite it when mimir responds with a fresh command.
+        // clearing it here would lose it if the error-recovery analysis
+        // (triggered by a failed run) returns no fix command at all.
 
         return true
     }
