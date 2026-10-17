@@ -41,10 +41,22 @@ export interface DistroVersion {
     codename?: string
 }
 
+// keep in sync with the "debian" enum on schema/distro.json
+export const DEBIAN_RELEASES = [
+    "bookworm",
+    "trixie",
+    "forky"
+] as const
+
+export type DebianRelease = typeof DEBIAN_RELEASES[number]
+export const DEFAULT_DEBIAN_RELEASE: DebianRelease = "bookworm"
+
+
 export interface Distro {
     name: string
     machine: string
     version: DistroVersion
+    debian?: DebianRelease
     maxImgSize: number
     arch: "linux/amd64" | "linux/arm64"
     searchForRecipesOn: string[]
@@ -153,6 +165,8 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
     const _RECIPES: string[] = []
     let RECIPES: Recipe[] = []
     const _schema = require(`${__dirname}/../../schema/recipe.json`)
+    const _debian: DebianRelease = distro.debian ?? DEFAULT_DEBIAN_RELEASE
+    let _debianFound = false
 
     for (const _pathToSearch of distro.searchForRecipesOn) {
         const getJsonFiles = (dir: string, relativeToDistro: boolean = false): string[] => {
@@ -201,6 +215,27 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
 
         let _recipes = getJsonFiles(_pathToSearch, true)
 
+        // the Debian release recipes are special: only the one set on the
+        // distro "debian" property is used, all the others are dropped, and
+        // includeRecipes/excludeRecipes do not apply to them.
+        // Use the directory name, the json can be a machine specific one
+        const _debianRecipes: string[] = []
+        _recipes = _recipes.filter((recipe) => {
+            const recipeDir = PATH.basename(PATH.dirname(recipe))
+
+            if (!(DEBIAN_RELEASES as readonly string[]).includes(recipeDir)) {
+                return true
+            }
+
+            if (recipeDir === _debian) {
+                _debianRecipes.push(recipe)
+                _debianFound = true
+            } else {
+                logger.debug(`Ignoring Debian ${recipeDir} recipe, distro uses ${_debian}`)
+            }
+
+            return false
+        })
 
         // check if there is the includeRecipes key
         if (distro.includeRecipes != null && distro.includeRecipes.length > 0) {
@@ -247,7 +282,11 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
         }
 
         // append the recipes
-        _RECIPES.push(..._recipes)
+        _RECIPES.push(..._debianRecipes, ..._recipes)
+    }
+
+    if (!_debianFound) {
+        throw new Error(`no recipe found for Debian ${_debian} in ${distro.searchForRecipesOn.join(", ")}`)
     }
 
     // summary

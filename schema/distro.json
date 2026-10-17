@@ -47,6 +47,16 @@
                 "build"
             ]
         },
+        "debian": {
+            "description": "The Debian release used as base. Only the recipe under recipes-debian with this name is included, the other Debian release recipes are excluded",
+            "type": "string",
+            "enum": [
+                "bookworm",
+                "trixie",
+                "forky"
+            ],
+            "default": "bookworm"
+        },
         "maxImgSize": {
             "type": "number"
         },

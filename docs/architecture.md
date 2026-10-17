@@ -85,7 +85,7 @@ name matches its parent directory name (e.g. `linux/linux.json`). A
 machine-specific override file (`linux-rpi5b.json`) takes precedence over the
 default when present.
 
-Recipes are then filtered by `includeRecipes` or `excludeRecipes` from the distro manifest (mutually exclusive, exactly one must be present).
+Recipes are then filtered by `includeRecipes` or `excludeRecipes` from the distro manifest (mutually exclusive, exactly one must be present). Debian release recipes (directories named after a release codename, such as `recipes-debian/bookworm`) skip that filter: only the one matching the distro `debian` property is kept, see [Distro Manifest → Debian Release](distro.md#debian-release).
 
 Finally, recipes with the same `name` are **merged**: the one with the higher
 `priority` wins for scalar properties, and when `merge: true` its
@@ -104,6 +104,7 @@ The most important are derived from the distro manifest:
 | `ARCH` | `distro.arch` |
 | `DISTRO_MAJOR` / `DISTRO_MINOR` / `DISTRO_PATCH` / `DISTRO_BUILD` | `distro.version.*` |
 | `DISTRO_VARIANT` / `DISTRO_CODENAME` | `distro.version.variant` / `codename` |
+| `DISTRO_DEBIAN` | `distro.debian` (default `bookworm`) |
 | `MAX_IMG_SIZE` | `distro.maxImgSize` |
 | `USE_INITRAMFS` | `distro.useInitramfs` |
 | `BUILD_PATH` | `<buildPath>/build-<distro.name>` |

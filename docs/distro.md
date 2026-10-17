@@ -44,6 +44,7 @@ adds `schema/distro-core.json` on top of it (for example to constrain the
 | `machine` | `string` | yes | The target machine type (for example `qemux86-64`, `qemuarm64`, or a vendor machine name). |
 | `arch` | `string` | yes | Target architecture. One of `linux/amd64`, `linux/arm64`. |
 | `version` | `object` | yes | Distribution version. See below. |
+| `debian` | `string` | no | Debian release used as base. One of `bookworm`, `trixie`, `forky`. Default `bookworm`. See [Debian Release](#debian-release). |
 | `maxImgSize` | `number` | yes | Maximum image size in megabytes. |
 | `searchForRecipesOn` | `string[]` | yes | Directories (relative to the manifest) to search for recipes. |
 | `includeRecipes` | `string[]` | one-of | Whitelist of recipe names to include. **Exactly one** of this or `excludeRecipes` must be present. |
@@ -78,11 +79,33 @@ The manifest drives **which recipes** are parsed:
      names is removed.
    - Otherwise, if `includeRecipes` is set, **only** recipes whose path matches
      one of those names are kept.
-3. Recipes sharing a name are merged by priority (see [Recipes →
+3. Debian release recipes are handled apart from that filter, see
+   [Debian Release](#debian-release).
+4. Recipes sharing a name are merged by priority (see [Recipes →
    Overriding a Recipe](recipes.md#overriding-a-recipe)).
 
 The schema enforces that `includeRecipes` and `excludeRecipes` are **mutually
 exclusive** and that exactly one of them is present.
+
+### Debian Release
+
+A recipe whose directory name is a Debian release codename (one of the
+`debian` enum values, for example `recipes-debian/bookworm/`) is a **Debian
+release recipe**. These recipes are special:
+
+- Only the recipe matching the distro `debian` property (default `bookworm`)
+  is used. Recipes for every other release are dropped.
+- `includeRecipes` and `excludeRecipes` do not apply to them. The selected
+  release is always included.
+- If no search path has a recipe for the selected release, the build fails.
+
+Other recipes under `recipes-debian` (for example `custom-feed`) are ordinary
+recipes and follow the normal filter.
+
+The selected release is exposed to recipes as `DISTRO_DEBIAN`.
+
+To support a new release, add its codename to the `debian` enum in
+`schema/distro.json` and to `DEBIAN_RELEASES` in `scripts/bitcook/parse.ts`.
 
 ## Multi-Cookbook Builds
 

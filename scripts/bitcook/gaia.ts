@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url)
 
 import process from "node:process"
 import logger from "node-color-log"
-import { ParseRecipes } from "./parse.ts"
+import { DEFAULT_DEBIAN_RELEASE, ParseRecipes } from "./parse.ts"
 import { ExecFetch } from "./execFetch.ts"
 import { CheckDependencies } from "./checkDeps.ts"
 import { ExecBuild } from "./execBuild.ts"
@@ -290,6 +290,10 @@ if (distro.version?.variant) {
 if (distro.version?.codename) {
     process.env.DISTRO_CODENAME = distro.version.codename
 }
+
+// set the environment variable for the Debian release
+distro.debian = distro.debian ?? DEFAULT_DEBIAN_RELEASE
+process.env.DISTRO_DEBIAN = distro.debian
 
 // set the environment variable for the maximum size of the img
 process.env.MAX_IMG_SIZE = String(distro.maxImgSize ?? 1024)
