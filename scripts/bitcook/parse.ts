@@ -198,6 +198,7 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
     const _schema = require(`${__dirname}/../../schema/recipe.json`)
     const _debian: DebianRelease = distro.debian ?? DEFAULT_DEBIAN_RELEASE
     let _debianFound = false
+    let _debianExcluded = false
 
     for (const _pathToSearch of distro.searchForRecipesOn) {
         const getJsonFiles = (dir: string, relativeToDistro: boolean = false): string[] => {
@@ -248,7 +249,8 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
 
         // the Debian release recipes are special: only the one set on the
         // distro "debian" property is used, all the others are dropped, and
-        // includeRecipes/excludeRecipes do not apply to them.
+        // includeRecipes does not apply to them. excludeRecipes can still
+        // drop the selected one (handled below).
         // Use the directory name, the json can be a machine specific one
         const _debianRecipes: string[] = []
         _recipes = _recipes.filter((recipe) => {
@@ -312,11 +314,28 @@ export function ParseRecipes (_: string, distro: Distro): Recipe[] {
             }
         }
 
+        // the Debian release recipe can still be explicitly dropped through
+        // excludeRecipes, for distros that do not build a rootfs image
+        // (e.g. kernel only distros)
+        if (distro.excludeRecipes != null && distro.excludeRecipes.length > 0) {
+            for (let i = _debianRecipes.length - 1; i >= 0; i--) {
+                const excludedBy = distro.excludeRecipes.find(
+                    (excludeRecipe) => _debianRecipes[i].includes(excludeRecipe)
+                )
+
+                if (excludedBy != null) {
+                    logger.debug(`Excluding Debian ${_debian} recipe, matched excludeRecipes entry ${excludedBy}`)
+                    _debianRecipes.splice(i, 1)
+                    _debianExcluded = true
+                }
+            }
+        }
+
         // append the recipes
         _RECIPES.push(..._debianRecipes, ..._recipes)
     }
 
-    if (!_debianFound) {
+    if (!_debianFound && !_debianExcluded) {
         throw new Error(`no recipe found for Debian ${_debian} in ${distro.searchForRecipesOn.join(", ")}`)
     }
 
