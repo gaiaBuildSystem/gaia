@@ -1,6 +1,5 @@
 #!/usr/bin/env -S deno run --allow-all
 
-import logger from "node-color-log"
 import process from "node:process"
 
 export type AskResponse = {
@@ -144,10 +143,14 @@ export class ClaudeAPIClient {
             signal
         })
 
+        // never log here: writing straight to stdout/stderr bypasses the
+        // opentui renderer and corrupts the TUI — callers render the message
         if (!response.ok) {
-            const body = await response.text()
-            logger.error(`mimir API request failed: ${response.status} ${body}`)
-            throw new Error(`mimir API request failed with status ${response.status}`)
+            const body = (await response.text()).trim()
+            const detail = body.length > 500 ? `${body.slice(0, 500)}…` : body
+            throw new Error(
+                `mimir API request failed with status ${response.status}${detail ? `: ${detail}` : ""}`
+            )
         }
 
         if (!response.body) {
