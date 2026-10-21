@@ -9,11 +9,27 @@ export type AskResponse = {
 }
 
 type StreamLine = {
-    type: "progress" | "result"
+    type: "progress" | "result" | "tool_call"
     text?: string
     explanation?: string
     command?: string | null
     errorKind?: string | null
+    // tool_call only
+    sessionId?: string
+    id?: string
+    name?: string
+    input?: Record<string, unknown>
+}
+
+// a tool that runs on this machine when the mimir model asks for it, eg.
+// paging through a local build log instead of uploading the whole thing;
+// whatever the handler returns (or throws) goes back to the model as the
+// tool result
+export type ClientTool = {
+    name: string
+    description: string
+    input_schema: Record<string, unknown>
+    handler: (input: Record<string, unknown>) => string | Promise<string>
 }
 
 export type ChatTurn = {
@@ -40,6 +56,7 @@ export class ClaudeAPIClient {
     private _additionalContext = ""
     private _maxHistoryContext = 4
     private _history: ChatTurn[] = []
+    private _tools = new Map<string, ClientTool>()
 
     constructor (
         baseUrl: string = process.env.MIMIR_API_URL || "https://phobos.dev.br:8000"
@@ -124,6 +141,55 @@ export class ClaudeAPIClient {
         }
     }
 
+    public registerTool (tool: ClientTool): void {
+        this._tools.set(tool.name, tool)
+    }
+
+    public unregisterTool (name: string): void {
+        this._tools.delete(name)
+    }
+
+    // runs a tool_call streamed by the API and POSTs the outcome back, which
+    // is what lets the paused model loop on the server continue
+    private async _answerToolCall (call: StreamLine, signal?: AbortSignal): Promise<void> {
+        let content: string
+        let isError = false
+
+        const tool = this._tools.get(call.name ?? "")
+        if (!tool) {
+            content = `Unknown client tool: ${call.name}`
+            isError = true
+        } else {
+            try {
+                content = await tool.handler(call.input ?? {})
+            } catch (error) {
+                content = `Tool failed: ${error instanceof Error ? error.message : String(error)}`
+                isError = true
+            }
+        }
+
+        const response = await fetch(`${this.baseUrl}/tool/result`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sessionId: call.sessionId,
+                toolUseId: call.id,
+                content,
+                isError
+            }),
+            signal
+        })
+
+        // the body is never used, release it so the connection is freed
+        await response.body?.cancel()
+
+        if (!response.ok) {
+            throw new Error(`mimir API rejected the ${call.name} tool result with status ${response.status}`)
+        }
+    }
+
     // `endpoint` picks the specialized analysis route (e.g. kernel build
     // logs) instead of the general /ask; both stream the same NDJSON shape,
     // the analysis endpoints' result just never carries a `command`
@@ -139,7 +205,16 @@ export class ClaudeAPIClient {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ question: _question }),
+            body: JSON.stringify({
+                question: _question,
+                clientTools: this._tools.size > 0
+                    ? [...this._tools.values()].map(({ name, description, input_schema }) => ({
+                        name,
+                        description,
+                        input_schema
+                    }))
+                    : undefined
+            }),
             signal
         })
 
@@ -183,6 +258,8 @@ export class ClaudeAPIClient {
 
                 if (parsed.type === "progress") {
                     onProgress?.(parsed.text ?? "")
+                } else if (parsed.type === "tool_call") {
+                    await this._answerToolCall(parsed, signal)
                 } else if (parsed.type === "result") {
                     result = {
                         explanation: parsed.explanation ?? "",

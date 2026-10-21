@@ -13,6 +13,7 @@ import type {
     TextRenderable,
 } from "@jitl/opentui-core"
 import { ClaudeAPIClient } from "./utils/claudeAPI.ts"
+import { LogToolbox } from "./utils/logTools.ts"
 
 const {
     Box,
@@ -95,6 +96,7 @@ let lastSuggestedCommand: string | null = null
 
 // llm client
 const mimir = new ClaudeAPIClient()
+const logTools = new LogToolbox(mimir)
 
 const isAbortError = (error: unknown): boolean =>
     error instanceof Error && error.name === "AbortError"
@@ -1485,36 +1487,13 @@ const runCommand = async (command: string): Promise<void> => {
         GlobalErrorCount++
 
         if (GlobalErrorCount < MAX_ERROR_COUNT) {
-            let outputTmpFileContent = ""
-            let _nextQuestion = ""
-            let _nextContext = ""
+            // a short tail plus the log tools instead of the whole output,
+            // so the model can dig for the root cause above the tail
+            const _nextQuestion = logTools.failedCommandQuestion(command, outputTmpFile)
 
-            try {
-                const fullOutput = stripAnsi(Deno.readTextFileSync(outputTmpFile))
-                const lines = fullOutput.split("\n")
-
-                outputTmpFileContent = lines.length > 400
-                    ? lines.slice(-400).join("\n")
-                    : fullOutput
-
-                // the question + logs + context could not exceed the 80k chars
-                _nextQuestion = `The command "${command}" failed to execute, logs: ${outputTmpFileContent}\n`
-                _nextContext = mimir.getContext()
-
-                if (_nextQuestion.length + _nextContext.length > 80000) {
-                    mimir.compactHistory()
-                    _nextQuestion = `The command "${command}" failed to execute, logs: ${outputTmpFileContent}\n`
-                    _nextContext = mimir.getContext()
-
-                    if (_nextQuestion.length + _nextContext.length > 80000) {
-                        // still too long so we will need to truncate logs
-                        const maxLogLength = 80000 - _nextContext.length - 1000
-                        const truncatedLogs = outputTmpFileContent.slice(-maxLogLength)
-                        _nextQuestion = `The command "${command}" failed to execute, logs: ${truncatedLogs}\n`
-                    }
-                }
-            } catch {
-                outputTmpFileContent = (error as Error).message
+            // the question + context could not exceed the 80k chars
+            if (_nextQuestion.length + mimir.getContext().length > 80000) {
+                mimir.compactHistory()
             }
 
             if (lastResponseErrorKind === "kernel") {
