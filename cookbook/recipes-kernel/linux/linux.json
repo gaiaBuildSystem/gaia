@@ -18,8 +18,8 @@
                 "linux/amd64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6"
             },
             "edge": {
-                "linux/arm64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6",
-                "linux/amd64": "8cd9520d35a6c38db6567e97dd93b1f11f185dc6"
+                "linux/arm64": "c03c1a14507dfaf8b856c2608f9ac216021fc222",
+                "linux/amd64": "c03c1a14507dfaf8b856c2608f9ac216021fc222"
             }
         }
     },
