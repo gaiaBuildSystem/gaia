@@ -8,8 +8,8 @@
     ],
     "source": "https://github.com/gaiaBuildSystem/drm_display.git",
     "ref": {
-        "linux/amd64": "868c01ff4dad22f0b4f5de9477271694871693f0",
-        "linux/arm64": "868c01ff4dad22f0b4f5de9477271694871693f0"
+        "linux/amd64": "3e550e88923e802fceb97862a580656b7d98c76e",
+        "linux/arm64": "3e550e88923e802fceb97862a580656b7d98c76e"
     },
     "hostAsContainer": true,
     "containerImage": {
